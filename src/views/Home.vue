@@ -117,7 +117,7 @@ onMounted(async () => {
          viewport for the device. min-h-dvh recalculates as mobile browser
          chrome (URL bar) shows/hides during scroll, causing the hero to
          resize and pushing everything below it — a CLS source. -->
-    <Section class="min-h-svh flex items-center !pt-12 !pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static">
+    <Section class="min-h-fit sm:min-h-svh flex items-center !pt-8 !pb-16 sm:!pt-12 sm:!pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static">
       <!-- Soft accent glow behind the Lottie. Hidden on small screens
            where the artwork stacks below the copy and the glow would
            wash out the headline. -->
@@ -126,7 +126,7 @@ onMounted(async () => {
         aria-hidden="true"
       />
       <Container>
-        <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center relative">
+        <div class="grid lg:grid-cols-2 gap-8 lg:gap-8 items-center relative">
           <!-- Hero text wrapper. Previously animated `y: 12 → 0` on mount,
                which (a) delays LCP because the LCP element is this <h1>
                and the largest paint is recorded at the end of the
@@ -137,7 +137,7 @@ onMounted(async () => {
           <Motion
             :initial="{ opacity: 1, y: 0 }"
             :animate="{ opacity: 1, y: 0 }"
-            class="flex flex-col gap-8 max-w-xl"
+            class="flex flex-col gap-6 sm:gap-8 max-w-xl"
           >
             <a
               href="https://github.com/Builder106/STAIJA"
@@ -204,15 +204,16 @@ onMounted(async () => {
             <Body large class="!text-white/85 dark:!text-ink-static/85">
               {{ t('home.hero.dek') }}
             </Body>
-            <div class="flex flex-wrap gap-4">
+            <div class="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
               <UiButton
                 variant="on-gradient"
                 :to="'/apply/stepup-scholars'"
+                class="w-full sm:w-auto text-center justify-center"
                 @click="trackApplyClick({ program: 'stepup', source: 'home_hero' })"
               >
                 {{ t('home.hero.ctaPrimary') }}
               </UiButton>
-              <UiButton variant="on-gradient-ghost" href="#programs">
+              <UiButton variant="on-gradient-ghost" href="#programs" class="w-full sm:w-auto text-center justify-center">
                 {{ t('home.hero.ctaSecondary') }}
               </UiButton>
             </div>
@@ -237,7 +238,7 @@ onMounted(async () => {
             :initial="{ opacity: 0 }"
             :animate="{ opacity: 1 }"
             :transition="{ duration: 0.5, delay: 0.2 }"
-            class="relative w-full aspect-[4/3] lg:aspect-square flex items-center justify-center"
+            class="relative w-full aspect-[4/3] lg:aspect-square flex items-center justify-center max-h-[300px] sm:max-h-[440px] lg:max-h-none"
           >
             <HeroLottie class="w-full h-full max-w-[560px] relative" />
           </Motion>
@@ -625,71 +626,33 @@ onMounted(async () => {
   }
 }
 
-/* Both hover/pop swaps below are gated to devices with real hover
-   (a mouse/trackpad), not just any :hover/:focus-visible match. Touch
-   browsers often fake :hover on the first tap and don't clear it until
-   the user taps elsewhere — combined with these words' tabindex, a tap
-   could pop the text to opacity:0 and leave it stuck invisible. Since
-   this is a decorative flourish with no touch equivalent worth
-   building, the simplest fix is to just never activate it on touch:
-   the words render as plain static text there. */
-@media (hover: hover) and (pointer: fine) {
-
-/* Hover/focus swap: "Africa's" pops out (scales up + fades) while the
-   Africa continent silhouette (masked from the public-domain
-   BlankMap-Africa.svg, see public/images/africa-mask.svg) pops in over
-   it, filled with the same pan-African gradient as the letters. The
-   silhouette's pop-in is delayed slightly behind the text's pop-out so
-   the swap reads as one leaving before the other arrives, not a
-   simultaneous crossfade. */
+/* Baseline layout and positioning rules apply unconditionally across all
+   input methods (touch and mouse/hover), ensuring elements remain correctly
+   positioned and hidden by default on mobile touch screens. */
 .lead-hover-group {
   position: relative;
   display: inline-flex;
   align-items: baseline;
   outline: none;
+  white-space: nowrap;
 }
 
 .lead-swap {
   position: relative;
   display: inline-flex;
+  white-space: nowrap;
 }
 
 .lead-text {
   display: inline-flex;
+  white-space: nowrap;
   transition: transform 220ms ease-in, opacity 220ms ease-in;
-}
-
-.lead-hover-group:hover .lead-text,
-.lead-hover-group:focus-visible .lead-text {
-  transform: scale(1.15);
-  opacity: 0;
-}
-
-.lead-hover-group:hover .flag-line-0,
-.lead-hover-group:hover .flag-line-1,
-.lead-hover-group:hover .flag-line-2,
-.lead-hover-group:focus-visible .flag-line-0,
-.lead-hover-group:focus-visible .flag-line-1,
-.lead-hover-group:focus-visible .flag-line-2 {
-  /* Drop (not pause) the idle bob so the trailing "'s", which stays
-     visible during the swap, snaps back to the baseline instead of
-     freezing mid-bob. */
-  animation: none;
 }
 
 .africa-pop-in {
   position: absolute;
   left: 50%;
-  /* Bottom-anchored (not vertically centered in the whole word) so the
-     silhouette sits on the same baseline as "Afr"/"ica" and "'s"
-     instead of floating above the line — centering against the full
-     lead-hover-group (which also contains "'s") pushed it up past the
-     cap-height into the GitHub pill above. */
   bottom: 0.05em;
-  /* em-based, not %: the parent's height is auto (line-height of the
-     text it wraps), and percentage heights resolve to 0 against an
-     auto-height containing block — that silently produced a zero-size,
-     invisible element before this was switched to em units. */
   width: 1.3em;
   height: 1.3em;
   transform: translate(-50%, 0) scale(0.4);
@@ -714,6 +677,58 @@ onMounted(async () => {
   pointer-events: none;
   transition: opacity 250ms ease-out, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
   transition-delay: 0ms;
+}
+
+.accent-hover-group {
+  position: relative;
+  display: inline-flex;
+  outline: none;
+  max-width: 100%;
+}
+
+.accent-text {
+  display: inline-flex;
+  transition: transform 240ms ease-out 150ms, opacity 240ms ease-out 150ms;
+}
+
+.science-pop-in {
+  position: absolute;
+  left: 50%;
+  bottom: 0.05em;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5em;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.science-icon {
+  width: 1.15em;
+  height: 1.15em;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 150ms ease-in, transform 190ms ease-in;
+}
+
+/* Hover/focus animations are gated to devices with real hover (mouse/trackpad). */
+@media (hover: hover) and (pointer: fine) {
+
+.lead-hover-group:hover .lead-text,
+.lead-hover-group:focus-visible .lead-text {
+  transform: scale(1.15);
+  opacity: 0;
+}
+
+.lead-hover-group:hover .flag-line-0,
+.lead-hover-group:hover .flag-line-1,
+.lead-hover-group:hover .flag-line-2,
+.lead-hover-group:focus-visible .flag-line-0,
+.lead-hover-group:focus-visible .flag-line-1,
+.lead-hover-group:focus-visible .flag-line-2 {
+  /* Drop (not pause) the idle bob so the trailing "'s", which stays
+     visible during the swap, snaps back to the baseline instead of
+     freezing mid-bob. */
+  animation: none;
 }
 
 .lead-hover-group:hover .africa-pop-in,
@@ -759,65 +774,12 @@ onMounted(async () => {
   }
 }
 
-/* Same pop-out/pop-in pattern as "Africa's" above, applied to
-   "scientist-leaders": the whole word pops out and a row of 3 science
-   icons pops in over it, each with its own stagger delay (set inline
-   in the template) so they arrive left to right rather than all at
-   once. Only one nesting level is needed here (vs. "Africa's" two)
-   because the entire phrase swaps — there's no trailing fragment to
-   keep in place. */
-.accent-hover-group {
-  position: relative;
-  display: inline-flex;
-  outline: none;
-}
-
-.accent-text {
-  display: inline-flex;
-  /* Governs the EXIT (return to rest): hold 150ms so the icons are
-     mostly gone before the word fades back, then a soft ease-out
-     return — otherwise the word and the icons cross over each other
-     mid-swap. Enter timing is set on the :hover rule below. */
-  transition: transform 240ms ease-out 150ms, opacity 240ms ease-out 150ms;
-}
-
 .accent-hover-group:hover .accent-text,
 .accent-hover-group:focus-visible .accent-text {
   transform: scale(1.15);
   opacity: 0;
-  /* Enter: quick pop-out, no hold — the word needs to clear first so
-     the icons have somewhere to land. */
   transition: transform 200ms ease-in, opacity 200ms ease-in;
-  /* Fully drop the idle-breathe animation here, not just pause it:
-     a paused animation still applies its current opacity keyframe,
-     which outranks this rule's opacity:0 and leaves the phrase
-     visible through the popped-in icons. */
   animation: none;
-}
-
-.science-pop-in {
-  position: absolute;
-  left: 50%;
-  bottom: 0.05em;
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5em;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.science-icon {
-  width: 1.15em;
-  height: 1.15em;
-  opacity: 0;
-  transform: scale(0.3);
-  /* Governs the EXIT: all three collapse together (no stagger) and
-     fast, shrinking back into scale(0.3) as they fade, so they're clear
-     of the word before it returns. The springy enter transition and its
-     left-to-right stagger live on the :hover rules below, so they only
-     apply on the way in — the previous inline `transition-delay` leaked
-     the stagger onto the exit too, leaving icons hanging up to ~570ms. */
-  transition: opacity 150ms ease-in, transform 190ms ease-in;
 }
 
 .accent-hover-group:hover .science-icon,
@@ -827,8 +789,7 @@ onMounted(async () => {
   transition: opacity 250ms ease-out, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Enter-only stagger: arrives left to right. Kept off the base rule so
-   the exit stays un-staggered. */
+/* Enter-only stagger: arrives left to right. */
 .accent-hover-group:hover .science-icon:nth-child(1),
 .accent-hover-group:focus-visible .science-icon:nth-child(1) { transition-delay: 60ms; }
 .accent-hover-group:hover .science-icon:nth-child(2),
