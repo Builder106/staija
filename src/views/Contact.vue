@@ -143,7 +143,7 @@ function handleSubmit(e: Event) {
 
             <div>
               <Heading :level="3" class="mb-4 !text-lg">Follow Us</Heading>
-              <div class="flex gap-4">
+              <div class="flex flex-wrap gap-4">
                 <a v-for="social in ['Twitter', 'LinkedIn', 'Instagram']" :key="social" href="#" class="px-4 py-2 rounded-full border hairline-ink text-sm font-semibold hover:!border-brand-violet hover:!text-brand-violet transition-colors bg-surface">
                   {{ social }}
                 </a>
