@@ -118,7 +118,7 @@ function formatDate(iso: string) {
                   We just launched! Our past events will appear here soon.
                 </template>
               </Body>
-              <UiButton variant="secondary" href="#newsletter">
+              <UiButton variant="secondary" to="/stay-connected">
                 Subscribe to our newsletter
               </UiButton>
             </div>
