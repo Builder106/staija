@@ -72,7 +72,7 @@
       "vite": "^8.1.4",
       "vitest": "^4.1.10",
       "@vitest/coverage-v8": "^4.1.10",
-      "vue-tsc": "latest"
+      "vue-tsc": "^3.2.0"
    },
    "overrides": {
       "phin": "3.7.1",

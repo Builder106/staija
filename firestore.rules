@@ -409,6 +409,7 @@ service cloud.firestore {
     match /lesson_progress/{progressId} {
       allow read: if isAuthenticated() && (
         resource.data.studentId == request.auth.uid ||
+        resource.data.mentorId == request.auth.uid ||
         hasAnyRole(['staff', 'admin'])
       );
       allow write: if false;

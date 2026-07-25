@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-07-24 — Consolidated CORS origin handling and aligned CI Node 22 LTS toolchain #decision #maintenance
+
+Consolidated standalone CORS origin logic in `functions/src/references.ts` to import `isAllowedOrigin` from `functions/src/cors.ts`. This ensures Vercel preview deployments (`https://*.vercel.app`), staging (`staging.staija.org`), and local ports (5190/5173) are consistently permitted across all public HTTP Cloud Functions without drift. Pinned `vue-tsc` to `^3.2.0` in `package.json` and aligned `.github/workflows/ci.yml` runner to Node 22 LTS to match production runtime requirements. Added comprehensive LMS workflow architecture documentation at `docs/LMS-WORKFLOW.md`.
+
 ## 2026-07-15 — UI demo trailer shipped as a second Remotion composition; two capture/audio traps caught on verification #milestone #incident
 
 Built StaijaUIDemo (45s, 1920×1080) next to the marketing trailer: browser-chrome cards slow-panning through real page captures, scene copy pulled from actual site content. Neither of the two real problems showed up in build output — both came from looking at the render. (1) The committed screenshots had blank scroll-reveal sections: motion-v whileInView (once:true) never fires in headless full-page capture, and a scroll-through pass before the screenshot didn't fix it either. What worked was stubbing IntersectionObserver via addInitScript so every observed element reports intersecting immediately, then re-capturing at 2× DPR. (2) silencedetect caught the music bed dying at 36.3s of a 45s video — audio.mp3 had been trimmed to the marketing trailer's length, so the UI demo now has its own 45.5s loudnormed cut (audio_ui.mp3). One content call: the community montage shows about/get-involved/stay-connected instead of events/blog, because those two pages currently render CMS empty states and "No upcoming events" reads as a dead product on camera.

@@ -306,6 +306,7 @@ export const completeLesson = onCall<CompleteLessonInput>(
       cohortId: string
       courseSlug: string
       status: string
+      mentorId?: string
     }
     if (enrollment.studentId !== request.auth.uid) {
       throw new HttpsError('permission-denied', "You can't update someone else's progress.")
@@ -318,6 +319,7 @@ export const completeLesson = onCall<CompleteLessonInput>(
       {
         enrollmentId,
         studentId: enrollment.studentId,
+        mentorId: enrollment.mentorId ?? null,
         lessonSlug,
         moduleSlug: moduleSlug ?? '',
         status: 'completed',

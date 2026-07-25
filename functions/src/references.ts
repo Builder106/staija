@@ -23,7 +23,7 @@ import { getStorage } from 'firebase-admin/storage'
 import { getAppCheck } from 'firebase-admin/app-check'
 import { createHmac, timingSafeEqual, randomBytes } from 'crypto'
 import Busboy from 'busboy'
-import { APP_URL, sendMailgun, referenceInviteEmail, referenceLetterReceivedEmail } from './emailTemplates'
+import { isAllowedOrigin } from './cors'
 
 const REFERENCE_TOKEN_SECRET = defineSecret('REFERENCE_TOKEN_SECRET')
 const MAILGUN_API_KEY = defineSecret('MAILGUN_API_KEY')
@@ -223,14 +223,6 @@ export const validateReferenceToken = onCall<{ token: string }>(
 
 // --- 3. Accept the file upload ---------------------------------------
 
-const ALLOWED_ORIGINS = [
-  'https://staija.org',
-  'https://www.staija.org',
-  'https://staging.staija.org',
-  'http://localhost:5190',
-  'http://localhost:5173',
-]
-
 export const submitReferenceLetter = onRequest(
   {
     secrets: [REFERENCE_TOKEN_SECRET, MAILGUN_API_KEY, MAILGUN_DOMAIN],
@@ -240,7 +232,7 @@ export const submitReferenceLetter = onRequest(
   },
   async (req, res) => {
     const origin = req.header('origin') || ''
-    if (ALLOWED_ORIGINS.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       res.set('Access-Control-Allow-Origin', origin)
       res.set('Vary', 'Origin')
       res.set('Access-Control-Allow-Methods', 'POST, OPTIONS')
