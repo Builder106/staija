@@ -36,7 +36,7 @@
       "@iconify/vue": "5.0.1",
       "@tiptap/extension-link": "^3.28.0",
       "@tiptap/extension-placeholder": "^3.28.0",
-      "@tiptap/extension-underline": "^3.28.0",
+      "@tiptap/extension-underline": "^3.29.2",
       "@tiptap/pm": "^3.28.0",
       "@tiptap/starter-kit": "^3.28.0",
       "@tiptap/vue-3": "^3.28.0",
