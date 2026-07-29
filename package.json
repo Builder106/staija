@@ -34,7 +34,7 @@
       "@contentful/rich-text-types": "^17.2.7",
       "@dicebear/core": "^9.4.2",
       "@iconify/vue": "5.0.1",
-      "@tiptap/extension-link": "^3.28.0",
+      "@tiptap/extension-link": "^3.29.2",
       "@tiptap/extension-placeholder": "^3.28.0",
       "@tiptap/extension-underline": "^3.28.0",
       "@tiptap/pm": "^3.28.0",
