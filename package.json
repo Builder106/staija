@@ -61,7 +61,7 @@
       "dotenv": "^17.4.2",
       "happy-dom": "^20.11.0",
       "jimp": "^1.6.1",
-      "playwright": "^1.61.1",
+      "playwright": "^1.62.0",
       "playwright-bdd": "^9.2.0",
       "potrace": "^2.1.8",
       "rollup-plugin-visualizer": "^7.0.1",
