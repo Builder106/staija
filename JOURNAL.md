@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-07-29 — Scripted phone device render and untracked frame sequence #build #decision
+
+Scripted phone device render generation for trailer workflow, moving from manual Blender UI renders to an automated CLI script. Untracked frame sequence outputs to keep repository lightweight and source-only. CPU-render timing recorded for future optimizations.
+
 ## 2026-07-24 — Consolidated CORS origin handling and aligned CI Node 22 LTS toolchain #decision #maintenance
 
 Consolidated standalone CORS origin logic in `functions/src/references.ts` to import `isAllowedOrigin` from `functions/src/cors.ts`. This ensures Vercel preview deployments (`https://*.vercel.app`), staging (`staging.staija.org`), and local ports (5190/5173) are consistently permitted across all public HTTP Cloud Functions without drift. Pinned `vue-tsc` to `^3.2.0` in `package.json` and aligned `.github/workflows/ci.yml` runner to Node 22 LTS to match production runtime requirements. Added comprehensive LMS workflow architecture documentation at `docs/LMS-WORKFLOW.md`.

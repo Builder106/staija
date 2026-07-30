@@ -1,0 +1,2 @@
+# Dry-run output from `STILL=1`; the real frames land in a project public/.
+test_still.png

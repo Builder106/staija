@@ -24,9 +24,14 @@ this project was split out.
 
 ## Assets
 
-`public/staija_phone_0001–0060.png` (the device sway loop) has no scripted
-regen path — it's rendered by hand from `public/phone.blend`, so it stays
-tracked in git rather than gitignored. `public/staija_stepup.png` and
+`public/staija_phone_0001–0060.png` (the device sway loop) is gitignored: it's
+78 MB of deterministic Blender output from `tools/device-render/phone.py`, so
+the script is what we keep and a clean checkout needs a render before this
+project will build. See that directory's README for the command. The screen
+texture it renders is `public/staija_mobile.png`, captured by
+`scratch/capture_mobile.js`.
+
+`public/staija_stepup.png` and
 `public/staija_dynamerge.png` are captured by `scratch/capture_programs.js`
 (Puppeteer; `npm i` inside `scratch/` first).
 
