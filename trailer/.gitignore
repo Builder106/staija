@@ -5,3 +5,8 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+# Blender phone sway loop: 78 MB of deterministic output from
+# tools/device-render/phone.py. Regenerate it rather than carrying it in
+# history — see that directory's README for the command.
+public/staija_phone_*.png
