@@ -3,7 +3,7 @@
  * Render tools/social/repo-card.html to repo-card.png at 1280×640.
  *
  * Output gets uploaded to Settings → Social preview on
- * github.com/Builder106/STAIJA. GitHub recommends 1280×640; the
+ * github.com/Builder106/staija. GitHub recommends 1280×640; the
  * template safe-area is 40pt all around (already respected by the
  * HTML's padding).
  *
