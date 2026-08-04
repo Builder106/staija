@@ -41,7 +41,7 @@ e2e/
 ## Tuning
 
 | Env var | Default | Effect |
-|---|---|---|
+| --- | --- | --- |
 | `DEMO_SLOWMO` | `1200` | Per-action pause in ms |
 | `DEMO_DWELL_MS` | `1500` | Default dwell duration |
 | `DEMO_TAIL_MS` | `2500` | Hold-final-frame duration |

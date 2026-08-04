@@ -20,7 +20,7 @@ discovers files by glob, so adding a new file is zero-config — just
 drop it in.
 
 | Slot | Portrait |
-|---|---|
+| --- | --- |
 | 0 | bald |
 | 1 | afro-medium |
 | 2 | locs |

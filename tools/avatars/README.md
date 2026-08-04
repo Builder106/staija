@@ -31,7 +31,7 @@ the scripts. Re-running with new prompts will overwrite
 ## Providers (PNG generation)
 
 | Provider | Free? | Auth | Quality | Notes |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **`pollinations`** (default) | yes, actually | none | good | Free FLUX-based generation. Sometimes 502s under load; the script retries. **Use this.** |
 | `hf` | "free trial" | `HF_TOKEN` env var | excellent | HF's Inference Providers credits get used up in 3-5 images and routed to the paid fal-ai backend. Worth using only if you have HF PRO. |
 
@@ -120,7 +120,7 @@ Idempotent — files that already have `viewBox` are skipped.
 matching the prompt order in [prompts.ts](./prompts.ts):
 
 | Trace file | `PORTRAITS` index |
-|---|---|
+| --- | --- |
 | `portrait-bald.svg` | 0 |
 | `portrait-afro-medium.svg` | 1 |
 | `portrait-locs.svg` | 2 |

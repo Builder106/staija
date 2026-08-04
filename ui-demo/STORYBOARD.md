@@ -7,7 +7,7 @@ Tier-3-only at `../trailer/`; see `../trailer/STORYBOARD.md`).
 ## Beats
 
 | # | Frames | Beat | On screen | Scene |
-|---|--------|------|-----------|-------|
+| --- | -------- | ------ | ----------- | ------- |
 | 1 | 0–90 | Title card | | `src/scenes/UITitle.tsx` |
 | 2 | 90–330 | Home | "One front door." — programs, stories, and community from the first scroll | `src/Composition.tsx` (`BrowserScene`, `staija_ui_home.png`) |
 | 3 | 330–540 | StepUp Scholars | "StepUp Scholars." — the Nigeria-based research incubator | `src/Composition.tsx` (`BrowserScene`, `staija_ui_programs_stepup_scholars.png`) |

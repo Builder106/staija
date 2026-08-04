@@ -19,7 +19,7 @@ Light/dark is driven by `[data-theme="dark"]` on `<html>`, not a class — this 
 ## Typography
 
 | Token | Face | Use |
-|---|---|---|
+| --- | --- | --- |
 | `font-display` | IBM Plex Sans | Headings only |
 | `font-sans` | Inter | Body |
 | `font-mono` | IBM Plex Mono | Data labels, slugs |

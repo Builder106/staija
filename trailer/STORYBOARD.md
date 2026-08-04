@@ -8,7 +8,7 @@ that piece.
 ## Beats
 
 | # | Frames | Scene | File |
-|---|--------|-------|------|
+| --- | -------- | ------- | ------ |
 | 1 | 0–150 | The hook | `src/scenes/TheHook.tsx` |
 | 2 | 150–270 | Mission | `src/scenes/Mission.tsx` |
 | 3 | 270–480 | The solution | `src/scenes/TheSolution.tsx` — phone device shot, 60-frame ±18° sway loop from `public/staija_phone_*.png` (source: `tools/device-render/phone.py`) |

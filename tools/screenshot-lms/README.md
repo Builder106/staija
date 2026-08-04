@@ -9,9 +9,11 @@ Captures every screen in the LMS — public, admin, student, mentor — to
    another process is on 5190, set `STAIJA_URL=http://localhost:<port>`
    when running the harness.
 2. **Demo content seeded** in Contentful and mirrored to Firestore:
+
    ```bash
    npm run lms:seed
    ```
+
    You should now see `cms_courses`, `cms_modules`, `cms_lessons`, and
    `cms_assignmentSpecs` documents in the Firestore console (env =
    `staging` per `.env.local`).
@@ -53,7 +55,7 @@ screenshot harness" exists.
 ## What gets created
 
 | Account | Email | Role | Use |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Staff | (your Google account) | admin temporarily | All `/admin/*` |
 | Demo applicant | `staija.demo.applicant@example.com` | applicant | `/applicant/*`, role-modal screenshot |
 | Demo student | `staija.demo.student@example.com` | student | `/student/*`, `/learn/*` |
