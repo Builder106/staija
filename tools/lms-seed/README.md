@@ -47,7 +47,7 @@ A safety guard refuses to seed or clear against `master` unless you
 pass `--force`. If you've removed `.env.local` and your `.env` still
 says `master`, you'll see:
 
-```
+```text
 Refusing to seed against the 'master' Contentful environment.
 Set VITE_CONTENTFUL_ENV_ID=staging in .env.local … or pass --force.
 ```
@@ -56,7 +56,7 @@ Set VITE_CONTENTFUL_ENV_ID=staging in .env.local … or pass --force.
 
 Create `.env.local` with:
 
-```
+```dotenv
 VITE_CONTENTFUL_ENV_ID=staging
 ```
 

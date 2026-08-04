@@ -117,7 +117,7 @@ npm run dev
 
 All frontend config is injected at build time via `VITE_*` variables in `.env`:
 
-```
+```dotenv
 VITE_FIREBASE_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN
 VITE_FIREBASE_PROJECT_ID

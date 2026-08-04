@@ -66,7 +66,7 @@ all `:id` routes have real data to render.
 
 ## Output
 
-```
+```text
 tools/screenshot-lms/out/
 ├── public/        13 screens (home, blog, login, signup, 404, …)
 ├── admin/         15+ screens including content/* edit pages and modals

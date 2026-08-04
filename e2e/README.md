@@ -17,7 +17,7 @@ The dev server is started automatically (`npm run dev` via Playwright's
 
 ## Structure
 
-```
+```text
 e2e/
 ├── demo/features/          Gherkin scenarios → one mp4 per scenario
 │   ├── 00-warmup.feature   Throwaway runs that work around the

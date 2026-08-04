@@ -12,7 +12,7 @@ for the full reasoning behind the current path.
 
 **Two scripted steps + one manual step.**
 
-```
+```text
 generate.ts (PNG)  →  vectorizer.ai web (SVG)  →  clean.ts (cleaned + parts.ts auto-written)
 ```
 
