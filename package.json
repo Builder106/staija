@@ -88,6 +88,7 @@
       },
       "@cucumber/messages": {
          "uuid": "^11.1.1"
-      }
+      },
+      "@opentelemetry/core": "^2.8.0"
    }
 }

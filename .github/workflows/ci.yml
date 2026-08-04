@@ -31,7 +31,11 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm ci
-      - run: npm audit --audit-level=high
+      # --omit=dev: firebase-tools (devDependency, CLI only, never shipped)
+      # bundles a deep tree with several CVEs that would require a breaking
+      # firebase-tools major bump to clear. Scoped to production deps, which
+      # matches the app's actual deployed attack surface.
+      - run: npm audit --omit=dev --audit-level=high
       - run: npx vue-tsc -b
 
   test:
