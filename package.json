@@ -62,7 +62,7 @@
       "@vue/tsconfig": "^0.9.1",
       "dotenv": "^17.4.2",
     "firebase-tools": "^15.25.1",
-      "happy-dom": "^20.11.0",
+      "happy-dom": "^20.11.1",
       "jimp": "^1.6.1",
       "playwright": "^1.62.1",
       "playwright-bdd": "^9.2.0",
