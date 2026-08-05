@@ -44,7 +44,7 @@
       "@tiptap/vue-3": "^3.29.2",
       "@vercel/analytics": "^2.0.1",
       "@vercel/speed-insights": "^2.0.0",
-      "@vueuse/core": "^14.3.0",
+      "@vueuse/core": "^14.4.0",
       "contentful-management": "12.8.0",
       "firebase": "^12.16.0",
       "lottie-web": "^5.13.0",
