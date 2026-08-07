@@ -11,6 +11,7 @@ import UiCard from '../../components/ui/UiCard.vue'
 import UiButton from '../../components/ui/UiButton.vue'
 import RichText from '../../components/learn/RichText.vue'
 import QuizRunner from '../../components/learn/QuizRunner.vue'
+import StaijaTutorDrawer from '../../components/learn/StaijaTutorDrawer.vue'
 import { useAuth } from '../../composables/useAuth'
 import {
   CourseService,
@@ -29,6 +30,17 @@ const lesson = ref<CmsLesson | null>(null)
 const enrollment = ref<Enrollment | null>(null)
 const progress = ref<LessonProgress[]>([])
 const marking = ref(false)
+const tutorOpen = ref(false)
+
+const lessonBodyPlain = computed(() => {
+  if (!lesson.value?.body) return ''
+  try {
+    const doc = lesson.value.body as { content?: Array<{ content?: Array<{ value?: string }> }> }
+    return doc.content?.flatMap((c) => c.content?.map((inner) => inner.value || '') || []).join(' ') || ''
+  } catch {
+    return ''
+  }
+})
 
 let progressUnsub: (() => void) | null = null
 
@@ -192,26 +204,45 @@ onUnmounted(() => {
             @passed="markComplete"
           />
 
-          <!-- Mark complete (if non-quiz completion criteria) -->
-          <div v-if="lesson.completionCriteria !== 'quiz_passed'" class="flex items-center gap-3">
+          <!-- Completion and AI Tutor action bar -->
+          <div class="flex items-center justify-between gap-4 flex-wrap pt-2">
+            <div v-if="lesson.completionCriteria !== 'quiz_passed'" class="flex items-center gap-3">
+              <UiButton
+                v-if="!completed"
+                variant="primary"
+                :disabled="marking"
+                @click="markComplete"
+              >
+                <Icon v-if="marking" icon="lucide:loader-2" width="14" class="animate-spin" />
+                <Icon v-else icon="lucide:check" width="14" />
+                {{ marking ? 'Marking…' : 'Mark complete' }}
+              </UiButton>
+              <span
+                v-else
+                class="inline-flex items-center gap-2 text-sm font-medium text-emerald-700"
+              >
+                <Icon icon="lucide:check-circle-2" width="16" />
+                Completed
+              </span>
+            </div>
+
             <UiButton
-              v-if="!completed"
-              variant="primary"
-              :disabled="marking"
-              @click="markComplete"
+              variant="secondary"
+              class="!bg-brand-violet/10 !text-brand-violet hover:!bg-brand-violet/20 border border-brand-violet/30"
+              @click="tutorOpen = true"
             >
-              <Icon v-if="marking" icon="lucide:loader-2" width="14" class="animate-spin" />
-              <Icon v-else icon="lucide:check" width="14" />
-              {{ marking ? 'Marking…' : 'Mark complete' }}
+              <Icon icon="lucide:bot" width="16" />
+              Ask AI Tutor
             </UiButton>
-            <span
-              v-else
-              class="inline-flex items-center gap-2 text-sm font-medium text-emerald-700"
-            >
-              <Icon icon="lucide:check-circle-2" width="16" />
-              Completed
-            </span>
           </div>
+
+          <!-- StaijaTutorDrawer -->
+          <StaijaTutorDrawer
+            :open="tutorOpen"
+            :lessonTitle="lesson.title"
+            :lessonBodyPlain="lessonBodyPlain"
+            @close="tutorOpen = false"
+          />
         </template>
       </Container>
     </Section>

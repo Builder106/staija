@@ -481,6 +481,30 @@ export class QuizService {
   }
 }
 
+export interface AskLmsTutorPayload {
+  lessonTitle: string
+  lessonBodyPlain: string
+  courseTitle?: string
+  program?: string
+  studentQuestion: string
+  chatHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+  questionContext?: {
+    questionText: string
+    userAnswerText?: string
+    explanation?: string
+  }
+}
+
+export interface AskLmsTutorResult {
+  reply: string
+  suggestedFollowUps: string[]
+}
+
+export const askLmsTutor = (data: AskLmsTutorPayload) =>
+  httpsCallable<AskLmsTutorPayload, AskLmsTutorResult>(functions, 'askLmsTutor')(data).then(
+    (r) => r.data,
+  )
+
 // --- Helpers ----------------------------------------------------------
 
 // Convert a Firestore Timestamp / ISO string / Date / number into ms.
