@@ -7,7 +7,6 @@ const props = defineProps<{
   code: string
 }>()
 
-const container = ref<HTMLElement | null>(null)
 const svgContent = ref('')
 const error = ref<string | null>(null)
 const rendering = ref(false)
@@ -71,7 +70,6 @@ watch(() => props.code, () => {
 
     <div
       v-else
-      ref="container"
       class="mermaid-svg-wrapper flex justify-center items-center overflow-x-auto p-2 min-h-[120px]"
       v-html="svgContent"
     />
