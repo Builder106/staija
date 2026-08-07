@@ -33,6 +33,14 @@ const shim: Storage = {
   },
 }
 
+if (typeof document !== 'undefined') {
+  Object.defineProperty(document, 'compatMode', {
+    value: 'CSS1Compat',
+    writable: true,
+    configurable: true,
+  })
+}
+
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'localStorage', {
     value: shim,
@@ -47,3 +55,4 @@ if (typeof globalThis !== 'undefined') {
     configurable: true,
   })
 }
+
