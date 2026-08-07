@@ -65,6 +65,7 @@ const counts = ref<Record<LmsContentType, number | null>>({
   module: null,
   lesson: null,
   assignmentSpec: null,
+  quiz: null,
 })
 const loading = ref(true)
 const dismissed = ref(false)
