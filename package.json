@@ -34,7 +34,7 @@
    "dependencies": {
       "@contentful/rich-text-html-renderer": "^17.2.2",
       "@contentful/rich-text-types": "^17.2.7",
-      "@dicebear/core": "^10.4.0",
+      "@dicebear/core": "^9.4.2",
       "@iconify/vue": "5.0.1",
       "@tiptap/extension-link": "^3.29.2",
       "@tiptap/extension-placeholder": "^3.29.2",
