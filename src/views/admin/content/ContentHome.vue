@@ -32,6 +32,7 @@ const courses = ref<EntrySummary[]>([])
 const modulesById = ref<Map<string, EntrySummary>>(new Map())
 const lessonsById = ref<Map<string, EntrySummary>>(new Map())
 const assignmentsById = ref<Map<string, EntrySummary>>(new Map())
+const quizzes = ref<EntrySummary[]>([])
 
 // IDs that appeared in some parent's reference list. Anything in the
 // full list but not referenced is an "orphan" — surfaced separately so
@@ -250,6 +251,7 @@ const drawerEditPath = computed(() => {
   if (e.contentType === 'course') return `${base}/courses/${e.id}`
   if (e.contentType === 'module') return `${base}/modules/${e.id}`
   if (e.contentType === 'lesson') return `${base}/lessons/${e.id}`
+  if (e.contentType === 'quiz') return `${base}/quizzes/${e.id}`
   return `${base}/assignments/${e.id}`
 })
 
@@ -257,6 +259,7 @@ function drawerTypeLabel(e: EntrySummary): string {
   if (e.contentType === 'course') return 'Course'
   if (e.contentType === 'module') return 'Module'
   if (e.contentType === 'lesson') return 'Lesson'
+  if (e.contentType === 'quiz') return 'Quiz'
   return 'Assignment'
 }
 
@@ -407,17 +410,19 @@ async function load() {
   loading.value = true
   error.value = null
   try {
-    const [c, m, l, a] = await Promise.all([
+    const [c, m, l, a, q] = await Promise.all([
       listEntries('course', { limit: 200 }),
       listEntries('module', { limit: 500 }),
       listEntries('lesson', { limit: 1000 }),
       listEntries('assignmentSpec', { limit: 500 }),
+      listEntries('quiz', { limit: 500 }),
     ])
 
     courses.value = c
     modulesById.value = new Map(m.map((e) => [e.id, e]))
     lessonsById.value = new Map(l.map((e) => [e.id, e]))
     assignmentsById.value = new Map(a.map((e) => [e.id, e]))
+    quizzes.value = q
 
     const refMods = new Set<string>()
     const refLessons = new Set<string>()
@@ -800,12 +805,20 @@ onMounted(load)
         <div class="flex flex-col gap-3">
           <div class="flex items-center justify-between gap-3 flex-wrap">
             <h2 class="font-display text-lg font-semibold text-ink m-0">Your courses</h2>
-            <UiButton variant="primary" :to="'/admin/content/courses/new'">
-              <span class="flex items-center gap-1.5">
-                <Icon icon="lucide:plus" width="14" />
-                New course
-              </span>
-            </UiButton>
+            <div class="flex items-center gap-2">
+              <UiButton variant="secondary" :to="`${adminBase}/content/quizzes/new`">
+                <span class="flex items-center gap-1.5">
+                  <Icon icon="lucide:help-circle" width="14" />
+                  New quiz
+                </span>
+              </UiButton>
+              <UiButton variant="primary" :to="`${adminBase}/content/courses/new`">
+                <span class="flex items-center gap-1.5">
+                  <Icon icon="lucide:plus" width="14" />
+                  New course
+                </span>
+              </UiButton>
+            </div>
           </div>
 
           <!-- Search across the whole tree. Matches expand their ancestors

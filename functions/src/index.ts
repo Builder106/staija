@@ -49,8 +49,8 @@ export { adminListUsers } from './adminUsers'
 export { signOutEverywhere } from './security'
 export { exportUserData } from './dataExport'
 
-// LMS callables (Phase 1).
-export { enrollStudent, completeLesson, submitAssignment, gradeSubmission } from './lms'
+// LMS callables (Phase 1 & Phase 2).
+export { enrollStudent, completeLesson, submitAssignment, gradeSubmission, submitQuiz } from './lms'
 export { scheduleSession, rsvpSession } from './sessions'
 
 // AI-powered course outliner (Groq-backed). Requires GROQ_API_KEY,

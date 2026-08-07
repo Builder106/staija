@@ -9,6 +9,7 @@ import Eyebrow from '../../../components/ui/Eyebrow.vue'
 import UiCard from '../../../components/ui/UiCard.vue'
 import UiButton from '../../../components/ui/UiButton.vue'
 import UiSelect from '../../../components/ui/UiSelect.vue'
+import EntryReferencePicker from '../../../components/admin/EntryReferencePicker.vue'
 import RichTextEditor from '../../../components/admin/RichTextEditor.vue'
 import {
   getEntry,
@@ -45,6 +46,7 @@ const form = ref<LessonFields>({
   videoUrl: '',
   estimatedMinutes: undefined,
   completionCriteria: 'viewed',
+  quiz: undefined,
 })
 const { isDirty, markClean } = useFormDirty(form)
 
@@ -55,6 +57,8 @@ async function load() {
     const entry = await getEntry(id.value)
     isPublished.value = entry.isPublished
     const f = entry.fields
+    const quizRef = (f.quiz as { sys?: { id: string } } | string | undefined)
+    const quizId = typeof quizRef === 'string' ? quizRef : quizRef?.sys?.id
     form.value = {
       slug: (f.slug as string) ?? '',
       title: (f.title as string) ?? '',
@@ -62,6 +66,7 @@ async function load() {
       videoUrl: (f.videoUrl as string) ?? '',
       estimatedMinutes: f.estimatedMinutes as number | undefined,
       completionCriteria: ((f.completionCriteria as 'viewed' | 'assignment_submitted' | 'quiz_passed') ?? 'viewed'),
+      quiz: quizId,
     }
     markClean()
   } catch (err) {
@@ -362,8 +367,19 @@ onMounted(load)
                   :options="[
                     { value: 'viewed', label: 'Viewed', hint: 'Opening counts' },
                     { value: 'assignment_submitted', label: 'Assignment submitted' },
-                    { value: 'quiz_passed', label: 'Quiz passed', hint: 'Coming soon', disabled: true },
+                    { value: 'quiz_passed', label: 'Quiz passed' },
                   ]"
+                />
+              </div>
+
+              <div v-if="form.completionCriteria === 'quiz_passed'" class="flex flex-col gap-2 pt-2 border-t border-ink/10">
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Linked Quiz</label>
+                <EntryReferencePicker
+                  contentType="quiz"
+                  :modelValue="form.quiz ? [form.quiz] : []"
+                  :multiple="false"
+                  placeholder="Select a quiz for this lesson..."
+                  @update:modelValue="form.quiz = $event[0]"
                 />
               </div>
             </div>

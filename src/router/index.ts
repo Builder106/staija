@@ -148,6 +148,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/admin/content/assignments', redirect: '/admin/content' },
   { path: '/staff/content/assignments', redirect: '/staff/content' },
   { path: '/admin/content/assignments/:id', name: 'admin-content-assignment-edit', alias: '/staff/content/assignments/:id', component: () => import('../views/admin/content/AssignmentEdit.vue'), meta: { title: 'Edit assignment — STAIJA', requiresAuth: true, permissions: ['manage_cohorts'] } },
+  { path: '/admin/content/quizzes', redirect: '/admin/content' },
+  { path: '/staff/content/quizzes', redirect: '/staff/content' },
+  { path: '/admin/content/quizzes/:id', name: 'admin-content-quiz-edit', alias: '/staff/content/quizzes/:id', component: () => import('../views/admin/content/QuizEdit.vue'), meta: { title: 'Edit quiz — STAIJA', requiresAuth: true, permissions: ['manage_cohorts'] } },
 
   // LMS routes — student-facing
   { path: '/learn', name: 'learn-home', component: () => import('../views/learn/CourseHome.vue'), meta: { title: 'My course — STAIJA', requiresAuth: true, permissions: ['participate_in_programs'] } },

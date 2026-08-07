@@ -68,6 +68,20 @@ const DEMO_PREFIX = 'demo-'
 type Program = 'stepup_scholars' | 'dynamerge'
 type Submission = 'text' | 'file' | 'link' | 'text_or_file'
 
+interface DemoQuiz {
+  id: string
+  title: string
+  summary?: string
+  passThresholdPercent?: number
+  questions: Array<{
+    id: string
+    questionText: string
+    options: Array<{ id: string; text: string }>
+    correctOptionId: string
+    explanation?: string
+  }>
+}
+
 interface DemoLesson {
   id: string
   title: string
@@ -75,6 +89,7 @@ interface DemoLesson {
   estimatedMinutes: number
   videoUrl?: string
   completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed'
+  quiz?: DemoQuiz
 }
 
 interface DemoAssignment {
@@ -157,6 +172,38 @@ const COURSES: DemoCourse[] = [
               'Before you touch a single instrument, you need to understand the four-tier safety model used in our partner labs.',
               'This lesson is the prerequisite for any in-person session. The quiz at the end is required.',
             ],
+            quiz: {
+              id: `${DEMO_PREFIX}quiz-lab-safety`,
+              title: 'Lab Safety Protocol Knowledge Check',
+              summary: 'Evaluate your understanding of safety protocols and hazard identification.',
+              passThresholdPercent: 70,
+              questions: [
+                {
+                  id: 'q1',
+                  questionText: 'What is the primary personal protective equipment (PPE) required when handling chemical reagents?',
+                  options: [
+                    { id: 'q1_o1', text: 'Safety goggles and lab coat' },
+                    { id: 'q1_o2', text: 'Sunglasses and t-shirt' },
+                    { id: 'q1_o3', text: 'Latex gloves only' },
+                    { id: 'q1_o4', text: 'No PPE is required for small volumes' },
+                  ],
+                  correctOptionId: 'q1_o1',
+                  explanation: 'Eye protection and lab coats shield against chemical splashes and spills.',
+                },
+                {
+                  id: 'q2',
+                  questionText: 'Where should chemical waste be disposed of after completing an experiment?',
+                  options: [
+                    { id: 'q2_o1', text: 'Poured directly down the sink' },
+                    { id: 'q2_o2', text: 'Designated hazardous waste container' },
+                    { id: 'q2_o3', text: 'Standard trash bin' },
+                    { id: 'q2_o4', text: 'Left on the lab bench' },
+                  ],
+                  correctOptionId: 'q2_o2',
+                  explanation: 'Chemical waste must always be collected in labelled hazardous waste containers.',
+                },
+              ],
+            },
           },
         ],
         assignments: [
@@ -399,6 +446,19 @@ async function seed() {
     for (const mod of course.modules) {
       const lessonIds: string[] = []
       for (const lesson of mod.lessons) {
+        let quizLinkId: string | undefined
+        if (lesson.quiz) {
+          await upsert(env, 'quiz', lesson.quiz.id, clean({
+            slug: L(lesson.quiz.id),
+            title: L(lesson.quiz.title),
+            summary: L(lesson.quiz.summary),
+            passThresholdPercent: L(lesson.quiz.passThresholdPercent ?? 70),
+            questions: L(lesson.quiz.questions),
+          }))
+          console.log(`  · quiz    ${lesson.quiz.id}`)
+          quizLinkId = lesson.quiz.id
+        }
+
         await upsert(env, 'lesson', lesson.id, clean({
           slug: L(lesson.id),
           title: L(lesson.title),
@@ -406,6 +466,7 @@ async function seed() {
           videoUrl: L(lesson.videoUrl),
           estimatedMinutes: L(lesson.estimatedMinutes),
           completionCriteria: L(lesson.completionCriteria ?? 'viewed'),
+          quiz: quizLinkId ? L(entryLink(quizLinkId)) : undefined,
         }))
         console.log(`  · lesson  ${lesson.id}`)
         lessonIds.push(lesson.id)

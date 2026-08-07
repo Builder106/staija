@@ -25,7 +25,7 @@ const LOCALE = 'en-US'
 
 // ---------- Types (mirror the client-facing shapes) ----------
 
-type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec'
+type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec' | 'quiz'
 
 interface EntrySummary {
   id: string
@@ -165,6 +165,7 @@ function shapeFields(payload: LmsCreateOrUpdatePayload): Record<string, unknown>
         attachments: L(refsArray(f.attachments, 'Asset')),
         estimatedMinutes: L(int(f.estimatedMinutes)),
         completionCriteria: L(f.completionCriteria),
+        quiz: L(singleRef(f.quiz, 'Entry')),
       })
     case 'assignmentSpec':
       return clean({
@@ -175,6 +176,14 @@ function shapeFields(payload: LmsCreateOrUpdatePayload): Record<string, unknown>
         maxFileSizeMb: L(int(f.maxFileSizeMb)),
         acceptedFileTypes: L(f.acceptedFileTypes),
         dueOffsetDays: L(int(f.dueOffsetDays)),
+      })
+    case 'quiz':
+      return clean({
+        slug: L(normalizeSlug(f.slug)),
+        title: L(f.title),
+        summary: L(f.summary),
+        passThresholdPercent: L(int(f.passThresholdPercent)),
+        questions: L(f.questions),
       })
   }
 }
@@ -265,7 +274,7 @@ function validate(req: unknown): AdminRequest {
   if (!req || typeof req !== 'object') throw new HttpsError('invalid-argument', 'request missing.')
   const r = req as Record<string, unknown>
   const action = r.action
-  const VALID_TYPES: LmsContentType[] = ['course', 'module', 'lesson', 'assignmentSpec']
+  const VALID_TYPES: LmsContentType[] = ['course', 'module', 'lesson', 'assignmentSpec', 'quiz']
   switch (action) {
     case 'list':
       if (!VALID_TYPES.includes(r.type as LmsContentType)) {

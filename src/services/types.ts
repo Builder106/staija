@@ -366,7 +366,45 @@ export interface CmsLesson {
   attachments?: { url: string; title?: string }[]
   estimatedMinutes?: number
   completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed'
+  quiz?: { sys: { id: string } }
   _sys?: CmsCourse['_sys']
+}
+
+export interface QuizOption {
+  id: string
+  text: string
+}
+
+export interface QuizQuestion {
+  id: string
+  questionText: string
+  options: QuizOption[]
+  correctOptionId: string
+  explanation?: string
+}
+
+export interface CmsQuiz {
+  slug: string
+  title: string
+  summary?: string
+  passThresholdPercent?: number // Default 70%
+  questions: QuizQuestion[]
+  _sys?: CmsCourse['_sys']
+}
+
+export interface QuizAttempt {
+  id?: string
+  enrollmentId: string
+  studentId: string
+  quizId: string
+  quizSlug: string
+  lessonSlug: string
+  score: number
+  passed: boolean
+  answers: Record<string, string> // questionId -> optionId
+  totalQuestions: number
+  correctCount: number
+  submittedAt: Date
 }
 
 export interface CmsAssignmentSpec {
@@ -443,6 +481,8 @@ export interface LessonProgress {
   status: 'not_started' | 'viewed' | 'completed'
   firstViewedAt?: Date
   completedAt?: Date
+  quizScore?: number
+  quizPassed?: boolean
 }
 
 export interface AssignmentSubmission {

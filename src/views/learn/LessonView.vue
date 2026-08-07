@@ -10,6 +10,7 @@ import Eyebrow from '../../components/ui/Eyebrow.vue'
 import UiCard from '../../components/ui/UiCard.vue'
 import UiButton from '../../components/ui/UiButton.vue'
 import RichText from '../../components/learn/RichText.vue'
+import QuizRunner from '../../components/learn/QuizRunner.vue'
 import { useAuth } from '../../composables/useAuth'
 import {
   CourseService,
@@ -34,6 +35,15 @@ let progressUnsub: (() => void) | null = null
 const completed = computed(() =>
   progress.value.some((p) => p.lessonSlug === lesson.value?.slug && p.status === 'completed'),
 )
+
+const quizId = computed(() => {
+  const refId = lesson.value?.quiz?.sys?.id
+  if (refId) return refId
+  if (lesson.value?.completionCriteria === 'quiz_passed') {
+    return lesson.value?.slug
+  }
+  return null
+})
 
 // Convert YouTube/Vimeo URLs to embeddable form. The Contentful field is
 // a plain URL field; we accept watch-page links and rewrite to the
@@ -173,8 +183,17 @@ onUnmounted(() => {
             </ul>
           </UiCard>
 
-          <!-- Mark complete -->
-          <div class="flex items-center gap-3">
+          <!-- Quiz assessment (if present) -->
+          <QuizRunner
+            v-if="quizId && enrollment"
+            :quizId="quizId"
+            :lessonSlug="lesson.slug"
+            :enrollmentId="enrollment.id!"
+            @passed="markComplete"
+          />
+
+          <!-- Mark complete (if non-quiz completion criteria) -->
+          <div v-if="lesson.completionCriteria !== 'quiz_passed'" class="flex items-center gap-3">
             <UiButton
               v-if="!completed"
               variant="primary"

@@ -574,3 +574,144 @@ export const gradeSubmission = onCall<GradeSubmissionInput>(
     return { ok: true }
   },
 )
+
+// --- submitQuiz -------------------------------------------------------
+
+interface SubmitQuizInput {
+  enrollmentId: string
+  quizId: string
+  lessonSlug: string
+  moduleSlug?: string
+  answers: Record<string, string> // questionId -> optionId
+}
+
+export const submitQuiz = onCall<SubmitQuizInput>(
+  {
+    memory: '256MiB',
+    timeoutSeconds: 30,
+    enforceAppCheck: true,
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be signed in.')
+    }
+    const { enrollmentId, quizId, lessonSlug, moduleSlug, answers } = request.data ?? {}
+    if (!enrollmentId || !quizId || !lessonSlug || !answers) {
+      throw new HttpsError(
+        'invalid-argument',
+        'enrollmentId, quizId, lessonSlug, and answers are required.',
+      )
+    }
+
+    const db = getFirestore()
+    const enrollmentSnap = await db.collection('enrollments').doc(enrollmentId).get()
+    if (!enrollmentSnap.exists) {
+      throw new HttpsError('not-found', 'Enrollment not found.')
+    }
+    const enrollment = enrollmentSnap.data() as {
+      studentId: string
+      mentorId?: string
+      courseSlug: string
+    }
+    if (enrollment.studentId !== request.auth.uid) {
+      throw new HttpsError('permission-denied', "You can't submit a quiz for someone else.")
+    }
+
+    let quizDoc = await db.collection('cms_quizzes').doc(quizId).get()
+    if (!quizDoc.exists) {
+      const qSnap = await db.collection('cms_quizzes').where('slug', '==', quizId).limit(1).get()
+      if (qSnap.empty) {
+        throw new HttpsError('not-found', `Quiz ${quizId} not found.`)
+      }
+      quizDoc = qSnap.docs[0]
+    }
+
+    const quiz = quizDoc.data() as {
+      slug: string
+      title: string
+      passThresholdPercent?: number
+      questions?: Array<{
+        id: string
+        questionText: string
+        correctOptionId: string
+        explanation?: string
+      }>
+    }
+
+    const questions = quiz.questions ?? []
+    if (questions.length === 0) {
+      throw new HttpsError('failed-precondition', 'Quiz has no questions.')
+    }
+
+    let correctCount = 0
+    const questionFeedback: Record<
+      string,
+      { correct: boolean; correctOptionId: string; explanation?: string }
+    > = {}
+
+    for (const q of questions) {
+      const selectedOptionId = answers[q.id]
+      const isCorrect = selectedOptionId === q.correctOptionId
+      if (isCorrect) correctCount++
+      questionFeedback[q.id] = {
+        correct: isCorrect,
+        correctOptionId: q.correctOptionId,
+        explanation: q.explanation,
+      }
+    }
+
+    const totalQuestions = questions.length
+    const score = Math.round((correctCount / totalQuestions) * 100)
+    const threshold = quiz.passThresholdPercent ?? 70
+    const passed = score >= threshold
+
+    const now = FieldValue.serverTimestamp()
+
+    // Store quiz attempt record
+    const attemptRef = db.collection('quiz_attempts').doc()
+    await attemptRef.set({
+      enrollmentId,
+      studentId: enrollment.studentId,
+      mentorId: enrollment.mentorId ?? null,
+      quizId: quizDoc.id,
+      quizSlug: quiz.slug,
+      lessonSlug,
+      score,
+      passed,
+      answers,
+      totalQuestions,
+      correctCount,
+      submittedAt: now,
+    })
+
+    // Update lesson_progress
+    const progressId = `${enrollmentId}_${lessonSlug}`
+    const progressRef = db.collection('lesson_progress').doc(progressId)
+    const progressUpdate: Record<string, unknown> = {
+      enrollmentId,
+      studentId: enrollment.studentId,
+      mentorId: enrollment.mentorId ?? null,
+      lessonSlug,
+      moduleSlug: moduleSlug ?? '',
+      quizScore: score,
+      quizPassed: passed,
+    }
+
+    if (passed) {
+      progressUpdate.status = 'completed'
+      progressUpdate.completedAt = now
+    }
+
+    await progressRef.set(progressUpdate, { merge: true })
+
+    return {
+      ok: true,
+      score,
+      passed,
+      passThresholdPercent: threshold,
+      correctCount,
+      totalQuestions,
+      questionFeedback,
+    }
+  },
+)

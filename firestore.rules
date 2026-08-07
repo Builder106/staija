@@ -301,6 +301,10 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if false;
     }
+    match /cms_quizzes/{entryId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
 
     // Audit logs collection rules (for tracking role changes)
     match /audit_logs/{logId} {
@@ -420,6 +424,17 @@ service cloud.firestore {
     // Grading writes go through gradeSubmission to keep the side-effect
     // (notification, audit) coupled.
     match /assignment_submissions/{submissionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        resource.data.mentorId == request.auth.uid ||
+        hasAnyRole(['staff', 'admin'])
+      );
+      allow write: if false;
+    }
+
+    // Quiz attempts. Student reads own; mentor reads assigned; staff/admin all access.
+    // Writes are server-only via submitQuiz callable.
+    match /quiz_attempts/{attemptId} {
       allow read: if isAuthenticated() && (
         resource.data.studentId == request.auth.uid ||
         resource.data.mentorId == request.auth.uid ||

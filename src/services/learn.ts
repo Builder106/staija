@@ -40,6 +40,8 @@ import type {
   CmsModule,
   CmsLesson,
   CmsAssignmentSpec,
+  CmsQuiz,
+  QuizAttempt,
   Cohort,
   Enrollment,
   LessonProgress,
@@ -425,6 +427,59 @@ export const scheduleSession = (data: ScheduleSessionPayload) =>
 
 export const rsvpSession = (data: { sessionId: string; rsvped: 'yes' | 'no' | 'maybe' }) =>
   httpsCallable<typeof data, { ok: boolean }>(functions, 'rsvpSession')(data).then((r) => r.data)
+
+export interface SubmitQuizPayload {
+  enrollmentId: string
+  quizId: string
+  lessonSlug: string
+  moduleSlug?: string
+  answers: Record<string, string>
+}
+
+export interface QuizSubmitResult {
+  ok: boolean
+  score: number
+  passed: boolean
+  passThresholdPercent: number
+  correctCount: number
+  totalQuestions: number
+  questionFeedback: Record<
+    string,
+    { correct: boolean; correctOptionId: string; explanation?: string }
+  >
+}
+
+export const submitQuiz = (data: SubmitQuizPayload) =>
+  httpsCallable<SubmitQuizPayload, QuizSubmitResult>(functions, 'submitQuiz')(data).then(
+    (r) => r.data,
+  )
+
+export class QuizService {
+  static async getQuizById(id: string): Promise<CmsQuiz | null> {
+    const snap = await getDoc(doc(db, 'cms_quizzes', id))
+    return snap.exists() ? (snap.data() as CmsQuiz) : null
+  }
+
+  static async getQuizBySlug(slug: string): Promise<CmsQuiz | null> {
+    const q = query(collection(db, 'cms_quizzes'), where('slug', '==', slug), fsLimit(1))
+    const snap = await getDocs(q)
+    return snap.empty ? null : (snap.docs[0].data() as CmsQuiz)
+  }
+
+  static async getAttemptsForStudent(
+    enrollmentId: string,
+    lessonSlug: string,
+  ): Promise<QuizAttempt[]> {
+    const q = query(
+      collection(db, 'quiz_attempts'),
+      where('enrollmentId', '==', enrollmentId),
+      where('lessonSlug', '==', lessonSlug),
+      orderBy('submittedAt', 'desc'),
+    )
+    const snap = await getDocs(q)
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as QuizAttempt)
+  }
+}
 
 // --- Helpers ----------------------------------------------------------
 

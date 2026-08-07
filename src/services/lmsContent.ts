@@ -18,7 +18,7 @@ import type { Document } from '@contentful/rich-text-types'
 
 // ---------- Types ----------
 
-export type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec'
+export type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec' | 'quiz'
 
 export interface CourseFields {
   slug: string
@@ -50,6 +50,21 @@ export interface LessonFields {
   attachments?: string[] // Asset entry IDs
   estimatedMinutes?: number
   completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed'
+  quiz?: string // Quiz entry ID
+}
+
+export interface QuizFields {
+  slug: string
+  title: string
+  summary?: string
+  passThresholdPercent?: number
+  questions: {
+    id: string
+    questionText: string
+    options: { id: string; text: string }[]
+    correctOptionId: string
+    explanation?: string
+  }[]
 }
 
 export interface AssignmentSpecFields {
@@ -67,6 +82,7 @@ export type LmsFields =
   | { type: 'module'; fields: ModuleFields }
   | { type: 'lesson'; fields: LessonFields }
   | { type: 'assignmentSpec'; fields: AssignmentSpecFields }
+  | { type: 'quiz'; fields: QuizFields }
 
 // Lightweight summary used by list views.
 export interface EntrySummary {
