@@ -7,7 +7,7 @@ import Section from '../components/ui/Section.vue'
 import Heading from '../components/ui/Heading.vue'
 import Body from '../components/ui/Body.vue'
 import UiButton from '../components/ui/UiButton.vue'
-import { AuthService } from '../services/auth'
+import { AuthService, toFriendlyAuthMessage } from '../services/auth'
 import { primeProfileCache } from '../router'
 import { postLoginRoute } from '../services/postLoginRedirect'
 
@@ -31,7 +31,7 @@ async function onSubmit(e: Event) {
     primeProfileCache(cred.user.uid, 'applicant')
     router.push({ name: 'applicant-dashboard' })
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Sign up failed'
+    error.value = toFriendlyAuthMessage(err, 'Sign up failed')
   } finally {
     submitting.value = false
   }
@@ -45,7 +45,7 @@ async function onGoogle() {
     primeProfileCache(credential.user.uid, role)
     router.push(postLoginRoute(role))
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Google sign up failed'
+    error.value = toFriendlyAuthMessage(err, 'Google sign up failed')
   } finally {
     submitting.value = false
   }

@@ -8,7 +8,7 @@ import Heading from '../components/ui/Heading.vue'
 import Body from '../components/ui/Body.vue'
 import UiButton from '../components/ui/UiButton.vue'
 import type { UserRole } from '../services/types'
-import { AuthService } from '../services/auth'
+import { AuthService, toFriendlyAuthMessage } from '../services/auth'
 import { primeProfileCache } from '../router'
 import { postLoginRoute } from '../services/postLoginRedirect'
 
@@ -34,7 +34,7 @@ async function onSubmit(e: Event) {
     const { credential, role } = await AuthService.signIn(email.value, password.value)
     redirectAfterAuth(credential.user.uid, role)
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Sign in failed'
+    error.value = toFriendlyAuthMessage(err, 'Sign in failed')
   } finally {
     submitting.value = false
   }
@@ -47,7 +47,7 @@ async function onGoogle() {
     const { credential, role } = await AuthService.signInWithGoogle()
     redirectAfterAuth(credential.user.uid, role)
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Google sign in failed'
+    error.value = toFriendlyAuthMessage(err, 'Google sign in failed')
   } finally {
     submitting.value = false
   }

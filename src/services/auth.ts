@@ -276,3 +276,34 @@ function isStaffEmail(email: string | null | undefined): boolean {
   if (at < 0) return false
   return email.slice(at + 1).toLowerCase() === STAFF_EMAIL_DOMAIN
 }
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  'auth/popup-closed-by-user': 'Sign-in was cancelled. Please try again.',
+  'auth/cancelled-popup-request': 'Sign-in was cancelled. Please try again.',
+  'auth/popup-blocked': 'Your browser blocked the sign-in popup. Please allow popups for this site and try again.',
+  'auth/network-request-failed': 'Network error. Please check your connection and try again.',
+  'auth/user-disabled': 'This account has been disabled. Contact support for help.',
+  'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
+  'auth/wrong-password': 'Incorrect email or password.',
+  'auth/user-not-found': 'Incorrect email or password.',
+  'auth/invalid-credential': 'Incorrect email or password.',
+  'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+}
+
+// Firestore's IndexedDB persistence layer can throw raw browser exceptions
+// (e.g. "the database connection is closing") when a second tab or the
+// OAuth popup races the main tab's connection. Those aren't meaningful to
+// users, so they're mapped to one friendly retry message.
+function isStorageError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /database connection is closing|indexeddb|version change transaction/i.test(message)
+}
+
+export function toFriendlyAuthMessage(error: unknown, fallback: string): string {
+  if (isStorageError(error)) {
+    return 'A temporary storage issue interrupted sign-in. Please try again, or close other tabs of this site and retry.'
+  }
+  const code = (error as { code?: string } | undefined)?.code
+  if (code && AUTH_ERROR_MESSAGES[code]) return AUTH_ERROR_MESSAGES[code]
+  return error instanceof Error ? error.message : fallback
+}
