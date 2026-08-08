@@ -106,15 +106,7 @@ export default defineConfig(async ({ mode }) => {
       // window.localStorage whose methods aren't reachable in this
       // vitest combo. See tests/setup.ts for the diagnosis + workaround.
       setupFiles: ['tests/setup.ts'],
-      server: {
-        deps: {
-          // @dicebear/core is a pure-ESM package whose internal module
-          // graph trips vitest's SSR evaluator (createAvatar resolves as
-          // undefined). Inlining forces it through vite's pipeline where
-          // ESM named exports are handled correctly.
-          inline: ['@dicebear/core'],
-        },
-      },
+
     },
   }
 })

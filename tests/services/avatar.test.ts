@@ -1,18 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
-
-// @dicebear/core exports via CJS (./lib/index.js) and its import chain
-// through svg.ts → style.ts triggers a vitest SSR circular-dep pattern
-// where createAvatar resolves as undefined. Mock at the test boundary —
-// these tests cover the wrapper contract (correct SVG shape, viewBox,
-// determinism), not Dicebear's own rendering.
-vi.mock('@dicebear/core', () => ({
-  createAvatar: (_style: unknown, opts: { seed: string }) => ({
-    toString: () =>
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">${opts.seed}</svg>`,
-    toDataUri: () =>
-      `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">${opts.seed}</svg>`)}`,
-  }),
-}))
+import { describe, it, expect } from 'vitest'
 
 import { avatarSvg, avatarDataUri } from '../../src/services/avatar/svg'
 import { avatarSeedFor } from '../../src/services/avatar'

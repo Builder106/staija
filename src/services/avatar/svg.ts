@@ -16,9 +16,12 @@
  * cap below will evict.
  */
 
-import { createAvatar } from '@dicebear/core'
-import { staijaStyle } from './style'
+import { pickPortrait } from './style'
 import { PORTRAITS } from './parts'
+
+/** Shared SVG envelope open tag — matches the 80×80 viewBox the parts library is authored against. */
+const SVG_OPEN =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none" shape-rendering="auto">'
 
 // Module-level cache. Seed → result. The realistic upper bound is
 // "number of distinct users you've ever rendered an avatar for" — for
@@ -42,22 +45,24 @@ function cached<V>(map: Map<string, V>, key: string, compute: () => V): V {
 }
 
 export function avatarSvg(seed: string): string {
-  return cached(SVG_CACHE, seed, () =>
-    createAvatar(staijaStyle, { seed }).toString(),
-  )
+  return cached(SVG_CACHE, seed, () => {
+    const portrait = pickPortrait(seed)
+    return `${SVG_OPEN}${portrait}</svg>`
+  })
 }
 
 export function avatarDataUri(seed: string): string {
-  return cached(DATA_URI_CACHE, seed, () =>
-    createAvatar(staijaStyle, { seed }).toDataUri(),
-  )
+  return cached(DATA_URI_CACHE, seed, () => {
+    const svg = avatarSvg(seed)
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+  })
 }
 
 /**
  * Render a specific portrait slot wrapped in the same SVG envelope
  * the seeded path produces. Used by the avatar preview route to pin
  * to a known portrait without hunting for a seed that maps to it via
- * Dicebear's PRNG.
+ * the hash-based PRNG.
  *
  * Slot indices match `tools/avatars/prompts.ts` — e.g. 1 is the
  * afro-medium portrait used as the Phase 1 test slot.
@@ -79,7 +84,7 @@ export function avatarSvgForSlot(slot: number): string {
       `avatarSvgForSlot: slot ${slot} is out of range (0–${PORTRAITS.length - 1})`,
     )
   }
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none" shape-rendering="auto">${portrait}</svg>`
+  const svg = `${SVG_OPEN}${portrait}</svg>`
   SLOT_SVG_CACHE.set(slot, svg)
   return svg
 }
