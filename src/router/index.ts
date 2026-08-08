@@ -295,11 +295,13 @@ router.beforeEach(async (to, _from, next) => {
   const requiresAuth = Boolean(to.meta?.requiresAuth)
   const requiredPermissions = to.meta?.permissions || []
 
-  await authReady
-
+  // Fast-path for public routes: resolve immediately without waiting for Firebase Auth initialization
   if (!requiresAuth && requiredPermissions.length === 0) {
     return next()
   }
+
+  await authReady
+
 
   const user = auth.currentUser
   if (!user) {

@@ -11,8 +11,6 @@ import './style.css'
 // be dead bytes in the bundle.
 import App from './App.vue'
 import router from './router'
-import { auth } from './config/firebase.ts'
-import { onAuthStateChanged } from 'firebase/auth'
 import { installAnalyticsRouter } from './services/analytics'
 import { captureReferrerFromUrl } from './services/referrals'
 import { i18n, currentLocale } from './i18n'
@@ -37,25 +35,21 @@ startVersionWatcher()
 // navigation that brings in a new `?ref=`.
 captureReferrerFromUrl()
 
-// Wait for Firebase Auth to initialize before mounting the app
-let app: ReturnType<typeof createApp> | undefined
+// Mount Vue immediately so first paint is instantaneous (FCP/LCP optimization).
+// Router guards (src/router/index.ts) handle async Firebase Auth resolution for protected routes.
+const app = createApp(App)
+app.use(router)
+app.use(i18n)
 
-onAuthStateChanged(auth, () => {
-   if (!app) {
-      app = createApp(App)
-      app.use(router)
-      app.use(i18n)
-      if (typeof document !== 'undefined') {
-         document.documentElement.lang = currentLocale()
-      }
-      installAnalyticsRouter(router)
-      // Re-capture `?ref=` on every navigation — an SPA route change
-      // doesn't re-run main.ts, so a deep link landed mid-session
-      // would otherwise lose its attribution. The capture is
-      // idempotent and only writes when a valid `ref` is present.
-      router.afterEach(() => {
-        captureReferrerFromUrl()
-      })
-      app.mount('#app')
-   }
+if (typeof document !== 'undefined') {
+   document.documentElement.lang = currentLocale()
+}
+
+installAnalyticsRouter(router)
+
+router.afterEach(() => {
+  captureReferrerFromUrl()
 })
+
+app.mount('#app')
+
