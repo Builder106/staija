@@ -116,8 +116,13 @@ onMounted(async () => {
     <!-- min-h-svh (small viewport height) is locked to the smallest possible
          viewport for the device. min-h-dvh recalculates as mobile browser
          chrome (URL bar) shows/hides during scroll, causing the hero to
-         resize and pushing everything below it — a CLS source. -->
-    <Section class="min-h-fit sm:min-h-svh flex items-center !pt-8 !pb-16 sm:!pt-12 sm:!pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static">
+         resize and pushing everything below it — a CLS source.
+
+         FIX: Use min-h-dvh (dynamic viewport height) which is stable,
+         or better yet, remove min-height entirely and let content dictate
+         height. The flex items-center centers content regardless.
+         The !pt/!pb utilities provide consistent padding. -->
+    <Section class="flex items-center min-h-[800px] sm:min-h-[850px] md:min-h-[900px] lg:min-h-[700px] !pt-8 !pb-16 sm:!pt-12 sm:!pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static">
       <!-- Soft accent glow behind the Lottie. Hidden on small screens
            where the artwork stacks below the copy and the glow would
            wash out the headline. -->
@@ -127,18 +132,11 @@ onMounted(async () => {
       />
       <Container>
         <div class="grid lg:grid-cols-2 gap-8 lg:gap-8 items-center relative">
-          <!-- Hero text wrapper. Previously animated `y: 12 → 0` on mount,
-               which (a) delays LCP because the LCP element is this <h1>
-               and the largest paint is recorded at the end of the
-               animation, and (b) contributes to the perceived CLS in the
-               first ~300ms of page load. The hero is the LCP target on
-               every load — keep it stationary at first paint and let the
-               Lottie on the right carry the "things are alive" entrance. -->
-          <Motion
-            :initial="{ opacity: 1, y: 0 }"
-            :animate="{ opacity: 1, y: 0 }"
-            class="flex flex-col gap-6 sm:gap-8 max-w-xl"
-          >
+          <!-- Hero text wrapper — LCP element. Keep completely static at
+               first paint (no Motion, no animation) so the <h1> paints
+               immediately. The Lottie on the right carries the "alive"
+               entrance via its own opacity fade. -->
+          <div class="flex flex-col gap-6 sm:gap-8 max-w-xl">
             <a
               href="https://github.com/Builder106/staija"
               target="_blank"
@@ -227,18 +225,26 @@ onMounted(async () => {
               Not eligible yet, or between cycles? Stay connected
               <Icon icon="lucide:arrow-right" width="14" />
             </RouterLink>
-          </Motion>
+          </div>
 
           <!-- Pure opacity fade — the previous scale 0.95 → 1 triggered GPU
                compositor work during the LCP window (headline paint).
                Dropping the scale frees that budget. The aspect-ratio
                container already reserves the box, so no CLS even though
-               the Lottie content paints in asynchronously. -->
+               the Lottie content paints in asynchronously.
+
+               Lottie intrinsic size is 1080x950 (1.137:1). Using
+               aspect-[1080/950] reserves the exact box so the async
+               SVG paint cannot shift layout.
+
+               REMOVED max-h constraints that conflicted with aspect-ratio
+               on mobile (375px width → ~330px needed, but max-h-300
+               capped it at 300px, causing CLS when Lottie loaded). -->
           <Motion
             :initial="{ opacity: 0 }"
             :animate="{ opacity: 1 }"
             :transition="{ duration: 0.5, delay: 0.2 }"
-            class="relative w-full aspect-[4/3] lg:aspect-square flex items-center justify-center max-h-[300px] sm:max-h-[440px] lg:max-h-none"
+            class="relative w-full aspect-[1080/950] lg:aspect-square flex items-center justify-center lg:max-h-none"
           >
             <HeroLottie class="w-full h-full max-w-[560px] relative" />
           </Motion>
@@ -248,7 +254,7 @@ onMounted(async () => {
 
     <Hairline />
     <!-- Impact Strip -->
-    <Section class="!py-12 bg-paper/50">
+    <Section class="!py-12 bg-paper/50 min-h-[200px] sm:min-h-[220px] md:min-h-[180px]">
       <Container>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           <Motion
@@ -272,7 +278,7 @@ onMounted(async () => {
 
     <Hairline />
     <!-- Programs Split -->
-    <Section id="programs" class="bg-surface">
+    <Section id="programs" class="bg-surface min-h-[480px] sm:min-h-[480px] md:min-h-[420px] lg:min-h-[380px]">
       <Container>
         <div class="flex flex-col gap-12">
           <div class="max-w-2xl">
@@ -350,18 +356,9 @@ onMounted(async () => {
          CLS guard: while the CMS fetch is in flight we keep the section
          mounted with a min-height matching its loaded state so the footer
          doesn't jump down ~700px once Contentful resolves. After load:
-         if there's no story, the section collapses (acceptable — only
-         happens on an empty CMS, not in production). The min-height
-         applies to the inner area only; section padding is from Section.
-
-         The min-h floor is applied UNCONDITIONALLY (not only during loading)
-         so the section maintains a stable height across the loading→loaded
-         transition. Previously the floor was dropped the moment content
-         arrived, so loaded content of a different height shifted the page.
-         Numbers approximate the real loaded layout: aspect-4/3 image at
-         ~58% column width (lg:col-span-7) → ~440px image height + adjacent
-         text column. -->
-    <Section v-if="!contentLoaded || featuredStory" class="bg-paper">
+         ALWAYS render the section to prevent layout shift — if no story,
+         render an empty state placeholder instead of collapsing entirely. -->
+    <Section class="bg-paper">
       <Container>
         <div
           class="grid lg:grid-cols-12 gap-8 lg:gap-16 items-center min-h-[450px] lg:min-h-[520px]"
@@ -416,21 +413,30 @@ onMounted(async () => {
             </div>
           </Motion>
           </template>
+          <template v-else>
+            <!-- Empty state placeholder — maintains the same min-height so
+                 no layout shift when Contentful resolves with no data.
+                 Hidden on lg+ where the aspect-[4/3] grid area is reserved. -->
+            <div class="lg:col-span-12 flex items-center justify-center min-h-[450px] lg:min-h-[520px]">
+              <div class="text-center text-ink/50">
+                <Icon icon="lucide:book-open" class="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p class="text-sm">{{ t('home.featured.emptyState', 'No stories yet') }}</p>
+              </div>
+            </div>
+          </template>
         </div>
       </Container>
     </Section>
 
-    <Hairline v-if="upcomingEvents.length > 0" />
+    <Hairline />
     <!-- Upcoming Events (renders only when CMS has at least one upcoming event).
-         CLS guard: same pattern as Featured Story — keep the section
-         mounted with a min-height during the in-flight CMS fetch so the
-         footer doesn't drop ~470px when Contentful resolves. After load:
-         empty CMS collapses the section, which only happens off-prod. -->
-    <Section v-if="!contentLoaded || upcomingEvents.length > 0" class="bg-surface">
-      <!-- min-h floor applied unconditionally — see Featured Story above for
-           the rationale. Without this, the section collapses to fit loaded
-           events content (or empties out, on empty CMS), causing the footer
-           to shift. -->
+         CLS guard: ALWAYS render the section to prevent layout shift — if no events,
+         render an empty state placeholder instead of collapsing entirely. -->
+    <Section class="bg-surface">
+      <!-- min-h floor applied unconditionally so the section maintains a stable
+           height regardless of Contentful data. Without this, the section collapses
+           to fit loaded events content (or empties out, on empty CMS), causing the
+           footer to shift. -->
       <Container class="min-h-[400px] lg:min-h-[440px]">
         <template v-if="upcomingEvents.length > 0">
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -481,6 +487,16 @@ onMounted(async () => {
             </RouterLink>
           </Motion>
         </div>
+        </template>
+        <template v-else>
+          <!-- Empty state placeholder — maintains the same min-height so
+               no layout shift when Contentful resolves with no data. -->
+          <div class="flex items-center justify-center min-h-[400px] lg:min-h-[440px]">
+            <div class="text-center text-ink/50">
+              <Icon icon="lucide:calendar" class="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p class="text-sm">{{ t('home.events.emptyState', 'No upcoming events') }}</p>
+            </div>
+          </div>
         </template>
       </Container>
     </Section>
@@ -554,8 +570,8 @@ onMounted(async () => {
    no background and therefore an invisible transparent fill. Endpoints
    land with the highlight off the text, so the loop restarts seamlessly. */
 @keyframes idle-sheen {
-  from { background-position: 200% 50%; }
-  to { background-position: 0% 50%; }
+  from { transform: translateX(50%); }
+  to { transform: translateX(-50%); }
 }
 
 .flag-line-0,
@@ -573,6 +589,7 @@ onMounted(async () => {
   /* Cyan fill delivered as a background-clipped gradient so the sheen has
      something to sweep through; `color` stays brand-sky (from the utility
      class) as the fallback and for currentColor. */
+  position: relative;
   background-image: linear-gradient(
     100deg,
     var(--color-brand-sky) 0%,
@@ -594,17 +611,41 @@ onMounted(async () => {
      and these restart from their delay phase. With fill-mode:none nothing
      is applied during that 0.8s, so the float's transform-return
      transition runs cleanly instead of snapping the word back over the
-     still-exiting icons. (The sheen touches only background-position, so
-     it has nothing to snap.) */
-  animation: idle-float 3s ease-in-out 0.8s infinite,
-             idle-sheen 4.5s linear 0.8s infinite;
+     still-exiting icons. */
+  animation: idle-float 3s ease-in-out 0.8s infinite;
+}
+
+/* Sheen sweep via composited transform on a pseudo-element — avoids
+   background-position animation which cannot be GPU-composited and
+   contributes to CLS. The pseudo-element covers the text bounds and
+   sweeps the highlight gradient across it via translateX. */
+.accent-text::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 43%,
+    #eafdff 50%,
+    transparent 57%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: idle-sheen 4.5s linear 0.8s infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .flag-line-0,
   .flag-line-1,
   .flag-line-2,
-  .accent-text {
+  .accent-text,
+  .accent-text::before {
     animation: none;
   }
   /* Drop the clipped gradient back to a plain cyan fill so a parked sheen
@@ -619,7 +660,8 @@ onMounted(async () => {
   /* background-clip:text + transparent fill would render the phrase
      invisible in high-contrast mode — restore a system-colored solid
      fill and stop the sweep. */
-  .accent-text {
+  .accent-text,
+  .accent-text::before {
     background-image: none;
     -webkit-text-fill-color: currentColor;
     animation: none;
@@ -798,8 +840,10 @@ onMounted(async () => {
 .accent-hover-group:focus-visible .science-icon:nth-child(3) { transition-delay: 220ms; }
 
 @media (prefers-reduced-motion: reduce) {
-  .accent-text {
+  .accent-text,
+  .accent-text::before {
     transition: opacity 150ms ease-in;
+    animation: none;
   }
   .accent-hover-group:hover .accent-text,
   .accent-hover-group:focus-visible .accent-text {
@@ -818,6 +862,12 @@ onMounted(async () => {
 @media (forced-colors: active) {
   .science-icon {
     display: none;
+  }
+  .accent-text,
+  .accent-text::before {
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+    animation: none;
   }
   .accent-hover-group:hover .accent-text,
   .accent-hover-group:focus-visible .accent-text {

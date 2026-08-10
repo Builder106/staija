@@ -56,12 +56,14 @@
       "featured": {
          "eyebrow": "Featured Story",
          "byline": "By {author}",
-         "readMore": "Read full story"
+         "readMore": "Read full story",
+         "emptyState": "No stories yet"
       },
       "events": {
          "eyebrow": "Community",
          "heading": "Upcoming events.",
-         "viewAll": "View all events"
+         "viewAll": "View all events",
+         "emptyState": "No upcoming events"
       }
    },
    "donate": {
