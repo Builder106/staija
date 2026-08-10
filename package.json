@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:staging": "vite --mode staging",
-    "build": "vue-tsc -b && vite build",
-    "build:staging": "vue-tsc -b && vite build --mode staging",
+    "build": "tsx scripts/generate-sitemap.ts && vue-tsc -b && vite build",
+    "build:staging": "tsx scripts/generate-sitemap.ts && vue-tsc -b && vite build --mode staging",
     "preview": "vite preview",
     "deploy:staging": "firebase deploy --project staging",
     "deploy:staging:rules": "firebase deploy --project staging --only firestore,storage",

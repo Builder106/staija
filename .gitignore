@@ -75,3 +75,21 @@ tools/social/linkedin-posts/
 tools/social/threads-posts/
 tools/social/*.png
 tools/social/social-media-context.md
+
+# Performance audit artifacts (local only)
+lighthouse-report*.json
+lighthouse-report_*.json
+lighthouse-report-abs*.json
+lighthouse-report-fin*.json
+lighthouse-report-final*.json
+lighthouse-report-flex*.json
+lighthouse-report-simple*.json
+lighthouse-report-vfinal*.json
+staija-perf-trace*.json.gz
+
+# Generated at build time
+public/robots.txt
+public/sitemap.xml
+
+# Generated raster export (keep source .svg)
+public/staija-gradient-wordmark.png
