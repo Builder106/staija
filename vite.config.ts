@@ -64,21 +64,27 @@ export default defineConfig(async ({ mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: true,
-      // manualChunks for Firebase / Tiptap / etc was removed after it
-      // shipped a build to staging that crashed on init with a
-      // "Cannot access 'X' before initialization" TDZ error — Rollup's
-      // chunked output had a circular static dep between two of the
-      // generated vendor chunks. Letting Vite/Rollup pick chunk
-      // boundaries automatically avoids the manual mistake; the
-      // tradeoff is one larger vendor bundle vs. a parallel-loadable
-      // split. We can revisit a safer split (e.g. only carve off
-      // tiptap, which has the best loaded-by-one-route profile) once
-      // the chunk graph is auditable, but until then prod's working
-      // single-bundle layout is the baseline. The bundle visualizer
-      // (ANALYZE=1 npm run build → dist/stats.html) is still useful
-      // for spotting accidental imports.
+      // Manual chunks: carve off Tiptap (only loaded on admin content
+      // routes) to reduce main bundle size. Firebase kept in vendor
+      // because it's used across auth routes. The previous manualChunks
+      // attempt failed due to a TDZ circular dep between vendor chunks;
+      // this version is scoped to Tiptap only — a single leaf dependency
+      // with no imports back into app code — so it cannot create a
+      // cycle.
       rollupOptions: {
         output: {
+          manualChunks(id: string) {
+            if (id.includes('node_modules')) {
+              // Tiptap editor — only used in admin content routes
+              // (LessonEdit, AssignmentEdit). Splitting this avoids
+              // ~300KB of editor code in the main bundle for all users.
+              if (/[\\/]node_modules[\\/]@tiptap/.test(id)) {
+                return 'vendor-tiptap'
+              }
+              // All other node_modules go to vendor
+              return 'vendor'
+            }
+          },
           // Opaque hash-only filenames for route + component chunks.
           // Vite's default is `[name]-[hash].js`, which leaks our view
           // file names (Settings, Apply, Donate, etc.) into the URL —

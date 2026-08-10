@@ -11,7 +11,52 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://vercel.com https://*.vercel.com https://*.vercel.app"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://va.vercel-scripts.com https://api.iconify.design; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://images.unsplash.com https://images.ctfassets.net https://firebasestorage.googleapis.com https://www.google.com https://www.gstatic.com; connect-src 'self' https://identitytoolkit.googleapis.com https://firestore.googleapis.com https://cdn.contentful.com https://images.ctfassets.net https://vitals.vercel-insights.com https://www.google.com https://www.gstatic.com https://api.iconify.design; frame-src https://www.google.com https://www.gstatic.com; frame-ancestors 'self' https://vercel.com https://*.vercel.com https://*.vercel.app; base-uri 'self'; form-action 'self'; object-src 'none'; trusted-types default;"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-origin"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
         }
       ]
     },
