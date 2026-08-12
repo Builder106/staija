@@ -46,7 +46,7 @@
     "@vueuse/core": "^14.4.0",
     "contentful-management": "12.14.0",
     "firebase": "^12.17.0",
-    "katex": "^0.18.1",
+    "katex": "^0.18.2",
     "lottie-web": "^5.13.0",
     "mermaid": "^11.6.0",
     "motion-v": "^2.3.0",
