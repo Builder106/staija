@@ -7,7 +7,9 @@ journeys and captures each scenario as an MP4. The MP4s in
 ## Run
 
 ```bash
+
 # Records every demo scenario, writes mp4s to e2e/videos/
+
 npm run demo
 ```
 
@@ -32,11 +34,15 @@ e2e/
 ## Adding a new demo
 
 1. Create `e2e/demo/features/NN-name.feature` (numeric prefix sets play
+
    order — Playwright runs alphabetically).
+
 2. Reuse step phrases where possible; add new ones in `e2e/steps/`.
 3. Anchor scenes with `dwellForDemo(page)` after every navigation or
+
    modal appearance — slowMo doesn't cover those.
-4. Run `npm run demo` and commit the new `e2e/videos/<slug>.mp4`.
+
+4. Run `npm run demo`and commit the new`e2e/videos/<slug>.mp4`.
 
 ## Tuning
 
@@ -47,18 +53,25 @@ e2e/
 | `DEMO_TAIL_MS` | `2500` | Hold-final-frame duration |
 
 ```bash
+
 # Faster pace for quick iteration
+
 DEMO_SLOWMO=600 DEMO_DWELL_MS=800 npm run demo
 ```
 
 ## Known quirks
 
 - **The first one or two videos in a single-worker run can be 0 bytes.**
+
   The two warmup scenarios in `00-warmup.feature` absorb that, and the
   reporter discards their webms before the mp4 conversion step.
+
 - **Don't switch to parallel workers as a "fix"** — multiple test
+
   contexts compete for the video subsystem and most or all videos end
   up 0 bytes.
+
 - **Don't add cleanup hooks to demo scenarios.** API calls in `After`
+
   hooks race with Playwright's video finalization and can produce
   corrupted captures.

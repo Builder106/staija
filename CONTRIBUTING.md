@@ -11,14 +11,19 @@ Out-of-scope ideas are welcome as issues, but please don't open a PR for one wit
 ## Local setup
 
 ```bash
+
 # 1. Install
+
 npm install
 
 # 2. Environment
+
 #    .env is gitignored. Ask the maintainer for development values, or
-#    follow docs/INFRASTRUCTURE.md for the full secret inventory.
+
+#    follow docs/INFRASTRUCTURE.md for the full secret inventory
 
 # 3. Dev server (http://localhost:5190)
+
 npm run dev
 ```
 
@@ -35,7 +40,7 @@ A few conventions:
 
 - Prefer accessible selectors (`getByRole`, `getByLabel`, `getByText`) over CSS or `data-testid`. If you need a test id, the element is probably under-labeled.
 - Service-layer tests mock Firebase. Don't reach for real network in unit tests.
-- Component tests use `@vue/test-utils` with `happy-dom`. The localStorage shim in [`tests/setup.ts`](./tests/setup.ts) is required — vitest 4 + happy-dom 20 ships a non-functional native impl.
+- Component tests use `@vue/test-utils`with`happy-dom`. The localStorage shim in [`tests/setup.ts`](./tests/setup.ts) is required — vitest 4 + happy-dom 20 ships a non-functional native impl.
 
 ## Commits
 

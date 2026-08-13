@@ -32,8 +32,8 @@ texture it renders is `public/staija_mobile.png`, captured by
 `scratch/capture_mobile.js`.
 
 `public/staija_stepup.png` and
-`public/staija_dynamerge.png` are captured by `scratch/capture_programs.js`
-(Puppeteer; `npm i` inside `scratch/` first).
+`public/staija_dynamerge.png`are captured by`scratch/capture_programs.js`
+(Puppeteer; `npm i`inside`scratch/` first).
 
 See `STORYBOARD.md` for the "known unused assets" carried into
 `scratch/unused-assets/` during the split — nothing was deleted, just parked.

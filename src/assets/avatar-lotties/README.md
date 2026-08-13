@@ -13,7 +13,7 @@ tilt, expression shift) earns the rigging cost.
 
 ## Filename convention
 
-Each file must be named exactly `slot-<N>.json` where `N` matches
+Each file must be named exactly `slot-<N>.json`where`N` matches
 the slot index in [tools/avatars/prompts.ts](../../../tools/avatars/prompts.ts).
 The runtime lookup in [`../../services/avatar/lotties.ts`](../../services/avatar/lotties.ts)
 discovers files by glob, so adding a new file is zero-config — just
@@ -40,10 +40,14 @@ There are two paths.
 
 1. Open <https://creator.lottiefiles.com/>.
 2. Import the matching PNG from
+
    [public/avatars/portrait-N.png](../../../public/avatars/) as a
    raster layer at 256×256.
+
 3. Add motion: scale-in entrance, idle breath, eye blinks (manually
+
    drawn vector layers over the eye region), head tilt, etc.
+
 4. Export as Bodymovin/Lottie JSON.
 5. Save as `slot-<N>.json` in this directory.
 6. Settings hero will pick it up automatically on next page load.

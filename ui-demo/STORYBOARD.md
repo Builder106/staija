@@ -19,18 +19,21 @@ Tier-3-only at `../trailer/`; see `../trailer/STORYBOARD.md`).
 ## Audio
 
 - Bed: Kevin MacLeod's "Wholesome" (CC BY 4.0) — trimmed into `public/audio.mp3`
+
   (a separate trim from the Tier 3 trailer's own `audio.mp3`; both derive from
   the same source track, `../trailer/scratch/wholesome.mp3`). Credit required
   on publish; see `public/CREDITS.md`.
+
 - SFX: `sfx_whoosh.wav` at every scene cut (frames 90/330/540/750/990),
+
   `sfx_chime.wav` as the outro card lands (frame 1190).
 
 ## Assets specific to this tier
 
 `public/staija_ui_*.png` are full-page authenticated screenshots of
 staija.org. Referenced by the composition: `home`, `programs_stepup_scholars`,
-`programs_dynamerge`, `signup` (main sequence), plus `about`, `get_involved`,
-`stay_connected` (montage). `blog`, `contact`, `events`, `login`, `press` were
+`programs_dynamerge`, `signup`(main sequence), plus`about`, `get_involved`,
+`stay_connected`(montage).`blog`, `contact`, `events`, `login`, `press` were
 captured alongside the rest but are **not currently wired into any beat** —
 kept in `public/` since they're clearly part of this tier's asset family, not
 true orphans, in case a future re-cut wants them.

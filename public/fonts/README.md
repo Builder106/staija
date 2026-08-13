@@ -4,17 +4,21 @@ These woff2 files back the `@font-face` block in [`src/styles/fonts.css`](../../
 
 ## Regeneration
 
-Run from the repo root. Requires `curl` and `sed`.
+Run from the repo root. Requires `curl`and`sed`.
 
 ```bash
+
 # 1. Fetch the Google Fonts stylesheet with a modern UA so it serves
-#    woff2 URLs (an older UA gets woff, which is larger).
+
+#    woff2 URLs (an older UA gets woff, which is larger)
+
 curl -sL \
   -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' \
   'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap' \
   -o /tmp/staija-fonts.css
 
-# 2. Download each unique woff2 URL into public/fonts/.
+# 2. Download each unique woff2 URL into public/fonts/
+
 grep -oE 'https://fonts.gstatic.com/[^)]*\.woff2' /tmp/staija-fonts.css \
   | sort -u \
   | while IFS= read -r url; do
@@ -22,16 +26,24 @@ grep -oE 'https://fonts.gstatic.com/[^)]*\.woff2' /tmp/staija-fonts.css \
     done
 
 # 3. Rewrite the CSS to point at the local files, then splice the
+
 #    result into the bottom of src/styles/fonts.css below the
+
 #    "Self-hosted web fonts (generated)" marker line. The fallback
+
 #    @font-face blocks above the marker are hand-maintained — don't
-#    overwrite them.
+
+#    overwrite them
+
 sed -E \
   's|https://fonts\.gstatic\.com/[^)]*/([^/]+\.woff2)|/fonts/\1|g' \
   /tmp/staija-fonts.css \
   > /tmp/staija-fonts-rewritten.css
+
 # Then manually replace everything after the marker comment in
-# src/styles/fonts.css with the contents of the rewritten file.
+
+# src/styles/fonts.css with the contents of the rewritten file
+
 ```
 
 ## When to regenerate
@@ -46,7 +58,7 @@ If a preload link in [`index.html`](../../index.html) 404s after regen, the file
 
 These didn't come from the Google Fonts CDN pipeline above — Ojuju is a variable font, so it needed `fonttools` (instancer + subset + woff2 compress), not a CSS-endpoint fetch. See [`docs/TYPOGRAPHY-SYSTEM.md`](../../docs/TYPOGRAPHY-SYSTEM.md) for why it was added and [`src/styles/fonts.css`](../../src/styles/fonts.css) for the `@font-face` blocks that reference them.
 
-Regeneration (run on `ampere-dev`, not this Mac — `pip install fonttools` materializes a `.venv`):
+Regeneration (run on `ampere-dev`, not this Mac — `pip install fonttools`materializes a`.venv`):
 
 ```bash
 curl -sL -o 'Ojuju[wght].ttf' 'https://github.com/google/fonts/raw/main/ofl/ojuju/Ojuju%5Bwght%5D.ttf'
@@ -62,7 +74,7 @@ for f in Ojuju-Medium500 Ojuju-ExtraBold800; do
 done
 ```
 
-Copy the two `*-subset.woff2` outputs into `public/fonts/`, keeping the same filenames (`src/styles/fonts.css` references them by name, not hash).
+Copy the two `*-subset.woff2`outputs into`public/fonts/`, keeping the same filenames (`src/styles/fonts.css` references them by name, not hash).
 
 ## Madimi One (single static weight, no CDN pipeline)
 
@@ -80,7 +92,7 @@ fonttools subset MadimiOne-Regular.ttf --output-file=MadimiOne-Regular-subset.tt
 fonttools ttLib.woff2 compress -o MadimiOne-Regular-subset.woff2 MadimiOne-Regular-subset.ttf
 ```
 
-Copy `MadimiOne-Regular-subset.woff2` into `public/fonts/`.
+Copy `MadimiOne-Regular-subset.woff2`into`public/fonts/`.
 
 ## Agu Display (variable font, instanced to a single static weight)
 
@@ -97,11 +109,11 @@ fonttools subset AguDisplay-Default.ttf --output-file=AguDisplay-Regular-subset.
 fonttools ttLib.woff2 compress -o AguDisplay-Regular-subset.woff2 AguDisplay-Regular-subset.ttf
 ```
 
-Copy `AguDisplay-Regular-subset.woff2` into `public/fonts/`.
+Copy `AguDisplay-Regular-subset.woff2`into`public/fonts/`.
 
-**Note:** `Matemasie-Regular-subset.woff2` is a leftover from when `--font-accent-african-tertiary` pointed at Matemasie instead of Agu Display — its `@font-face` blocks and CSS references were removed when the token was repointed, but the file itself is still sitting in this directory unused (file deletion wasn't available in that session). Safe to delete.
+**Note:** `Matemasie-Regular-subset.woff2`is a leftover from when`--font-accent-african-tertiary`pointed at Matemasie instead of Agu Display — its`@font-face` blocks and CSS references were removed when the token was repointed, but the file itself is still sitting in this directory unused (file deletion wasn't available in that session). Safe to delete.
 
-The `'Agu Display Fallback'` / `'Madimi One Fallback'` `size-adjust`/`ascent-override`/`descent-override` values in `src/styles/fonts.css` aren't from this pipeline — they're hand-derived from the font's own `hhea`/`OS/2` tables. The formula, reverse-derived from the existing Madimi/Ojuju fallback values (not written down anywhere else, so recorded here):
+The `'Agu Display Fallback'`/`'Madimi One Fallback'` `size-adjust`/`ascent-override`/`descent-override`values in`src/styles/fonts.css`aren't from this pipeline — they're hand-derived from the font's own`hhea`/`OS/2` tables. The formula, reverse-derived from the existing Madimi/Ojuju fallback values (not written down anywhere else, so recorded here):
 
 ```python
 from fontTools.ttLib import TTFont
@@ -112,5 +124,7 @@ arial_xavg_per_em = 904 / 2048  # standard Arial OS/2.xAvgCharWidth / unitsPerEm
 size_adjust = (os2.xAvgCharWidth / upm) / arial_xavg_per_em * 100       # → size-adjust
 ascent_override = os2.sTypoAscender / upm * 100                         # → ascent-override
 descent_override = abs(os2.sTypoDescender) / upm * 100                  # → descent-override
+
 # line-gap-override is 0% for every face used so far (all have sTypoLineGap == 0)
+
 ```
