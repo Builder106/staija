@@ -93,3 +93,11 @@ public/sitemap.xml
 
 # Generated raster export (keep source .svg)
 public/staija-gradient-wordmark.png
+
+# Marketing assets — hosted on CDN, not committed to repo
+public/marketing/
+public/qr-code_staija_get-involved.png
+
+# Marketing assets — hosted on CDN, not committed to repo
+public/marketing/
+public/qr-code_staija_get-involved.png
