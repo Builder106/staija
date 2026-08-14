@@ -1,0 +1,17 @@
+dist/
+node_modules/
+*.config.*
+scripts/
+tools/
+e2e/
+tests/
+coverage/
+*.lock
+*.log
+.vercel
+.firebase
+.env*
+*.md
+*.json
+*.yaml
+*.yml
