@@ -47,7 +47,7 @@ jobs:
       - run: npm run format
 
   check:
-    name: Type-check
+    name: Type-check & Compliance
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -60,8 +60,12 @@ jobs:
       # bundles a deep tree with several CVEs that would require a breaking
       # firebase-tools major bump to clear. Scoped to production deps, which
       # matches the app's actual deployed attack surface.
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npx vue-tsc -b
+      - name: Dependency security audit
+        run: npm audit --omit=dev --audit-level=high
+      - name: Open-source license compliance scan
+        run: npx license-checker --summary --production
+      - name: TypeScript validation
+        run: npx vue-tsc -b
 
   test:
     name: Unit tests
@@ -74,3 +78,59 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm test
+
+  build:
+    name: Build & Bundle Budget
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: 'npm'
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+      - name: Verify bundle size budget
+        run: |
+          echo "=== Output bundle files ==="
+          ls -lh dist/
+          TOTAL_KB=$(du -sk dist | cut -f1)
+          echo "Total bundle size: ${TOTAL_KB} KB"
+          if [ "$TOTAL_KB" -gt 15000 ]; then
+            echo "Bundle size exceeded 15MB budget ceiling: ${TOTAL_KB} KB"
+            exit 1
+          fi
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  e2e:
+    name: E2E & Accessibility
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: 'npm'
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run Demo E2E & a11y suite
+        run: npm run demo
+      - name: Upload Playwright artifacts on failure
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-results
+          path: |
+            test-results/
+            e2e/videos/
+          retention-days: 7
+          if-no-files-found: ignore
