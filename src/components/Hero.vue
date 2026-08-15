@@ -32,7 +32,7 @@ onMounted(async () => {
     renderer: 'svg',
     loop: false,
     autoplay: true,
-    animationData: heroAnimation as unknown as Record<string, unknown>,
+    animationData: heroAnimation,
   });
 });
 </script>

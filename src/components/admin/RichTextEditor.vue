@@ -49,10 +49,10 @@ const editor = useEditor({
       placeholder: props.placeholder ?? 'Write the lesson body…',
     }),
   ],
-  content: contentfulToTipTap(props.modelValue) as unknown as Record<string, unknown>,
+  content: contentfulToTipTap(props.modelValue) as import('@tiptap/vue-3').JSONContent,
   onUpdate({ editor: e }) {
     if (suppressEmit) return;
-    const json = e.getJSON() as unknown as TipTapDoc;
+    const json = e.getJSON() as TipTapDoc;
     emit('update:modelValue', tipTapToContentful(json));
   },
   editorProps: {
@@ -74,7 +74,7 @@ watch(
     if (next === prev) return;
     const ttDoc = contentfulToTipTap(next);
     suppressEmit = true;
-    editor.value.commands.setContent(ttDoc as unknown as Record<string, unknown>, {
+    editor.value.commands.setContent(ttDoc as import('@tiptap/vue-3').JSONContent, {
       emitUpdate: false,
     });
     suppressEmit = false;

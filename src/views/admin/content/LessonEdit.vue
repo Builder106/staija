@@ -236,7 +236,7 @@ function bulletList(items: string[]): TopLevelBlock {
         },
       ],
     })),
-  } as unknown as TopLevelBlock;
+  };
 }
 
 function appendBlocks(doc: Document | undefined, blocks: TopLevelBlock[]): Document {

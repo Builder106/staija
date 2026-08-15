@@ -355,6 +355,8 @@ export interface CmsCourse {
   };
 }
 
+import type { Document as RichTextDocument } from '@contentful/rich-text-types';
+
 export interface CmsModule {
   slug: string;
   title: string;
@@ -368,7 +370,7 @@ export interface CmsModule {
 export interface CmsLesson {
   slug: string;
   title: string;
-  body?: unknown; // Contentful Rich Text document
+  body?: RichTextDocument; // Contentful Rich Text document
   videoUrl?: string;
   attachments?: { url: string; title?: string }[];
   estimatedMinutes?: number;
@@ -417,7 +419,7 @@ export interface QuizAttempt {
 export interface CmsAssignmentSpec {
   slug: string;
   title: string;
-  instructions?: unknown; // Contentful Rich Text document
+  instructions?: RichTextDocument; // Contentful Rich Text document
   submissionType: 'text' | 'file' | 'link' | 'text_or_file';
   maxFileSizeMb?: number;
   acceptedFileTypes?: string[];

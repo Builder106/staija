@@ -68,8 +68,12 @@ export const i18n = createI18n(options);
 
 export function setLocale(code: LocaleCode): void {
   if (!SUPPORTED_LOCALES.some(l => l.code === code)) return;
-  // Type cast: legacy: false means i18n.global.locale is a Ref<string>.
-  (i18n.global.locale as unknown as { value: string }).value = code;
+  const loc = i18n.global.locale as string | { value: string };
+  if (typeof loc === 'object' && loc !== null && 'value' in loc) {
+    loc.value = code;
+  } else {
+    (i18n.global as { locale: string }).locale = code;
+  }
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, code);
     document.documentElement.lang = code;
@@ -77,5 +81,9 @@ export function setLocale(code: LocaleCode): void {
 }
 
 export function currentLocale(): LocaleCode {
-  return (i18n.global.locale as unknown as { value: LocaleCode }).value;
+  const loc = i18n.global.locale as string | { value: LocaleCode };
+  if (typeof loc === 'object' && loc !== null && 'value' in loc) {
+    return loc.value;
+  }
+  return loc as LocaleCode;
 }

@@ -42,6 +42,12 @@ const app = initializeApp(firebaseConfig);
 // which would silently ship debug-mode App Check to production. Adding a
 // hostname here is an explicit allowlist; staija.org (prod) is not in
 // the list, so prod always uses real reCAPTCHA Enterprise verification.
+declare global {
+  interface Window {
+    FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
+  }
+}
+
 const isDebugAppCheckEnv =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
@@ -52,9 +58,7 @@ let appCheck: AppCheck | null = null;
 if (typeof window !== 'undefined') {
   if (isDebugAppCheckEnv) {
     const pinnedToken = import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN as string | undefined;
-    (
-      self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string }
-    ).FIREBASE_APPCHECK_DEBUG_TOKEN = pinnedToken ?? true;
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN = pinnedToken ?? true;
   }
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY as string | undefined;
   if (recaptchaSiteKey) {

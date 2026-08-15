@@ -12,6 +12,8 @@ import { ContentfulClient } from './contentful';
 
 // --- DTOs --------------------------------------------------------------
 
+import type { Document as RichTextDocument } from '@contentful/rich-text-types';
+
 export type BlogProgram = 'stepup' | 'dynamerge' | 'general';
 export type BlogTopic = 'research' | 'stories' | 'news';
 
@@ -20,7 +22,7 @@ export interface BlogPost {
   title: string;
   dek: string;
   hero: string;
-  body: unknown; // Contentful rich-text doc; renderer is page-side
+  body: RichTextDocument | null; // Contentful rich-text doc; renderer is page-side
   program: BlogProgram;
   topic: BlogTopic;
   author: string;
@@ -72,7 +74,7 @@ interface BlogPostFields {
   slug: string;
   title: string;
   excerpt?: string;
-  content: unknown; // Contentful RichText document
+  content: RichTextDocument; // Contentful RichText document
   coverImage?: { sys: { id: string } };
   author: { sys: { id: string } }; // Link to an Author entry
   category?: { sys: { id: string } }; // Link to a Category entry

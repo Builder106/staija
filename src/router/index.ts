@@ -652,9 +652,8 @@ export function primeProfileCache(uid: string, role: UserRole | null) {
 }
 
 router.afterEach(to => {
-  if (to.meta && typeof to.meta.title === 'string') {
-    const g = globalThis as unknown as { document?: { title: string } };
-    if (g.document) g.document.title = to.meta.title;
+  if (to.meta && typeof to.meta.title === 'string' && typeof document !== 'undefined') {
+    document.title = to.meta.title;
   }
 });
 

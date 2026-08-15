@@ -64,19 +64,22 @@ export async function compressFile(
     return { file, compressed: false, originalBytes, outputBytes: file.size };
   }
 
-  const bitmap = await loadImageBitmap(file);
-  const { width, height } = scaleDown(bitmap.width, bitmap.height, opts.maxDimension);
+  const imgSource = await loadImageSource(file);
+  const dims = getImageDimensions(imgSource);
+  const { width, height } = scaleDown(dims.width, dims.height, opts.maxDimension);
 
   let quality = opts.initialQuality;
   let blob: Blob | null = null;
 
   while (quality >= opts.minQuality) {
-    blob = await drawToBlob(bitmap, width, height, quality);
+    blob = await drawToBlob(imgSource, width, height, quality);
     if (blob.size <= opts.maxSizeBytes) break;
     quality -= 0.1;
   }
 
-  bitmap.close?.();
+  if ('close' in imgSource && typeof imgSource.close === 'function') {
+    imgSource.close();
+  }
 
   if (!blob) {
     return { file, compressed: false, originalBytes, outputBytes: file.size };
@@ -90,16 +93,23 @@ export async function compressFile(
   return { file: outFile, compressed: true, originalBytes, outputBytes: outFile.size };
 }
 
-async function loadImageBitmap(file: File): Promise<ImageBitmap> {
+type ScalableImageSource = ImageBitmap | HTMLImageElement;
+
+function getImageDimensions(source: ScalableImageSource): { width: number; height: number } {
+  if ('naturalWidth' in source) {
+    return { width: source.naturalWidth || source.width, height: source.naturalHeight || source.height };
+  }
+  return { width: source.width, height: source.height };
+}
+
+async function loadImageSource(file: File): Promise<ScalableImageSource> {
   if (typeof createImageBitmap === 'function') {
     return createImageBitmap(file);
   }
   // Fallback for environments without ImageBitmap support. createImageBitmap
   // is in every modern browser, but jsdom and a few embedded WebViews lack it.
   const dataUrl = await readAsDataUrl(file);
-  const img = await loadHtmlImage(dataUrl);
-  // Cast: HTMLImageElement matches the subset of ImageBitmap we use.
-  return img as unknown as ImageBitmap;
+  return loadHtmlImage(dataUrl);
 }
 
 function readAsDataUrl(file: File): Promise<string> {
@@ -127,7 +137,7 @@ function scaleDown(w: number, h: number, max: number): { width: number; height: 
 }
 
 function drawToBlob(
-  bitmap: ImageBitmap,
+  source: CanvasImageSource,
   width: number,
   height: number,
   quality: number
@@ -139,13 +149,7 @@ function drawToBlob(
   const ctx =
     (canvas as HTMLCanvasElement).getContext('2d') ?? (canvas as OffscreenCanvas).getContext('2d');
   if (!ctx) return Promise.reject(new Error('2D context unavailable'));
-  (ctx as CanvasRenderingContext2D).drawImage(
-    bitmap as unknown as CanvasImageSource,
-    0,
-    0,
-    width,
-    height
-  );
+  (ctx as CanvasRenderingContext2D).drawImage(source, 0, 0, width, height);
 
   if (canvas instanceof HTMLCanvasElement) {
     return new Promise<Blob>((resolve, reject) => {

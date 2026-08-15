@@ -159,8 +159,13 @@ const lockedExplanation = computed(() => {
   }
 });
 
-const form = ref({
-  program: '' as 'stepup_scholars' | 'dynamerge' | '',
+const form = ref<{
+  program: Application['program'] | '';
+  personalInfo: Partial<Application['personalInfo']>;
+  motivation: string;
+  experience: string;
+}>({
+  program: '',
   personalInfo: {
     firstName: '',
     lastName: '',
@@ -170,7 +175,7 @@ const form = ref({
   experience: '',
 });
 
-// Per-application autosave key. `apply.edit.{id}` keeps drafts scoped
+// Per-application autosave key. `apply.edit.${id}` keeps drafts scoped
 // per application — editing two drafts in two tabs doesn't cross-talk.
 // `skipRestore: true` because we need to load from Firestore first and
 // only consider restoring if the local draft is newer than the server
@@ -199,32 +204,30 @@ const loadApplication = async () => {
         motivation: app.motivation,
         experience: app.experience,
       };
-      maybePromptRestore(app.updatedAt);
+
+      // Check if a local draft exists and is newer than the Firestore
+      // document's updatedAt. If so, prompt the user before restoring
+      // so edits made elsewhere aren't silently discarded.
+      const draftAt = peekDraft();
+      if (draftAt) {
+        const serverUpdatedAt = app.updatedAt ? new Date(app.updatedAt).getTime() : 0;
+        if (draftAt.getTime() > serverUpdatedAt) {
+          pendingDraftAt.value = draftAt;
+          restorePromptVisible.value = true;
+        } else {
+          // Local draft is stale (server has newer edits) — discard it.
+          clearDraft();
+        }
+      }
+    } else {
+      error.value = 'Application not found';
     }
-  } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Failed to load application';
+  } catch (err) {
+    error.value = (err as Error).message || 'Failed to load application';
   } finally {
     loading.value = false;
   }
 };
-
-// Compare local-draft timestamp against the server's updatedAt and
-// only show the restore prompt when local is strictly newer. Equal
-// timestamps are treated as already-in-sync (the server copy IS the
-// last save) so we don't nag the user about no-op restores.
-function maybePromptRestore(serverUpdatedAt: Date | string | undefined) {
-  const draftAt = peekDraft();
-  if (!draftAt) return;
-  const serverAt = serverUpdatedAt ? new Date(serverUpdatedAt as string | Date) : null;
-  if (serverAt && draftAt.getTime() <= serverAt.getTime()) {
-    // Local draft is stale (or equal). Treat as no-op; clean it up so
-    // we don't keep prompting on every visit.
-    clearDraft();
-    return;
-  }
-  pendingDraftAt.value = draftAt;
-  restorePromptVisible.value = true;
-}
 
 function acceptLocalDraft() {
   restoreDraft();
@@ -239,10 +242,16 @@ function discardLocalDraft() {
 
 const saveDraft = async () => {
   if (application.value?.id) {
-    await DatabaseService.updateApplication(
-      application.value.id,
-      form.value as unknown as Partial<Application>
-    );
+    const payload: Partial<Application> = {
+      ...(form.value.program ? { program: form.value.program } : {}),
+      personalInfo: {
+        ...application.value.personalInfo,
+        ...form.value.personalInfo,
+      } as Application['personalInfo'],
+      motivation: form.value.motivation,
+      experience: form.value.experience,
+    };
+    await DatabaseService.updateApplication(application.value.id, payload);
     // Server is now authoritative — drop the local copy so the next
     // visit doesn't prompt to restore the same content we just saved.
     clearDraft();
@@ -252,11 +261,18 @@ const saveDraft = async () => {
 
 const handleSubmit = async () => {
   if (application.value?.id) {
-    await DatabaseService.updateApplication(application.value.id, {
-      ...form.value,
+    const payload: Partial<Application> = {
+      ...(form.value.program ? { program: form.value.program } : {}),
+      personalInfo: {
+        ...application.value.personalInfo,
+        ...form.value.personalInfo,
+      } as Application['personalInfo'],
+      motivation: form.value.motivation,
+      experience: form.value.experience,
       status: 'submitted',
       submittedAt: new Date(),
-    } as unknown as Partial<Application>);
+    };
+    await DatabaseService.updateApplication(application.value.id, payload);
     clearDraft();
     router.push('/applicant/applications');
   }

@@ -26,7 +26,7 @@ onMounted(async () => {
     renderer: 'svg',
     loop: props.loop,
     autoplay: props.autoplay,
-    animationData: animationModule.default as unknown as Record<string, unknown>,
+    animationData: animationModule.default,
     // Explicit renderer settings to prevent layout shift
     rendererSettings: {
       preserveAspectRatio: 'xMidYMid meet',
