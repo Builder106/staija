@@ -3,8 +3,8 @@ import { getAuth } from 'firebase/auth'
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 import { getFunctions } from 'firebase/functions'
-import { getAnalytics } from 'firebase/analytics'
-import { getPerformance } from 'firebase/performance'
+import { getAnalytics, type Analytics } from 'firebase/analytics'
+import { getPerformance, type FirebasePerformance } from 'firebase/performance'
 import {
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
@@ -48,7 +48,7 @@ let appCheck: AppCheck | null = null
 if (typeof window !== 'undefined') {
   if (isDebugAppCheckEnv) {
     const pinnedToken = import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN as string | undefined
-    ;(self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = pinnedToken ?? true
+    ;(self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = pinnedToken ?? true
   }
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY as string | undefined
   if (recaptchaSiteKey) {
@@ -121,8 +121,8 @@ export const publicStorage = publicBucket
 export const functions = getFunctions(app)
 
 // Initialize analytics and performance monitoring (only in production)
-let analytics: any = null
-let performance: any = null
+let analytics: Analytics | null = null
+let performance: FirebasePerformance | null = null
 
 if (typeof window !== 'undefined' && import.meta.env.PROD) {
   analytics = getAnalytics(app)

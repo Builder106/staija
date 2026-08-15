@@ -34,7 +34,7 @@ import { addDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore
 import { AuthService } from '../../services/firebase'
 import { db } from '../../config/firebase'
 
-type Story = { id?: string; title: string; content: string; author: string; createdAt?: any }
+type Story = { id?: string; title: string; content: string; author: string; createdAt?: Date | { toDate?: () => Date } | string | number | null }
 
 const stories = ref<Story[]>([])
 const startNew = ref(false)

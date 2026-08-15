@@ -22,7 +22,16 @@ export const TheClimax: React.FC = () => {
 
   const outOp = interpolate(frame, [135, 150], [1, 0], { extrapolateRight: "clamp" });
 
-  const CircularProgress = ({ progress, label, scale, color, x, y }: any) => (
+  interface CircularProgressProps {
+    progress: number;
+    label: string;
+    scale: number;
+    color: string;
+    x: number;
+    y: number;
+  }
+
+  const CircularProgress = ({ progress, label, scale, color, x, y }: CircularProgressProps) => (
     <div className="absolute flex flex-col items-center" style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}>
       <div className="relative w-40 h-40">
         <svg className="w-40 h-40 transform -rotate-90">

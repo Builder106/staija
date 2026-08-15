@@ -192,8 +192,8 @@ const loadApplication = async () => {
       }
       maybePromptRestore(app.updatedAt)
     }
-  } catch (err: any) {
-    error.value = err.message
+  } catch (err: unknown) {
+    error.value = err instanceof Error ? err.message : 'Failed to load application'
   } finally {
     loading.value = false
   }

@@ -175,28 +175,28 @@ describe('Status.vue — reference status badges', () => {
 
   it('received reference shows "Letter received"', async () => {
     const wrapper = await mountWithApp({
-      references: [{ name: 'Dr. Smith', email: 'smith@uni.edu', institution: 'MIT', relationship: 'Advisor', status: 'received' } as any],
+      references: [{ name: 'Dr. Smith', email: 'smith@uni.edu', institution: 'MIT', relationship: 'Advisor', status: 'received' }],
     })
     expect(wrapper.text()).toContain('Letter received')
   })
 
   it('invited reference shows "Invite sent | awaiting"', async () => {
     const wrapper = await mountWithApp({
-      references: [{ name: 'Prof. Lee', email: 'lee@uni.edu', institution: 'Yale', relationship: 'Mentor', status: 'invited' } as any],
+      references: [{ name: 'Prof. Lee', email: 'lee@uni.edu', institution: 'Yale', relationship: 'Mentor', status: 'invited' }],
     })
     expect(wrapper.text()).toContain('Invite sent | awaiting')
   })
 
   it('pending reference shows "Not yet invited"', async () => {
     const wrapper = await mountWithApp({
-      references: [{ name: 'Ms. Jones', email: 'jones@co.org', institution: '', relationship: 'Manager', status: 'pending' } as any],
+      references: [{ name: 'Ms. Jones', email: 'jones@co.org', institution: '', relationship: 'Manager', status: 'pending' }],
     })
     expect(wrapper.text()).toContain('Not yet invited')
   })
 
   it('reference without explicit status defaults to "Not yet invited"', async () => {
     const wrapper = await mountWithApp({
-      references: [{ name: 'A. Person', email: 'a@b.com', institution: '', relationship: '' } as any],
+      references: [{ name: 'A. Person', email: 'a@b.com', institution: '', relationship: '' }],
     })
     expect(wrapper.text()).toContain('Not yet invited')
   })

@@ -179,6 +179,7 @@ export interface Application {
     email: string
     institution: string
     relationship: string
+    status?: 'invited' | 'pending' | 'received'
   }[]
   /**
    * The applicant's response to the offered spot. Set by the

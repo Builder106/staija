@@ -12,7 +12,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         parser: tseslint.parser,
-        ecmaVersion: 'latest',
+        ecmaVersion: 'esnext',
         sourceType: 'module',
         ecmaFeatures: { jsx: true },
         extraFileExtensions: ['.vue'],

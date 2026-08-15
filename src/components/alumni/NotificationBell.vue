@@ -50,7 +50,7 @@ const unreadCount = ref(0)
 const isOpen = ref(false)
 const loading = ref(false)
 const container = ref<HTMLElement | null>(null)
-let pollInterval: any
+let pollInterval: ReturnType<typeof setInterval> | number | undefined
 
 const loadNotifications = async () => {
   const user = AuthService.getCurrentUser()
@@ -94,16 +94,16 @@ const handleNotificationClick = async (n: AppNotification) => {
     // For now, reload to refresh state if on related page
   }
   
-  if (n.data?.url) {
+  if (typeof n.data?.url === 'string') {
     router.push(n.data.url)
   }
   
   isOpen.value = false
 }
 
-const formatDate = (date: any) => {
+const formatDate = (date: Date | { toDate?: () => Date } | string | number | null | undefined) => {
   if (!date) return ''
-  const d = date.toDate ? date.toDate() : new Date(date)
+  const d = typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function' ? date.toDate() : new Date(date as string | number | Date)
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' }).format(d)
 }
 

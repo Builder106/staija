@@ -19,7 +19,7 @@ export interface AppNotification {
   type: 'connection_request' | 'connection_accepted' | 'event_update' | 'general'
   title: string
   message: string
-  data?: Record<string, any>
+  data?: Record<string, unknown>
   read: boolean
   createdAt: Date | Timestamp
 }

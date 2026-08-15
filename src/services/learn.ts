@@ -159,8 +159,7 @@ export class CohortService {
   }
 
   static async updateCohort(cohortId: string, updates: Partial<Cohort>): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await updateDoc(doc(db, 'cohorts', cohortId), updates as any)
+    await updateDoc(doc(db, 'cohorts', cohortId), updates as { [x: string]: unknown })
   }
 
   static async deleteCohort(cohortId: string): Promise<void> {
