@@ -9,41 +9,41 @@
  * components share one subscription.
  */
 
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-const QUERY = '(prefers-reduced-motion: reduce)'
+const QUERY = '(prefers-reduced-motion: reduce)';
 
-const prefers = ref(detectInitial())
-let mediaQuery: MediaQueryList | null = null
-let listenerCount = 0
+const prefers = ref(detectInitial());
+let mediaQuery: MediaQueryList | null = null;
+let listenerCount = 0;
 
 function detectInitial(): boolean {
-  if (typeof window === 'undefined' || !window.matchMedia) return false
-  return window.matchMedia(QUERY).matches
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  return window.matchMedia(QUERY).matches;
 }
 
 function onChange(e: MediaQueryListEvent) {
-  prefers.value = e.matches
+  prefers.value = e.matches;
 }
 
 export function useReducedMotion() {
   onMounted(() => {
-    listenerCount++
+    listenerCount++;
     if (listenerCount === 1 && typeof window !== 'undefined' && window.matchMedia) {
-      mediaQuery = window.matchMedia(QUERY)
-      mediaQuery.addEventListener('change', onChange)
+      mediaQuery = window.matchMedia(QUERY);
+      mediaQuery.addEventListener('change', onChange);
       // Re-sync in case the OS preference changed between module load and mount.
-      prefers.value = mediaQuery.matches
+      prefers.value = mediaQuery.matches;
     }
-  })
+  });
 
   onBeforeUnmount(() => {
-    listenerCount = Math.max(0, listenerCount - 1)
+    listenerCount = Math.max(0, listenerCount - 1);
     if (listenerCount === 0 && mediaQuery) {
-      mediaQuery.removeEventListener('change', onChange)
-      mediaQuery = null
+      mediaQuery.removeEventListener('change', onChange);
+      mediaQuery = null;
     }
-  })
+  });
 
-  return prefers
+  return prefers;
 }

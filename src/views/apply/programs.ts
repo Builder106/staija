@@ -16,25 +16,35 @@
  * enforced both client-side (UI) and server-side (Cloud Function).
  */
 
-import { WEST_AFRICAN_COUNTRIES, REGIONS_BY_COUNTRY, REGION_LABEL_BY_COUNTRY } from './regions'
+import { REGIONS_BY_COUNTRY, REGION_LABEL_BY_COUNTRY, WEST_AFRICAN_COUNTRIES } from './regions';
 
-export type FieldType = 'text' | 'email' | 'tel' | 'date' | 'url' | 'textarea' | 'select' | 'checkbox' | 'tags' | 'number'
+export type FieldType =
+  | 'text'
+  | 'email'
+  | 'tel'
+  | 'date'
+  | 'url'
+  | 'textarea'
+  | 'select'
+  | 'checkbox'
+  | 'tags'
+  | 'number';
 
 export interface FieldDef {
-  name: string
-  label: string
-  type: FieldType
-  required?: boolean
-  placeholder?: string
-  helpText?: string
-  options?: string[] // for select
-  rows?: number // for textarea
-  pattern?: string // regex for text/email
+  name: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  placeholder?: string;
+  helpText?: string;
+  options?: string[]; // for select
+  rows?: number; // for textarea
+  pattern?: string; // regex for text/email
   /** Min / max for tags type — number of tags allowed. */
-  minTags?: number
-  maxTags?: number
+  minTags?: number;
+  maxTags?: number;
   /** Minimum word count for textarea fields. Enforced on Continue. */
-  minWords?: number
+  minWords?: number;
   /**
    * Render an in-browser audio recorder beside the field — fully
    * optional from the applicant's perspective. Confident speakers and
@@ -42,7 +52,7 @@ export interface FieldDef {
    * Uploaded as a separate file at submit time; the written field is
    * still the canonical answer.
    */
-  audioOptional?: { maxSeconds: number; prompt?: string }
+  audioOptional?: { maxSeconds: number; prompt?: string };
   /**
    * Dynamic select: options come from `map[fields[dependsOn]]` at
    * render time instead of a static `options` list. Used today by the
@@ -51,35 +61,39 @@ export interface FieldDef {
    * dynamic — see `labelByDependent` — so the label reads correctly
    * for whichever country is selected.
    */
-  optionsBy?: { dependsOn: string; map: Record<string, string[]>; labelByDependent?: Record<string, string> }
+  optionsBy?: {
+    dependsOn: string;
+    map: Record<string, string[]>;
+    labelByDependent?: Record<string, string>;
+  };
 }
 
 export interface StepDef {
-  id: string
+  id: string;
   /** Short label for the step indicator chips at the top of the wizard. */
-  label: string
+  label: string;
   /**
    * Sentence-style headline shown in the step card itself. If absent we
    * fall back to `label`, but most steps should set this — applicants
    * read "Tell us who you are." as warmer than "Personal".
    */
-  headline?: string
-  description?: string
-  fields: FieldDef[]
+  headline?: string;
+  description?: string;
+  fields: FieldDef[];
 }
 
 export interface ProgramSchema {
-  slug: 'stepup-scholars' | 'dynamerge'
-  name: string
-  ageRange: string
-  scope: string
+  slug: 'stepup-scholars' | 'dynamerge';
+  name: string;
+  ageRange: string;
+  scope: string;
   /** Used in confirmation emails + receipts. */
-  programKey: 'stepup_scholars' | 'dynamerge'
+  programKey: 'stepup_scholars' | 'dynamerge';
   /** Eligibility checkboxes that gate "Continue". */
-  eligibility: { id: string; label: string; required: boolean }[]
-  steps: StepDef[]
+  eligibility: { id: string; label: string; required: boolean }[];
+  steps: StepDef[];
   /** How many references the program asks for. */
-  referenceCount: { min: number; max: number }
+  referenceCount: { min: number; max: number };
 }
 
 const personalInfoStep = (extras: FieldDef[] = []): StepDef => ({
@@ -90,7 +104,13 @@ const personalInfoStep = (extras: FieldDef[] = []): StepDef => ({
   fields: [
     { name: 'firstName', label: 'First name', type: 'text', required: true },
     { name: 'lastName', label: 'Last name', type: 'text', required: true },
-    { name: 'email', label: 'Email', type: 'email', required: true, helpText: 'We use this for application updates.' },
+    {
+      name: 'email',
+      label: 'Email',
+      type: 'email',
+      required: true,
+      helpText: 'We use this for application updates.',
+    },
     { name: 'phone', label: 'Phone', type: 'tel', required: true, placeholder: '+234…' },
     { name: 'dateOfBirth', label: 'Date of birth', type: 'date', required: true },
     {
@@ -117,7 +137,7 @@ const personalInfoStep = (extras: FieldDef[] = []): StepDef => ({
     },
     ...extras,
   ],
-})
+});
 
 const academicInfoStep: StepDef = {
   id: 'academic',
@@ -125,14 +145,37 @@ const academicInfoStep: StepDef = {
   headline: "Where you're studying.",
   description: 'School, level, and the subjects on your radar.',
   fields: [
-    { name: 'currentInstitution', label: 'Current school / institution', type: 'text', required: true },
-    { name: 'currentLevel', label: 'Year / level', type: 'text', required: true, placeholder: 'SS3, gap year, undergrad year 1, etc.' },
+    {
+      name: 'currentInstitution',
+      label: 'Current school / institution',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'currentLevel',
+      label: 'Year / level',
+      type: 'text',
+      required: true,
+      placeholder: 'SS3, gap year, undergrad year 1, etc.',
+    },
     { name: 'major', label: 'Major / area of focus', type: 'text', required: false },
-    { name: 'gpa', label: 'GPA / class', type: 'text', required: false, helpText: 'Use whatever scale your school uses.' },
+    {
+      name: 'gpa',
+      label: 'GPA / class',
+      type: 'text',
+      required: false,
+      helpText: 'Use whatever scale your school uses.',
+    },
     { name: 'graduationYear', label: 'Expected graduation year', type: 'number', required: false },
-    { name: 'relevantCourses', label: 'Relevant courses', type: 'tags', helpText: 'Comma-separated. Up to 8.', maxTags: 8 },
+    {
+      name: 'relevantCourses',
+      label: 'Relevant courses',
+      type: 'tags',
+      helpText: 'Comma-separated. Up to 8.',
+      maxTags: 8,
+    },
   ],
-}
+};
 
 const motivationStep = (researchHelp: string): StepDef => ({
   id: 'motivation',
@@ -160,7 +203,7 @@ const motivationStep = (researchHelp: string): StepDef => ({
       audioOptional: {
         maxSeconds: 90,
         prompt:
-          "Prefer to talk it out? Record a 90-second answer to the same question. The written response above is still required — this just gives us another way to hear you.",
+          'Prefer to talk it out? Record a 90-second answer to the same question. The written response above is still required — this just gives us another way to hear you.',
       },
     },
     {
@@ -169,10 +212,11 @@ const motivationStep = (researchHelp: string): StepDef => ({
       type: 'textarea',
       required: true,
       rows: 5,
-      helpText: 'Projects, classes, science fairs, hackathons — anything that shows you can do the work.',
+      helpText:
+        'Projects, classes, science fairs, hackathons — anything that shows you can do the work.',
     },
   ],
-})
+});
 
 export const PROGRAMS: Record<string, ProgramSchema> = {
   'stepup-scholars': {
@@ -184,7 +228,11 @@ export const PROGRAMS: Record<string, ProgramSchema> = {
     eligibility: [
       { id: 'age', label: 'I am between 15 and 19 years old.', required: true },
       { id: 'nigeria', label: 'I live in Nigeria and can attend in person.', required: true },
-      { id: 'school', label: 'I am currently enrolled in secondary school or on a gap year.', required: true },
+      {
+        id: 'school',
+        label: 'I am currently enrolled in secondary school or on a gap year.',
+        required: true,
+      },
       { id: 'commit', label: 'I can commit ~10 hours per week for 6 months.', required: true },
     ],
     steps: [
@@ -193,12 +241,14 @@ export const PROGRAMS: Record<string, ProgramSchema> = {
       // Nigeria-specific state extra anymore.
       personalInfoStep(),
       academicInfoStep,
-      motivationStep('What scientific questions excite you? E.g. "soil microbiomes", "low-cost diagnostics".'),
+      motivationStep(
+        'What scientific questions excite you? E.g. "soil microbiomes", "low-cost diagnostics".'
+      ),
     ],
     referenceCount: { min: 2, max: 3 },
   },
 
-  'dynamerge': {
+  dynamerge: {
     slug: 'dynamerge',
     name: 'Dynamerge',
     ageRange: 'Ages 15–20',
@@ -207,7 +257,11 @@ export const PROGRAMS: Record<string, ProgramSchema> = {
     eligibility: [
       { id: 'age', label: 'I am between 15 and 20 years old.', required: true },
       { id: 'african', label: 'I am a resident of an African country.', required: true },
-      { id: 'internet', label: 'I have reliable internet access (data stipends available based on need).', required: false },
+      {
+        id: 'internet',
+        label: 'I have reliable internet access (data stipends available based on need).',
+        required: false,
+      },
       { id: 'commit', label: 'I can commit ~15 hours per week for 4 weeks.', required: true },
     ],
     steps: [
@@ -249,12 +303,14 @@ export const PROGRAMS: Record<string, ProgramSchema> = {
         },
       ]),
       academicInfoStep,
-      motivationStep('Pick technical areas you want to dive into. E.g. "machine learning", "biotech", "clean energy".'),
+      motivationStep(
+        'Pick technical areas you want to dive into. E.g. "machine learning", "biotech", "clean energy".'
+      ),
     ],
     referenceCount: { min: 1, max: 2 },
   },
-}
+};
 
 export function getProgram(slug: string): ProgramSchema | null {
-  return PROGRAMS[slug] ?? null
+  return PROGRAMS[slug] ?? null;
 }

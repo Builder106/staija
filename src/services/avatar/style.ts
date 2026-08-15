@@ -17,7 +17,7 @@
  *   const svgFragment = pickPortrait(user.uid)
  */
 
-import { PORTRAITS } from './parts'
+import { PORTRAITS } from './parts';
 
 /**
  * djb2 string hash — fast, deterministic, good distribution for
@@ -26,11 +26,11 @@ import { PORTRAITS } from './parts'
  * Returns a 32-bit unsigned integer.
  */
 function djb2(str: string): number {
-  let hash = 5381
+  let hash = 5381;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0;
   }
-  return hash
+  return hash;
 }
 
 /**
@@ -43,6 +43,6 @@ function djb2(str: string): number {
  * SVG envelope, just without illustration content.
  */
 export function pickPortrait(seed: string): string {
-  if (PORTRAITS.length === 0) return ''
-  return PORTRAITS[djb2(seed) % PORTRAITS.length]
+  if (PORTRAITS.length === 0) return '';
+  return PORTRAITS[djb2(seed) % PORTRAITS.length];
 }

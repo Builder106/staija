@@ -23,44 +23,44 @@
  *     reload twice for the same target SHA in the same tab.
  */
 
-const BUILD_ID = __BUILD_ID__
-const VERSION_URL = '/version.txt'
-const RELOAD_MARKER_KEY = 'staija.versionReloadedTo'
+const BUILD_ID = __BUILD_ID__;
+const VERSION_URL = '/version.txt';
+const RELOAD_MARKER_KEY = 'staija.versionReloadedTo';
 
-let checking = false
+let checking = false;
 
 async function fetchCurrentBuildId(): Promise<string | null> {
   try {
     const res = await fetch(`${VERSION_URL}?t=${Date.now()}`, {
       cache: 'no-store',
       credentials: 'omit',
-    })
-    if (!res.ok) return null
-    const text = (await res.text()).trim()
-    return text || null
+    });
+    if (!res.ok) return null;
+    const text = (await res.text()).trim();
+    return text || null;
   } catch {
-    return null
+    return null;
   }
 }
 
 async function checkForUpdate(): Promise<void> {
-  if (checking) return
-  checking = true
+  if (checking) return;
+  checking = true;
   try {
-    const serverId = await fetchCurrentBuildId()
-    if (!serverId || serverId === BUILD_ID) return
+    const serverId = await fetchCurrentBuildId();
+    if (!serverId || serverId === BUILD_ID) return;
 
     // We have a new deploy. Don't loop: if we've already reloaded to
     // this SHA in this tab, the bundle the browser actually loaded is
     // somehow stale anyway (CDN propagation lag, intermediate proxy
     // serving cached HTML, etc.). Wait it out instead of thrashing.
-    const reloadedTo = sessionStorage.getItem(RELOAD_MARKER_KEY)
-    if (reloadedTo === serverId) return
+    const reloadedTo = sessionStorage.getItem(RELOAD_MARKER_KEY);
+    if (reloadedTo === serverId) return;
 
-    sessionStorage.setItem(RELOAD_MARKER_KEY, serverId)
-    window.location.reload()
+    sessionStorage.setItem(RELOAD_MARKER_KEY, serverId);
+    window.location.reload();
   } finally {
-    checking = false
+    checking = false;
   }
 }
 
@@ -73,8 +73,8 @@ export function startVersionWatcher(): void {
   // /version.txt from `vite dev` returns 404, the check no-ops, but
   // the focus listener still fires on every tab switch which is
   // wasteful. Bail explicitly.
-  if (BUILD_ID.startsWith('dev-')) return
-  if (typeof window === 'undefined') return
+  if (BUILD_ID.startsWith('dev-')) return;
+  if (typeof window === 'undefined') return;
 
   // Skip on hostnames gated by Vercel SSO Deployment Protection. The
   // initial HTML load passes because the browser carries the SSO
@@ -84,22 +84,22 @@ export function startVersionWatcher(): void {
   // as the tab is open. The watcher serves no purpose on staging /
   // preview deploys anyway (those are reloaded manually during smoke
   // tests, not by long-lived end-user tabs), so just bail.
-  const host = window.location.hostname
-  if (host === 'staging.staija.org' || host.endsWith('.vercel.app')) return
+  const host = window.location.hostname;
+  if (host === 'staging.staija.org' || host.endsWith('.vercel.app')) return;
 
   // Most common trigger: user returns to the tab after some time
   // away. visibilitychange fires for both "tab activated" and "tab
   // deactivated"; we only care about the activation side.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      void checkForUpdate()
+      void checkForUpdate();
     }
-  })
+  });
 
   // pageshow handles the case where the browser restores the page
   // from the back-forward cache — visibilitychange doesn't always
   // fire for bfcache restores.
-  window.addEventListener('pageshow', (e) => {
-    if (e.persisted) void checkForUpdate()
-  })
+  window.addEventListener('pageshow', e => {
+    if (e.persisted) void checkForUpdate();
+  });
 }

@@ -12,76 +12,76 @@
  * was looking at, since they're the best judge of who in their
  * network it suits.
  */
-import { computed, ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import UiCard from '../ui/UiCard.vue'
-import Heading from '../ui/Heading.vue'
-import Body from '../ui/Body.vue'
-import { useAuth } from '../../composables/useAuth'
-import { getOrMintMyReferralId } from '../../services/referrals'
+import { Icon } from '@iconify/vue';
+import { computed, ref } from 'vue';
+import { useAuth } from '../../composables/useAuth';
+import { getOrMintMyReferralId } from '../../services/referrals';
+import Body from '../ui/Body.vue';
+import Heading from '../ui/Heading.vue';
+import UiCard from '../ui/UiCard.vue';
 
 const props = defineProps<{
-  from: string
-}>()
+  from: string;
+}>();
 
-const { user } = useAuth()
+const { user } = useAuth();
 
 // Stable referral ID for this visitor. For signed-in users it's
 // `u-<uid>` (so a future leaderboard can credit them by name). For
 // anonymous visitors it's `a-<short-random>`, persisted in
 // localStorage so a follow-up visit keeps the same identity.
-const myRefId = computed(() => getOrMintMyReferralId(user.value?.uid ?? null))
+const myRefId = computed(() => getOrMintMyReferralId(user.value?.uid ?? null));
 
 const PROGRAM_LABELS: Record<string, string> = {
   'stepup-scholars': 'StepUp Scholars',
   stepup: 'StepUp Scholars',
   dynamerge: 'Dynamerge',
-}
+};
 
 // Build the share URL from the current origin so the link works in
 // preview deployments and local dev without hardcoding staija.org.
 // `?ref=<myRefId>` is the per-user attribution marker — distinct per
 // sharer so a future leaderboard can credit signups back to them.
 const shareUrl = computed(() => {
-  const ref = myRefId.value || 'stay-connected'
-  const origin = typeof window === 'undefined' ? 'https://staija.org' : window.location.origin
+  const ref = myRefId.value || 'stay-connected';
+  const origin = typeof window === 'undefined' ? 'https://staija.org' : window.location.origin;
   if (props.from === 'stepup-scholars' || props.from === 'stepup') {
-    return `${origin}/programs/stepup-scholars?ref=${ref}`
+    return `${origin}/programs/stepup-scholars?ref=${ref}`;
   }
   if (props.from === 'dynamerge') {
-    return `${origin}/programs/dynamerge?ref=${ref}`
+    return `${origin}/programs/dynamerge?ref=${ref}`;
   }
-  return `${origin}/?ref=${ref}`
-})
+  return `${origin}/?ref=${ref}`;
+});
 
 const shareMessage = computed(() => {
-  const label = PROGRAM_LABELS[props.from]
+  const label = PROGRAM_LABELS[props.from];
   if (label) {
-    return `STAIJA runs ${label} — a STEM research program for African high-school and gap-year students. Worth a look:`
+    return `STAIJA runs ${label} — a STEM research program for African high-school and gap-year students. Worth a look:`;
   }
-  return `STAIJA runs STEM research programs for African high-school and gap-year students. Worth a look:`
-})
+  return `STAIJA runs STEM research programs for African high-school and gap-year students. Worth a look:`;
+});
 
-const fullShareText = computed(() => `${shareMessage.value} ${shareUrl.value}`)
+const fullShareText = computed(() => `${shareMessage.value} ${shareUrl.value}`);
 
 const whatsappHref = computed(
-  () => `https://wa.me/?text=${encodeURIComponent(fullShareText.value)}`,
-)
+  () => `https://wa.me/?text=${encodeURIComponent(fullShareText.value)}`
+);
 const emailHref = computed(() => {
-  const subject = encodeURIComponent('Thought of you — STAIJA')
-  const body = encodeURIComponent(`${shareMessage.value}\n\n${shareUrl.value}`)
-  return `mailto:?subject=${subject}&body=${body}`
-})
+  const subject = encodeURIComponent('Thought of you — STAIJA');
+  const body = encodeURIComponent(`${shareMessage.value}\n\n${shareUrl.value}`);
+  return `mailto:?subject=${subject}&body=${body}`;
+});
 const threadsHref = computed(
-  () => `https://threads.net/intent/post?text=${encodeURIComponent(fullShareText.value)}`,
-)
+  () => `https://threads.net/intent/post?text=${encodeURIComponent(fullShareText.value)}`
+);
 
-const copied = ref(false)
+const copied = ref(false);
 async function copyLink() {
   try {
-    await navigator.clipboard.writeText(shareUrl.value)
-    copied.value = true
-    setTimeout(() => (copied.value = false), 2000)
+    await navigator.clipboard.writeText(shareUrl.value);
+    copied.value = true;
+    setTimeout(() => (copied.value = false), 2000);
   } catch {
     // Clipboard blocked (older browsers, insecure context). Silent — the
     // raw link is already on screen in the read-only input.
@@ -96,8 +96,8 @@ async function copyLink() {
       <Heading :level="2" class="!text-xl !m-0">Know someone who'd fit?</Heading>
     </div>
     <Body class="text-ink/65 text-sm mb-6">
-      The fastest way to grow STAIJA is the people you already know. Send the link to a
-      cousin, classmate, or whoever you thought of when you read the eligibility list.
+      The fastest way to grow STAIJA is the people you already know. Send the link to a cousin,
+      classmate, or whoever you thought of when you read the eligibility list.
     </Body>
 
     <div class="flex flex-col sm:flex-row gap-2 mb-5">

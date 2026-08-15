@@ -10,71 +10,71 @@
  * LessonEdit, AssignmentEdit, ContentHome, etc.) didn't need changes.
  */
 
-import { httpsCallable } from 'firebase/functions'
-import { ref as storageRef, uploadBytes } from 'firebase/storage'
-import { functions, storage, auth } from '../config/firebase.ts'
-import { getAppConfig } from '../utils/env.ts'
-import type { Document } from '@contentful/rich-text-types'
+import type { Document } from '@contentful/rich-text-types';
+import { httpsCallable } from 'firebase/functions';
+import { ref as storageRef, uploadBytes } from 'firebase/storage';
+import { auth, functions, storage } from '../config/firebase.ts';
+import { getAppConfig } from '../utils/env.ts';
 
 // ---------- Types ----------
 
-export type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec' | 'quiz'
+export type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec' | 'quiz';
 
 export interface CourseFields {
-  slug: string
-  title: string
-  program: 'stepup_scholars' | 'dynamerge'
-  summary?: string
-  modules?: string[] // Array of module entry IDs
-  estimatedHours?: number
-  track?: string
-  published?: boolean
-  version: string
-  coverImage?: string // Asset entry ID
+  slug: string;
+  title: string;
+  program: 'stepup_scholars' | 'dynamerge';
+  summary?: string;
+  modules?: string[]; // Array of module entry IDs
+  estimatedHours?: number;
+  track?: string;
+  published?: boolean;
+  version: string;
+  coverImage?: string; // Asset entry ID
 }
 
 export interface ModuleFields {
-  slug: string
-  title: string
-  summary?: string
-  lessons?: string[]
-  assignments?: string[]
-  unlockRule?: 'sequential' | 'open'
+  slug: string;
+  title: string;
+  summary?: string;
+  lessons?: string[];
+  assignments?: string[];
+  unlockRule?: 'sequential' | 'open';
 }
 
 export interface LessonFields {
-  slug: string
-  title: string
-  body?: Document // Contentful RichText document
-  videoUrl?: string
-  attachments?: string[] // Asset entry IDs
-  estimatedMinutes?: number
-  completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed'
-  quiz?: string // Quiz entry ID
+  slug: string;
+  title: string;
+  body?: Document; // Contentful RichText document
+  videoUrl?: string;
+  attachments?: string[]; // Asset entry IDs
+  estimatedMinutes?: number;
+  completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed';
+  quiz?: string; // Quiz entry ID
 }
 
 export interface QuizFields {
-  slug: string
-  title: string
-  summary?: string
-  passThresholdPercent?: number
+  slug: string;
+  title: string;
+  summary?: string;
+  passThresholdPercent?: number;
   questions: {
-    id: string
-    questionText: string
-    options: { id: string; text: string }[]
-    correctOptionId: string
-    explanation?: string
-  }[]
+    id: string;
+    questionText: string;
+    options: { id: string; text: string }[];
+    correctOptionId: string;
+    explanation?: string;
+  }[];
 }
 
 export interface AssignmentSpecFields {
-  slug: string
-  title: string
-  instructions?: Document
-  submissionType: 'text' | 'file' | 'link' | 'text_or_file'
-  maxFileSizeMb?: number
-  acceptedFileTypes?: string[]
-  dueOffsetDays?: number
+  slug: string;
+  title: string;
+  instructions?: Document;
+  submissionType: 'text' | 'file' | 'link' | 'text_or_file';
+  maxFileSizeMb?: number;
+  acceptedFileTypes?: string[];
+  dueOffsetDays?: number;
 }
 
 export type LmsFields =
@@ -82,17 +82,17 @@ export type LmsFields =
   | { type: 'module'; fields: ModuleFields }
   | { type: 'lesson'; fields: LessonFields }
   | { type: 'assignmentSpec'; fields: AssignmentSpecFields }
-  | { type: 'quiz'; fields: QuizFields }
+  | { type: 'quiz'; fields: QuizFields };
 
 // Lightweight summary used by list views.
 export interface EntrySummary {
-  id: string
-  contentType: LmsContentType
-  fields: Record<string, unknown>
-  publishedAt: string | null
-  updatedAt: string
-  isPublished: boolean
-  isDraft: boolean
+  id: string;
+  contentType: LmsContentType;
+  fields: Record<string, unknown>;
+  publishedAt: string | null;
+  updatedAt: string;
+  isPublished: boolean;
+  isDraft: boolean;
 }
 
 // ---------- Callable proxy ----------
@@ -103,13 +103,13 @@ export interface EntrySummary {
 // Contentful Management API. The token never reaches the browser.
 
 interface AdminRequestList {
-  action: 'list'
-  type: LmsContentType
-  limit?: number
-  skip?: number
-  query?: string
-  ids?: string[]
-  fieldEquals?: { name: string; value: string }
+  action: 'list';
+  type: LmsContentType;
+  limit?: number;
+  skip?: number;
+  query?: string;
+  ids?: string[];
+  fieldEquals?: { name: string; value: string };
 }
 type AdminRequest =
   | AdminRequestList
@@ -118,24 +118,24 @@ type AdminRequest =
   | { action: 'update'; id: string; payload: LmsFields }
   | { action: 'publish'; id: string }
   | { action: 'unpublish'; id: string }
-  | { action: 'delete'; id: string }
+  | { action: 'delete'; id: string };
 
 async function callAdmin<T>(request: AdminRequest): Promise<T> {
-  const cfg = getAppConfig()
-  const envId = cfg.contentful?.environmentId
+  const cfg = getAppConfig();
+  const envId = cfg.contentful?.environmentId;
   const fn = httpsCallable<{ env?: string; request: AdminRequest }, T>(
     functions,
-    'lmsContentAdmin',
-  )
-  const result = await fn({ env: envId, request })
-  return result.data
+    'lmsContentAdmin'
+  );
+  const result = await fn({ env: envId, request });
+  return result.data;
 }
 
 // ---------- CRUD ----------
 
 export async function listEntries(
   type: LmsContentType,
-  opts?: { limit?: number; skip?: number; query?: string },
+  opts?: { limit?: number; skip?: number; query?: string }
 ): Promise<EntrySummary[]> {
   return callAdmin<EntrySummary[]>({
     action: 'list',
@@ -143,31 +143,31 @@ export async function listEntries(
     limit: opts?.limit,
     skip: opts?.skip,
     query: opts?.query,
-  })
+  });
 }
 
 export async function getEntry(id: string): Promise<EntrySummary> {
-  return callAdmin<EntrySummary>({ action: 'get', id })
+  return callAdmin<EntrySummary>({ action: 'get', id });
 }
 
 export async function createEntry(payload: LmsFields): Promise<EntrySummary> {
-  return callAdmin<EntrySummary>({ action: 'create', payload })
+  return callAdmin<EntrySummary>({ action: 'create', payload });
 }
 
 export async function updateEntry(id: string, payload: LmsFields): Promise<EntrySummary> {
-  return callAdmin<EntrySummary>({ action: 'update', id, payload })
+  return callAdmin<EntrySummary>({ action: 'update', id, payload });
 }
 
 export async function publishEntry(id: string): Promise<EntrySummary> {
-  return callAdmin<EntrySummary>({ action: 'publish', id })
+  return callAdmin<EntrySummary>({ action: 'publish', id });
 }
 
 export async function unpublishEntry(id: string): Promise<EntrySummary> {
-  return callAdmin<EntrySummary>({ action: 'unpublish', id })
+  return callAdmin<EntrySummary>({ action: 'unpublish', id });
 }
 
 export async function deleteEntry(id: string): Promise<void> {
-  await callAdmin<{ ok: true }>({ action: 'delete', id })
+  await callAdmin<{ ok: true }>({ action: 'delete', id });
 }
 
 // ---------- Smart-form helpers (pure, no network) ----------
@@ -184,7 +184,7 @@ export function slugify(input: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/^-+|-+$/g, '');
 }
 
 /**
@@ -194,8 +194,8 @@ export function slugify(input: string): string {
  * from a title".
  */
 export function normalizeSlug(input: string | undefined | null): string {
-  if (!input) return ''
-  return slugify(input)
+  if (!input) return '';
+  return slugify(input);
 }
 
 /**
@@ -203,25 +203,34 @@ export function normalizeSlug(input: string | undefined | null): string {
  * LessonEdit to show a live "what we detected" hint, and by
  * LessonView to convert watch-page URLs into embed URLs.
  */
-export type VideoProvider = 'youtube' | 'vimeo' | 'other' | 'invalid'
+export type VideoProvider = 'youtube' | 'vimeo' | 'other' | 'invalid';
 export function detectVideoProvider(input: string | undefined | null): VideoProvider | null {
-  const raw = (input ?? '').trim()
-  if (!raw) return null
+  const raw = (input ?? '').trim();
+  if (!raw) return null;
   try {
-    const u = new URL(raw)
-    if (u.hostname.includes('youtube.com') || u.hostname === 'youtu.be') return 'youtube'
-    if (u.hostname.includes('vimeo.com')) return 'vimeo'
-    return 'other'
+    const u = new URL(raw);
+    if (u.hostname.includes('youtube.com') || u.hostname === 'youtu.be') return 'youtube';
+    if (u.hostname.includes('vimeo.com')) return 'vimeo';
+    return 'other';
   } catch {
-    return 'invalid'
+    return 'invalid';
   }
 }
 
 const TERM_BY_MONTH = [
-  'spring','spring','spring','spring',
-  'summer','summer','summer','summer',
-  'fall','fall','fall','fall',
-] as const
+  'spring',
+  'spring',
+  'spring',
+  'spring',
+  'summer',
+  'summer',
+  'summer',
+  'summer',
+  'fall',
+  'fall',
+  'fall',
+  'fall',
+] as const;
 
 /**
  * Best-guess "current term version" for a fresh course. Maps month
@@ -230,9 +239,9 @@ const TERM_BY_MONTH = [
  * field.
  */
 export function currentTermVersion(date: Date = new Date()): string {
-  const year = date.getFullYear()
-  const term = TERM_BY_MONTH[date.getMonth()]
-  return `${year}-${term}`
+  const year = date.getFullYear();
+  const term = TERM_BY_MONTH[date.getMonth()];
+  return `${year}-${term}`;
 }
 
 /**
@@ -242,33 +251,33 @@ export function currentTermVersion(date: Date = new Date()): string {
  * doesn't include both a year and a known term.
  */
 export function normalizeVersion(input: string): string {
-  const raw = input.trim()
-  if (!raw) return raw
-  const yearMatch = raw.match(/(\d{4})/)
-  const termMatch = raw.toLowerCase().match(/(spring|summer|fall|autumn|winter)/)
-  if (!yearMatch || !termMatch) return raw.toLowerCase()
-  const term = termMatch[1] === 'autumn' ? 'fall' : termMatch[1]
-  return `${yearMatch[1]}-${term}`
+  const raw = input.trim();
+  if (!raw) return raw;
+  const yearMatch = raw.match(/(\d{4})/);
+  const termMatch = raw.toLowerCase().match(/(spring|summer|fall|autumn|winter)/);
+  if (!yearMatch || !termMatch) return raw.toLowerCase();
+  const term = termMatch[1] === 'autumn' ? 'fall' : termMatch[1];
+  return `${yearMatch[1]}-${term}`;
 }
 
 /** Year-bump a version string for the duplicate flow: "2025-spring"
  * becomes "2026-spring". Falls back to the current term if the input
  * doesn't look like a "{year}-{term}" string. */
 function bumpVersion(v: string): string {
-  const m = v.match(/^(\d{4})-(.+)$/)
-  if (!m) return currentTermVersion()
-  const year = parseInt(m[1], 10)
-  if (Number.isNaN(year)) return currentTermVersion()
-  return `${year + 1}-${m[2]}`
+  const m = v.match(/^(\d{4})-(.+)$/);
+  if (!m) return currentTermVersion();
+  const year = parseInt(m[1], 10);
+  if (Number.isNaN(year)) return currentTermVersion();
+  return `${year + 1}-${m[2]}`;
 }
 
 // ---------- Derived reads ----------
 
 export interface ComputedHours {
-  minutes: number
-  hours: number
-  lessonCount: number
-  moduleCount: number
+  minutes: number;
+  hours: number;
+  lessonCount: number;
+  moduleCount: number;
 }
 
 /**
@@ -278,39 +287,39 @@ export interface ComputedHours {
  * shouldn't see "12.3333..." in the UI.
  */
 export async function computeCourseEstimatedHours(moduleIds: string[]): Promise<ComputedHours> {
-  if (!moduleIds.length) return { minutes: 0, hours: 0, lessonCount: 0, moduleCount: 0 }
+  if (!moduleIds.length) return { minutes: 0, hours: 0, lessonCount: 0, moduleCount: 0 };
   const modules = await callAdmin<EntrySummary[]>({
     action: 'list',
     type: 'module',
     ids: moduleIds,
     limit: 100,
-  })
-  const lessonIds = modules.flatMap((m) => {
-    const lessonsField = (m.fields as Record<string, unknown>).lessons
-    if (!Array.isArray(lessonsField)) return []
+  });
+  const lessonIds = modules.flatMap(m => {
+    const lessonsField = (m.fields as Record<string, unknown>).lessons;
+    if (!Array.isArray(lessonsField)) return [];
     return lessonsField
-      .map((l) => (l as { sys?: { id?: string } })?.sys?.id)
-      .filter((v): v is string => !!v)
-  })
+      .map(l => (l as { sys?: { id?: string } })?.sys?.id)
+      .filter((v): v is string => !!v);
+  });
   if (!lessonIds.length) {
-    return { minutes: 0, hours: 0, lessonCount: 0, moduleCount: modules.length }
+    return { minutes: 0, hours: 0, lessonCount: 0, moduleCount: modules.length };
   }
   const lessons = await callAdmin<EntrySummary[]>({
     action: 'list',
     type: 'lesson',
     ids: lessonIds,
     limit: 200,
-  })
+  });
   const minutes = lessons.reduce((sum, l) => {
-    const m = (l.fields as Record<string, unknown>).estimatedMinutes
-    return sum + (typeof m === 'number' ? m : 0)
-  }, 0)
+    const m = (l.fields as Record<string, unknown>).estimatedMinutes;
+    return sum + (typeof m === 'number' ? m : 0);
+  }, 0);
   return {
     minutes,
     hours: Math.round((minutes / 60) * 10) / 10,
     lessonCount: lessons.length,
     moduleCount: modules.length,
-  }
+  };
 }
 
 /**
@@ -319,20 +328,20 @@ export async function computeCourseEstimatedHours(moduleIds: string[]): Promise<
  * editors reuse existing tracks instead of inventing new ones.
  */
 export async function listTracksForProgram(
-  program: 'stepup_scholars' | 'dynamerge',
+  program: 'stepup_scholars' | 'dynamerge'
 ): Promise<string[]> {
   const courses = await callAdmin<EntrySummary[]>({
     action: 'list',
     type: 'course',
     fieldEquals: { name: 'program', value: program },
     limit: 200,
-  })
-  const set = new Set<string>()
+  });
+  const set = new Set<string>();
   for (const c of courses) {
-    const t = (c.fields as Record<string, unknown>).track
-    if (typeof t === 'string' && t.trim()) set.add(t.trim())
+    const t = (c.fields as Record<string, unknown>).track;
+    if (typeof t === 'string' && t.trim()) set.add(t.trim());
   }
-  return Array.from(set).sort()
+  return Array.from(set).sort();
 }
 
 /**
@@ -342,14 +351,14 @@ export async function listTracksForProgram(
  * `published` is forced false so duplicates always start as drafts.
  */
 export async function buildDuplicateCourseFields(sourceId: string): Promise<CourseFields> {
-  const source = await getEntry(sourceId)
-  const f = source.fields
-  const sourceSlug = typeof f.slug === 'string' ? f.slug : ''
-  const sourceVersion = typeof f.version === 'string' ? f.version : ''
+  const source = await getEntry(sourceId);
+  const f = source.fields;
+  const sourceSlug = typeof f.slug === 'string' ? f.slug : '';
+  const sourceVersion = typeof f.version === 'string' ? f.version : '';
   return {
     slug: sourceSlug ? normalizeSlug(`${sourceSlug}-copy`) : '',
     title: typeof f.title === 'string' ? f.title : '',
-    program: ((f.program as 'stepup_scholars' | 'dynamerge') ?? 'stepup_scholars'),
+    program: (f.program as 'stepup_scholars' | 'dynamerge') ?? 'stepup_scholars',
     summary: typeof f.summary === 'string' ? f.summary : '',
     modules: extractRefIds(f.modules),
     estimatedHours: typeof f.estimatedHours === 'number' ? f.estimatedHours : undefined,
@@ -357,17 +366,15 @@ export async function buildDuplicateCourseFields(sourceId: string): Promise<Cour
     published: false,
     version: bumpVersion(sourceVersion),
     coverImage: extractRefId(f.coverImage),
-  }
+  };
 }
 
 function extractRefIds(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value
-    .map((v) => (v as { sys?: { id?: string } })?.sys?.id)
-    .filter((v): v is string => !!v)
+  if (!Array.isArray(value)) return [];
+  return value.map(v => (v as { sys?: { id?: string } })?.sys?.id).filter((v): v is string => !!v);
 }
 function extractRefId(value: unknown): string | undefined {
-  return (value as { sys?: { id?: string } })?.sys?.id
+  return (value as { sys?: { id?: string } })?.sys?.id;
 }
 
 // ---------- Asset upload ----------
@@ -380,49 +387,49 @@ function extractRefId(value: unknown): string | undefined {
 // stage what.
 
 export interface UploadAssetResult {
-  id: string
-  url: string
-  fileName: string
-  contentType: string
+  id: string;
+  url: string;
+  fileName: string;
+  contentType: string;
 }
 
 interface AssetUploadInput {
-  storagePath: string
-  fileName: string
-  contentType: string
-  title?: string
-  env?: string
+  storagePath: string;
+  fileName: string;
+  contentType: string;
+  title?: string;
+  env?: string;
 }
 
 function safeFileName(name: string): string {
   // Match the convention used by application submissions — keep only
   // characters that are safe in URL path segments.
-  return name.replace(/[^A-Za-z0-9_.-]/g, '_')
+  return name.replace(/[^A-Za-z0-9_.-]/g, '_');
 }
 
 export async function uploadAsset(file: File, title?: string): Promise<UploadAssetResult> {
-  const user = auth.currentUser
+  const user = auth.currentUser;
   if (!user) {
-    throw new Error('Must be signed in to upload assets.')
+    throw new Error('Must be signed in to upload assets.');
   }
-  const cfg = getAppConfig()
-  const stagingPath = `cms/${user.uid}/${Date.now()}-${safeFileName(file.name)}`
+  const cfg = getAppConfig();
+  const stagingPath = `cms/${user.uid}/${Date.now()}-${safeFileName(file.name)}`;
 
   // Stage in Storage. Firebase Auth covers the upload; storage.rules
   // gates the path to staff/admin role + a size cap.
-  const ref = storageRef(storage, stagingPath)
+  const ref = storageRef(storage, stagingPath);
   await uploadBytes(ref, file, {
     contentType: file.type || 'application/octet-stream',
-  })
+  });
 
   // Ask the function to copy it into Contentful.
-  const call = httpsCallable<AssetUploadInput, UploadAssetResult>(functions, 'lmsAssetUpload')
+  const call = httpsCallable<AssetUploadInput, UploadAssetResult>(functions, 'lmsAssetUpload');
   const result = await call({
     storagePath: stagingPath,
     fileName: file.name,
     contentType: file.type || 'application/octet-stream',
     title,
     env: cfg.contentful?.environmentId,
-  })
-  return result.data
+  });
+  return result.data;
 }

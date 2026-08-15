@@ -24,8 +24,12 @@
           <span>Saved {{ pendingDraftAt?.toLocaleString() }} — newer than the server copy.</span>
         </div>
         <div class="restore-banner-actions">
-          <button type="button" class="restore-btn-secondary" @click="discardLocalDraft">Discard</button>
-          <button type="button" class="restore-btn-primary" @click="acceptLocalDraft">Restore</button>
+          <button type="button" class="restore-btn-secondary" @click="discardLocalDraft">
+            Discard
+          </button>
+          <button type="button" class="restore-btn-primary" @click="acceptLocalDraft">
+            Restore
+          </button>
         </div>
       </div>
 
@@ -47,7 +51,7 @@
             v-model="form.program"
             :options="[
               { value: 'stepup_scholars', label: 'StepUp Scholars' },
-              { value: 'dynamerge',       label: 'Dynamerge' },
+              { value: 'dynamerge', label: 'Dynamerge' },
             ]"
           />
         </div>
@@ -108,150 +112,155 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { DatabaseService, type Application } from '../../services/firebase'
-import { useAutoSave } from '../../composables/useAutoSave'
-import UiSelect from '../../components/ui/UiSelect.vue'
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import UiSelect from '../../components/ui/UiSelect.vue';
+import { useAutoSave } from '../../composables/useAutoSave';
+import { DatabaseService, type Application } from '../../services/firebase';
 
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
-const application = ref<Application | null>(null)
-const loading = ref(true)
-const error = ref('')
+const application = ref<Application | null>(null);
+const loading = ref(true);
+const error = ref('');
 
 // Status-aware copy for the locked-state card. Renders only when an
 // application is loaded but no longer editable (not a draft).
 const lockedHeadline = computed(() => {
   switch (application.value?.status) {
-    case 'submitted': return 'Your application is submitted.'
-    case 'under_review': return 'Your application is under review.'
-    case 'accepted': return 'You were accepted to the program.'
-    case 'rejected': return 'Decision posted.'
-    default: return 'This application can’t be edited.'
+    case 'submitted':
+      return 'Your application is submitted.';
+    case 'under_review':
+      return 'Your application is under review.';
+    case 'accepted':
+      return 'You were accepted to the program.';
+    case 'rejected':
+      return 'Decision posted.';
+    default:
+      return 'This application can’t be edited.';
   }
-})
+});
 const lockedExplanation = computed(() => {
   const dateLine = application.value?.submittedAt
     ? ` Submitted ${new Date(application.value.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`
-    : ''
+    : '';
   switch (application.value?.status) {
     case 'submitted':
-      return `It's in our queue and locked from edits while staff review it.${dateLine} You'll get an email when there's an update.`
+      return `It's in our queue and locked from edits while staff review it.${dateLine} You'll get an email when there's an update.`;
     case 'under_review':
-      return `Staff are reading through it now. The submitted version is what they'll grade — it can't be changed mid-review.${dateLine}`
+      return `Staff are reading through it now. The submitted version is what they'll grade — it can't be changed mid-review.${dateLine}`;
     case 'accepted':
-      return `Congratulations — watch your email for onboarding next steps.${dateLine}`
+      return `Congratulations — watch your email for onboarding next steps.${dateLine}`;
     case 'rejected':
-      return `The decision and any feedback from the reviewer is available on the status page.${dateLine}`
+      return `The decision and any feedback from the reviewer is available on the status page.${dateLine}`;
     default:
-      return 'Editing is only available while an application is still in draft.'
+      return 'Editing is only available while an application is still in draft.';
   }
-})
+});
 
 const form = ref({
   program: '' as 'stepup_scholars' | 'dynamerge' | '',
   personalInfo: {
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
   },
   motivation: '',
-  experience: ''
-})
+  experience: '',
+});
 
 // Per-application autosave key. `apply.edit.{id}` keeps drafts scoped
 // per application — editing two drafts in two tabs doesn't cross-talk.
 // `skipRestore: true` because we need to load from Firestore first and
 // only consider restoring if the local draft is newer than the server
 // copy. Restoring blindly would clobber edits made from another device.
-const applicationId = route.params.id as string
-const autoSaveKey = `apply.edit.${applicationId}`
+const applicationId = route.params.id as string;
+const autoSaveKey = `apply.edit.${applicationId}`;
 const {
   status: autoSaveStatus,
   lastSavedAt: autoSavedAt,
   clear: clearDraft,
   peek: peekDraft,
   restore: restoreDraft,
-} = useAutoSave(autoSaveKey, form, { skipRestore: true })
+} = useAutoSave(autoSaveKey, form, { skipRestore: true });
 
-const restorePromptVisible = ref(false)
-const pendingDraftAt = ref<Date | null>(null)
+const restorePromptVisible = ref(false);
+const pendingDraftAt = ref<Date | null>(null);
 
 const loadApplication = async () => {
   try {
-    const app = await DatabaseService.getApplication(applicationId)
+    const app = await DatabaseService.getApplication(applicationId);
     if (app) {
-      application.value = app
+      application.value = app;
       form.value = {
         program: app.program,
         personalInfo: app.personalInfo,
         motivation: app.motivation,
-        experience: app.experience
-      }
-      maybePromptRestore(app.updatedAt)
+        experience: app.experience,
+      };
+      maybePromptRestore(app.updatedAt);
     }
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Failed to load application'
+    error.value = err instanceof Error ? err.message : 'Failed to load application';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // Compare local-draft timestamp against the server's updatedAt and
 // only show the restore prompt when local is strictly newer. Equal
 // timestamps are treated as already-in-sync (the server copy IS the
 // last save) so we don't nag the user about no-op restores.
 function maybePromptRestore(serverUpdatedAt: Date | string | undefined) {
-  const draftAt = peekDraft()
-  if (!draftAt) return
-  const serverAt = serverUpdatedAt ? new Date(serverUpdatedAt as string | Date) : null
+  const draftAt = peekDraft();
+  if (!draftAt) return;
+  const serverAt = serverUpdatedAt ? new Date(serverUpdatedAt as string | Date) : null;
   if (serverAt && draftAt.getTime() <= serverAt.getTime()) {
     // Local draft is stale (or equal). Treat as no-op; clean it up so
     // we don't keep prompting on every visit.
-    clearDraft()
-    return
+    clearDraft();
+    return;
   }
-  pendingDraftAt.value = draftAt
-  restorePromptVisible.value = true
+  pendingDraftAt.value = draftAt;
+  restorePromptVisible.value = true;
 }
 
 function acceptLocalDraft() {
-  restoreDraft()
-  restorePromptVisible.value = false
+  restoreDraft();
+  restorePromptVisible.value = false;
 }
 
 function discardLocalDraft() {
-  clearDraft()
-  restorePromptVisible.value = false
-  pendingDraftAt.value = null
+  clearDraft();
+  restorePromptVisible.value = false;
+  pendingDraftAt.value = null;
 }
 
 const saveDraft = async () => {
   if (application.value?.id) {
     await DatabaseService.updateApplication(
       application.value.id,
-      form.value as unknown as Partial<Application>,
-    )
+      form.value as unknown as Partial<Application>
+    );
     // Server is now authoritative — drop the local copy so the next
     // visit doesn't prompt to restore the same content we just saved.
-    clearDraft()
-    router.push('/applicant/applications')
+    clearDraft();
+    router.push('/applicant/applications');
   }
-}
+};
 
 const handleSubmit = async () => {
   if (application.value?.id) {
     await DatabaseService.updateApplication(application.value.id, {
       ...form.value,
       status: 'submitted',
-      submittedAt: new Date()
-    } as unknown as Partial<Application>)
-    clearDraft()
-    router.push('/applicant/applications')
+      submittedAt: new Date(),
+    } as unknown as Partial<Application>);
+    clearDraft();
+    router.push('/applicant/applications');
   }
-}
+};
 
 // Watch route param changes so the autosave key follows the right
 // application if the user navigates between two edit pages without a
@@ -259,13 +268,13 @@ const handleSubmit = async () => {
 watch(
   () => route.params.id,
   (newId, oldId) => {
-    if (newId && newId !== oldId) loadApplication()
-  },
-)
+    if (newId && newId !== oldId) loadApplication();
+  }
+);
 
 onMounted(() => {
-  loadApplication()
-})
+  loadApplication();
+});
 </script>
 
 <style scoped>
@@ -317,7 +326,9 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
 }
-.locked-actions .primary:hover { background: #7a44e6; }
+.locked-actions .primary:hover {
+  background: #7a44e6;
+}
 .locked-actions .secondary {
   background: transparent;
   color: #2c3e50;
@@ -327,7 +338,9 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
 }
-.locked-actions .secondary:hover { background: rgba(14, 18, 23, 0.04); }
+.locked-actions .secondary:hover {
+  background: rgba(14, 18, 23, 0.04);
+}
 
 .restore-banner {
   display: flex;
@@ -441,7 +454,8 @@ onMounted(() => {
   color: white;
 }
 
-.loading, .error {
+.loading,
+.error {
   text-align: center;
   padding: 2rem;
 }

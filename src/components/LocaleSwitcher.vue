@@ -1,39 +1,39 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '../i18n'
+import { Icon } from '@iconify/vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '../i18n';
 
-const { locale } = useI18n()
-const open = ref(false)
-const root = ref<HTMLElement | null>(null)
+const { locale } = useI18n();
+const open = ref(false);
+const root = ref<HTMLElement | null>(null);
 
-const current = computed(() =>
-  SUPPORTED_LOCALES.find((l) => l.code === locale.value) ?? SUPPORTED_LOCALES[0],
-)
+const current = computed(
+  () => SUPPORTED_LOCALES.find(l => l.code === locale.value) ?? SUPPORTED_LOCALES[0]
+);
 
 function pick(code: LocaleCode) {
-  setLocale(code)
-  open.value = false
+  setLocale(code);
+  open.value = false;
 }
 
 function onClickOutside(e: MouseEvent) {
-  if (!root.value) return
+  if (!root.value) return;
   if (e.target instanceof Node && !root.value.contains(e.target)) {
-    open.value = false
+    open.value = false;
   }
 }
 
 onMounted(() => {
   if (typeof window !== 'undefined') {
-    window.addEventListener('click', onClickOutside)
+    window.addEventListener('click', onClickOutside);
   }
-})
+});
 onBeforeUnmount(() => {
   if (typeof window !== 'undefined') {
-    window.removeEventListener('click', onClickOutside)
+    window.removeEventListener('click', onClickOutside);
   }
-})
+});
 </script>
 
 <template>

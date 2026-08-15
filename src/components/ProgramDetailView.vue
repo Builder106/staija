@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { Motion } from 'motion-v'
-import { Icon } from '@iconify/vue'
-import Container from './ui/Container.vue'
-import Section from './ui/Section.vue'
-import Heading from './ui/Heading.vue'
-import Body from './ui/Body.vue'
-import Eyebrow from './ui/Eyebrow.vue'
-import UiButton from './ui/UiButton.vue'
-import UiCard from './ui/UiCard.vue'
-import UiChip from './ui/UiChip.vue'
-import Parallax from './motion/Parallax.vue'
-import { trackApplyClick } from '../services/analytics'
-import { ProgramService } from '../services/programService'
-import type { Program } from '../services/firebase'
+import { Icon } from '@iconify/vue';
+import { Motion } from 'motion-v';
+import { computed, onMounted, ref, watch } from 'vue';
+import { trackApplyClick } from '../services/analytics';
+import type { Program } from '../services/firebase';
+import { ProgramService } from '../services/programService';
+import Parallax from './motion/Parallax.vue';
+import Body from './ui/Body.vue';
+import Container from './ui/Container.vue';
+import Eyebrow from './ui/Eyebrow.vue';
+import Heading from './ui/Heading.vue';
+import Section from './ui/Section.vue';
+import UiButton from './ui/UiButton.vue';
+import UiCard from './ui/UiCard.vue';
+import UiChip from './ui/UiChip.vue';
 
-const props = defineProps<{ slug: 'stepup-scholars' | 'dynamerge' }>()
+const props = defineProps<{ slug: 'stepup-scholars' | 'dynamerge' }>();
 
 // Fallback content used while no Program doc exists in Firestore yet.
 // Once an admin clicks "Create defaults" in /admin/programs, the seed
@@ -33,17 +33,39 @@ const FALLBACKS: Record<string, ProgramView> = {
       { icon: 'lucide:clock', label: 'Duration', value: '6 months' },
       { icon: 'lucide:banknote', label: 'Stipend', value: '₦50,000 / mo' },
     ],
-    heroImg: 'https://images.unsplash.com/photo-1625082361965-1139be607018?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+    heroImg:
+      'https://images.unsplash.com/photo-1625082361965-1139be607018?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     features: [
-      { title: 'Real Research', desc: 'Access world-class labs and equipment. Design experiments and gather original data.', img: 'https://images.unsplash.com/photo-1562789278-dac7af7fb5b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { title: 'Direct Mentorship', desc: 'Work 1:1 with postdoctoral researchers and industry scientists from top institutions.', img: 'https://images.unsplash.com/photo-1658252844173-ba5de80a3015?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { title: 'Lasting Community', desc: 'Join a tight-knit cohort of peers who will become your future collaborators.', img: 'https://images.unsplash.com/photo-1737529807163-1d8a3fb6c403?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
+      {
+        title: 'Real Research',
+        desc: 'Access world-class labs and equipment. Design experiments and gather original data.',
+        img: 'https://images.unsplash.com/photo-1562789278-dac7af7fb5b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        title: 'Direct Mentorship',
+        desc: 'Work 1:1 with postdoctoral researchers and industry scientists from top institutions.',
+        img: 'https://images.unsplash.com/photo-1658252844173-ba5de80a3015?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        title: 'Lasting Community',
+        desc: 'Join a tight-knit cohort of peers who will become your future collaborators.',
+        img: 'https://images.unsplash.com/photo-1737529807163-1d8a3fb6c403?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
     ],
     timeline: [
       { date: 'Month 1', desc: 'Research methods boot camp and lab safety certification.' },
-      { date: 'Month 2–4', desc: 'Active experimentation, data gathering, and weekly mentor check-ins.' },
-      { date: 'Month 5', desc: 'Data analysis, scientific writing workshops, and abstract drafting.' },
-      { date: 'Month 6', desc: 'Final symposium presentation and submission to youth science journals.' },
+      {
+        date: 'Month 2–4',
+        desc: 'Active experimentation, data gathering, and weekly mentor check-ins.',
+      },
+      {
+        date: 'Month 5',
+        desc: 'Data analysis, scientific writing workshops, and abstract drafting.',
+      },
+      {
+        date: 'Month 6',
+        desc: 'Final symposium presentation and submission to youth science journals.',
+      },
     ],
     eligibilityList: [
       'Must be between 15 and 19 years old',
@@ -52,25 +74,54 @@ const FALLBACKS: Record<string, ProgramView> = {
       'Able to commit 10 hours per week for 6 months',
     ],
     mentors: [
-      { name: 'Dr. Amina Yusuf', title: 'Postdoctoral Researcher', institution: 'MIT', img: 'https://images.unsplash.com/photo-1611432579699-484f7990b127?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { name: 'Prof. David Okafor', title: 'Principal Investigator', institution: 'University of Lagos', img: 'https://images.unsplash.com/photo-1614023342667-6f060e9d1e04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { name: 'Sarah Nwachukwu', title: 'PhD Candidate', institution: 'Stanford', img: 'https://images.unsplash.com/photo-1618355776464-8666794d2520?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
+      {
+        name: 'Dr. Amina Yusuf',
+        title: 'Postdoctoral Researcher',
+        institution: 'MIT',
+        img: 'https://images.unsplash.com/photo-1611432579699-484f7990b127?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        name: 'Prof. David Okafor',
+        title: 'Principal Investigator',
+        institution: 'University of Lagos',
+        img: 'https://images.unsplash.com/photo-1614023342667-6f060e9d1e04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        name: 'Sarah Nwachukwu',
+        title: 'PhD Candidate',
+        institution: 'Stanford',
+        img: 'https://images.unsplash.com/photo-1618355776464-8666794d2520?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
     ],
   },
-  'dynamerge': {
+  dynamerge: {
     name: 'Dynamerge',
-    pitch: 'A pan-African virtual summer bootcamp connecting ambitious students with global mentors.',
+    pitch:
+      'A pan-African virtual summer bootcamp connecting ambitious students with global mentors.',
     eligibility: 'Ages 15–20 | Pan-African',
     stats: [
       { icon: 'lucide:users', label: 'Eligibility', value: 'Pan-African' },
       { icon: 'lucide:clock', label: 'Duration', value: '4 weeks' },
       { icon: 'lucide:banknote', label: 'Cost', value: 'Fully funded' },
     ],
-    heroImg: 'https://images.unsplash.com/photo-1620831468075-db24ca183258?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+    heroImg:
+      'https://images.unsplash.com/photo-1620831468075-db24ca183258?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     features: [
-      { title: 'Intensive Curriculum', desc: 'Four weeks of daily virtual workshops covering coding, data science, and leadership.', img: 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { title: 'Global Mentors', desc: 'Learn directly from industry experts at top tech companies and research institutes.', img: 'https://images.unsplash.com/photo-1766074903112-79661da9ab45?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { title: 'Pan-African Network', desc: 'Build lasting relationships with peers across the continent.', img: 'https://images.unsplash.com/photo-1758270705518-b61b40527e76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
+      {
+        title: 'Intensive Curriculum',
+        desc: 'Four weeks of daily virtual workshops covering coding, data science, and leadership.',
+        img: 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        title: 'Global Mentors',
+        desc: 'Learn directly from industry experts at top tech companies and research institutes.',
+        img: 'https://images.unsplash.com/photo-1766074903112-79661da9ab45?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        title: 'Pan-African Network',
+        desc: 'Build lasting relationships with peers across the continent.',
+        img: 'https://images.unsplash.com/photo-1758270705518-b61b40527e76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
     ],
     timeline: [
       { date: 'Week 1', desc: 'Foundations: Introduction to programming and data analysis.' },
@@ -85,17 +136,32 @@ const FALLBACKS: Record<string, ProgramView> = {
       'Passionate about leveraging technology for impact',
     ],
     mentors: [
-      { name: 'Dr. Amina Yusuf', title: 'Postdoctoral Researcher', institution: 'MIT', img: 'https://images.unsplash.com/photo-1611432579699-484f7990b127?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { name: 'Prof. David Okafor', title: 'Principal Investigator', institution: 'University of Lagos', img: 'https://images.unsplash.com/photo-1614023342667-6f060e9d1e04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
-      { name: 'Sarah Nwachukwu', title: 'PhD Candidate', institution: 'Stanford', img: 'https://images.unsplash.com/photo-1618355776464-8666794d2520?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080' },
+      {
+        name: 'Dr. Amina Yusuf',
+        title: 'Postdoctoral Researcher',
+        institution: 'MIT',
+        img: 'https://images.unsplash.com/photo-1611432579699-484f7990b127?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        name: 'Prof. David Okafor',
+        title: 'Principal Investigator',
+        institution: 'University of Lagos',
+        img: 'https://images.unsplash.com/photo-1614023342667-6f060e9d1e04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
+      {
+        name: 'Sarah Nwachukwu',
+        title: 'PhD Candidate',
+        institution: 'Stanford',
+        img: 'https://images.unsplash.com/photo-1618355776464-8666794d2520?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+      },
     ],
   },
-}
+};
 
 // Start with the fallback already painted so the first paint isn't blank
 // while Firestore loads. The async fetch then replaces the content with
 // the canonical version if a Program doc exists.
-const program = ref<ProgramView | null>(FALLBACKS[props.slug] ?? null)
+const program = ref<ProgramView | null>(FALLBACKS[props.slug] ?? null);
 
 // Application window status, driven by the Firestore program's
 // applicationStart / applicationEnd. `null` when no live program doc
@@ -103,23 +169,23 @@ const program = ref<ProgramView | null>(FALLBACKS[props.slug] ?? null)
 // always shows a working CTA. 'upcoming' / 'closed' both swap the
 // Apply CTA's target to /stay-connected so visitors get an honest
 // destination instead of a dead form.
-const applicationStatus = ref<'open' | 'closed' | 'upcoming' | null>(null)
+const applicationStatus = ref<'open' | 'closed' | 'upcoming' | null>(null);
 
 const isApplyOpen = computed(
-  () => applicationStatus.value === null || applicationStatus.value === 'open',
-)
+  () => applicationStatus.value === null || applicationStatus.value === 'open'
+);
 const closedReason = computed(() =>
-  applicationStatus.value === 'upcoming' ? 'upcoming' : 'closed',
-)
+  applicationStatus.value === 'upcoming' ? 'upcoming' : 'closed'
+);
 
 async function loadProgram() {
-  program.value = FALLBACKS[props.slug] ?? null
-  applicationStatus.value = null
+  program.value = FALLBACKS[props.slug] ?? null;
+  applicationStatus.value = null;
   try {
-    const fromStore = await ProgramService.getProgram(props.slug)
+    const fromStore = await ProgramService.getProgram(props.slug);
     if (fromStore) {
-      program.value = toView(fromStore)
-      applicationStatus.value = ProgramService.getApplicationStatus(fromStore)
+      program.value = toView(fromStore);
+      applicationStatus.value = ProgramService.getApplicationStatus(fromStore);
     }
   } catch {
     // Network error / permission issue — keep the fallback in view
@@ -138,34 +204,43 @@ function toView(p: Program): ProgramView {
     timeline: p.timeline,
     eligibilityList: p.eligibilityList,
     mentors: p.mentors,
-  }
+  };
 }
 
-onMounted(loadProgram)
-watch(() => props.slug, loadProgram)
+onMounted(loadProgram);
+watch(() => props.slug, loadProgram);
 
 type ProgramView = {
-  name: string
-  pitch: string
-  eligibility: string
-  stats: { icon: string; label: string; value: string }[]
-  heroImg: string
-  features: { title: string; desc: string; img: string }[]
-  timeline: { date: string; desc: string }[]
-  eligibilityList: string[]
-  mentors: { name: string; title: string; institution: string; img: string }[]
-}
+  name: string;
+  pitch: string;
+  eligibility: string;
+  stats: { icon: string; label: string; value: string }[];
+  heroImg: string;
+  features: { title: string; desc: string; img: string }[];
+  timeline: { date: string; desc: string }[];
+  eligibilityList: string[];
+  mentors: { name: string; title: string; institution: string; img: string }[];
+};
 
 const faqs = [
   { q: 'Is there an application fee?', a: 'No, applying to STAIJA programs is completely free.' },
-  { q: 'Do I need prior research experience?', a: 'Not at all. We are looking for curiosity and a willingness to learn.' },
-  { q: 'How does the stipend work?', a: 'Accepted students receive a monthly stipend to cover internet, transportation, and basic needs during the program.' },
-  { q: 'Can I apply to both programs?', a: 'Yes, but you can only participate in one program per calendar year if accepted to both.' },
-]
+  {
+    q: 'Do I need prior research experience?',
+    a: 'Not at all. We are looking for curiosity and a willingness to learn.',
+  },
+  {
+    q: 'How does the stipend work?',
+    a: 'Accepted students receive a monthly stipend to cover internet, transportation, and basic needs during the program.',
+  },
+  {
+    q: 'Can I apply to both programs?',
+    a: 'Yes, but you can only participate in one program per calendar year if accepted to both.',
+  },
+];
 
-const openFaq = ref<number | null>(0)
+const openFaq = ref<number | null>(0);
 function toggleFaq(i: number) {
-  openFaq.value = openFaq.value === i ? null : i
+  openFaq.value = openFaq.value === i ? null : i;
 }
 </script>
 
@@ -178,16 +253,30 @@ function toggleFaq(i: number) {
     <div class="relative min-h-svh flex items-center bg-ink-static overflow-hidden">
       <div class="absolute inset-0 z-0">
         <Parallax :speed="-0.25" :distance="120" class="absolute inset-0">
-          <img :src="program.heroImg" :alt="program.name" width="1280" height="720" class="w-full h-full object-cover opacity-40 scale-110" />
+          <img
+            :src="program.heroImg"
+            :alt="program.name"
+            width="1280"
+            height="720"
+            class="w-full h-full object-cover opacity-40 scale-110"
+          />
         </Parallax>
         <div class="absolute inset-0 wash-violet-6 mix-blend-screen" />
-        <div class="absolute inset-0 bg-gradient-to-t from-ink-static via-ink-static/60 to-transparent" />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-ink-static via-ink-static/60 to-transparent"
+        />
       </div>
 
       <Container class="relative z-10 py-24">
         <div class="max-w-3xl flex flex-col gap-6 text-paper-static">
-          <Motion :initial="{ opacity: 0, y: 12 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.3 }">
-            <UiChip class="bg-paper-static/10 !text-paper-static border-paper-static/20">{{ program.eligibility }}</UiChip>
+          <Motion
+            :initial="{ opacity: 0, y: 12 }"
+            :animate="{ opacity: 1, y: 0 }"
+            :transition="{ duration: 0.3 }"
+          >
+            <UiChip class="bg-paper-static/10 !text-paper-static border-paper-static/20">{{
+              program.eligibility
+            }}</UiChip>
           </Motion>
 
           <Motion
@@ -217,11 +306,15 @@ function toggleFaq(i: number) {
             :transition="{ duration: 0.4, delay: 0.3 }"
           >
             <div v-for="stat in program.stats" :key="stat.label" class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-paper-static/10 flex items-center justify-center">
+              <div
+                class="w-10 h-10 rounded-full bg-paper-static/10 flex items-center justify-center"
+              >
                 <Icon :icon="stat.icon" width="20" class="text-white" />
               </div>
               <div>
-                <div class="text-xs text-paper-static/60 uppercase tracking-widest font-semibold">{{ stat.label }}</div>
+                <div class="text-xs text-paper-static/60 uppercase tracking-widest font-semibold">
+                  {{ stat.label }}
+                </div>
                 <div class="text-sm font-semibold text-white">{{ stat.value }}</div>
               </div>
             </div>
@@ -237,7 +330,12 @@ function toggleFaq(i: number) {
               v-if="isApplyOpen"
               :to="`/apply/${slug}`"
               class="!bg-white !text-ink-static hover:!bg-paper-static hover:shadow-lg"
-              @click="trackApplyClick({ program: slug === 'stepup-scholars' ? 'stepup' : 'dynamerge', source: 'program_hero' })"
+              @click="
+                trackApplyClick({
+                  program: slug === 'stepup-scholars' ? 'stepup' : 'dynamerge',
+                  source: 'program_hero',
+                })
+              "
             >
               Apply to {{ program.name }}
             </UiButton>
@@ -246,10 +344,15 @@ function toggleFaq(i: number) {
                 :to="`/stay-connected?from=${slug}&reason=${closedReason}`"
                 class="!bg-white !text-ink-static hover:!bg-paper-static hover:shadow-lg"
               >
-                {{ closedReason === 'upcoming' ? 'Get notified when applications open' : 'Stay connected for the next cycle' }}
+                {{
+                  closedReason === 'upcoming'
+                    ? 'Get notified when applications open'
+                    : 'Stay connected for the next cycle'
+                }}
               </UiButton>
               <span class="text-sm text-paper-static/70">
-                Applications {{ closedReason === 'upcoming' ? 'open soon' : 'are closed for this cycle' }}.
+                Applications
+                {{ closedReason === 'upcoming' ? 'open soon' : 'are closed for this cycle' }}.
               </span>
             </template>
           </Motion>
@@ -274,7 +377,14 @@ function toggleFaq(i: number) {
             :transition="{ duration: 0.5, delay: i * 0.1 }"
           >
             <div class="aspect-[4/3] rounded-2xl overflow-hidden">
-              <img :src="feature.img" :alt="feature.title" width="600" height="400" class="w-full h-full object-cover" loading="lazy" />
+              <img
+                :src="feature.img"
+                :alt="feature.title"
+                width="600"
+                height="400"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
             <div>
               <Heading :level="3" class="!text-xl mb-2">{{ feature.title }}</Heading>
@@ -292,7 +402,9 @@ function toggleFaq(i: number) {
           <Eyebrow class="text-brand-violet mb-4 block">Curriculum</Eyebrow>
           <Heading :level="2" class="mb-12">What you'll do.</Heading>
 
-          <ol class="list-none p-0 m-0 grid grid-cols-[auto_28px_1fr] md:grid-cols-[180px_28px_1fr] gap-x-5 md:gap-x-8">
+          <ol
+            class="list-none p-0 m-0 grid grid-cols-[auto_28px_1fr] md:grid-cols-[180px_28px_1fr] gap-x-5 md:gap-x-8"
+          >
             <Motion
               v-for="(step, i) in program.timeline"
               :key="step.date"
@@ -346,17 +458,23 @@ function toggleFaq(i: number) {
     <!-- Who it's for -->
     <Section class="bg-paper border-y hairline-ink">
       <Container>
-        <div class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12">
+        <div
+          class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12"
+        >
           <div class="md:w-1/3">
             <Heading :level="2" class="mb-4">Who it's for</Heading>
             <p class="text-ink/60 text-sm">
-              We evaluate applications based on curiosity, resilience, and potential for growth.
-              We actively encourage students from underrepresented backgrounds to apply.
+              We evaluate applications based on curiosity, resilience, and potential for growth. We
+              actively encourage students from underrepresented backgrounds to apply.
             </p>
           </div>
           <div class="md:w-2/3 flex flex-col gap-4">
             <div v-for="req in program.eligibilityList" :key="req" class="flex items-start gap-3">
-              <Icon icon="lucide:check-circle-2" width="20" class="text-brand-violet shrink-0 mt-1" />
+              <Icon
+                icon="lucide:check-circle-2"
+                width="20"
+                class="text-brand-violet shrink-0 mt-1"
+              />
               <Body>{{ req }}</Body>
             </div>
           </div>
@@ -371,9 +489,20 @@ function toggleFaq(i: number) {
           <Heading :level="2">Learn from the best.</Heading>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <UiCard v-for="mentor in program.mentors" :key="mentor.name" class="p-4 flex flex-col items-center text-center gap-4">
+          <UiCard
+            v-for="mentor in program.mentors"
+            :key="mentor.name"
+            class="p-4 flex flex-col items-center text-center gap-4"
+          >
             <div class="w-24 h-24 rounded-full overflow-hidden mb-2">
-              <img :src="mentor.img" :alt="mentor.name" width="300" height="300" class="w-full h-full object-cover" loading="lazy" />
+              <img
+                :src="mentor.img"
+                :alt="mentor.name"
+                width="300"
+                height="300"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
             <div>
               <h4 class="font-semibold text-ink text-lg m-0">{{ mentor.name }}</h4>
@@ -407,7 +536,11 @@ function toggleFaq(i: number) {
             </div>
             <div
               class="px-6 text-ink/70 transition-all duration-300 ease-in-out"
-              :class="openFaq === i ? 'pb-6 max-h-[200px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'"
+              :class="
+                openFaq === i
+                  ? 'pb-6 max-h-[200px] opacity-100'
+                  : 'max-h-0 opacity-0 overflow-hidden'
+              "
             >
               {{ faq.a }}
             </div>
@@ -428,7 +561,12 @@ function toggleFaq(i: number) {
             v-if="isApplyOpen"
             :to="'/signup'"
             class="!bg-transparent !text-white !border-2 !border-white hover:!bg-white hover:!text-brand-violet text-lg !px-8 !h-auto !py-4"
-            @click="trackApplyClick({ program: slug === 'stepup-scholars' ? 'stepup' : 'dynamerge', source: 'program_cta_banner' })"
+            @click="
+              trackApplyClick({
+                program: slug === 'stepup-scholars' ? 'stepup' : 'dynamerge',
+                source: 'program_cta_banner',
+              })
+            "
           >
             Apply to {{ program.name }}
           </UiButton>
@@ -437,7 +575,11 @@ function toggleFaq(i: number) {
             :to="`/stay-connected?from=${slug}&reason=${closedReason}`"
             class="!bg-transparent !text-white !border-2 !border-white hover:!bg-white hover:!text-brand-violet text-lg !px-8 !h-auto !py-4"
           >
-            {{ closedReason === 'upcoming' ? 'Get notified when applications open' : 'Stay connected for the next cycle' }}
+            {{
+              closedReason === 'upcoming'
+                ? 'Get notified when applications open'
+                : 'Stay connected for the next cycle'
+            }}
           </UiButton>
         </div>
       </Container>

@@ -11,40 +11,40 @@
  * renders. There's intentionally no contact button — visitors who
  * want to mentor join the notify-me list at the top of the page.
  */
-import { onMounted, ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import UiCard from '../ui/UiCard.vue'
-import Heading from '../ui/Heading.vue'
-import Body from '../ui/Body.vue'
-import { fetchPublicMentors, type PublicMentor } from '../../services/publicMentors'
-import { resolveAvatarSrc } from '../../services/avatar'
+import { Icon } from '@iconify/vue';
+import { onMounted, ref } from 'vue';
+import { resolveAvatarSrc } from '../../services/avatar';
+import { fetchPublicMentors, type PublicMentor } from '../../services/publicMentors';
+import Body from '../ui/Body.vue';
+import Heading from '../ui/Heading.vue';
+import UiCard from '../ui/UiCard.vue';
 
-const mentors = ref<PublicMentor[]>([])
-const loading = ref(true)
+const mentors = ref<PublicMentor[]>([]);
+const loading = ref(true);
 
 function avatarFor(m: PublicMentor): string {
   return resolveAvatarSrc({
     photoURL: m.photoURL,
     avatarSlot: m.avatarSlot,
     seed: m.uid,
-  })
+  });
 }
 
 function bioSnippet(m: PublicMentor): string {
-  const text = m.mentorBio.trim()
-  if (!text) return ''
-  if (text.length <= 140) return text
-  return text.slice(0, 137).trimEnd() + '…'
+  const text = m.mentorBio.trim();
+  if (!text) return '';
+  if (text.length <= 140) return text;
+  return text.slice(0, 137).trimEnd() + '…';
 }
 
 onMounted(async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    mentors.value = await fetchPublicMentors()
+    mentors.value = await fetchPublicMentors();
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 </script>
 
 <template>
@@ -54,8 +54,8 @@ onMounted(async () => {
       <Heading :level="2" class="!text-xl !m-0">Who's mentoring at STAIJA.</Heading>
     </div>
     <Body class="text-ink/65 text-sm m-0 -mt-2">
-      A few of the researchers, engineers, and builders who volunteer time to STAIJA
-      students. If you'd like to join them, add yourself to the notify-me list above.
+      A few of the researchers, engineers, and builders who volunteer time to STAIJA students. If
+      you'd like to join them, add yourself to the notify-me list above.
     </Body>
 
     <div v-if="loading" class="grid sm:grid-cols-2 gap-4">
@@ -71,17 +71,13 @@ onMounted(async () => {
       </div>
       <Heading :level="3" class="!text-lg !m-0">Mentor profiles coming soon.</Heading>
       <Body class="text-ink/65 text-sm m-0 max-w-md">
-        Our mentors haven't all opted into the public showcase yet. In the meantime, the
-        notify-me list above is the best way to hear when new ones come on board.
+        Our mentors haven't all opted into the public showcase yet. In the meantime, the notify-me
+        list above is the best way to hear when new ones come on board.
       </Body>
     </UiCard>
 
     <div v-else class="grid sm:grid-cols-2 gap-4">
-      <UiCard
-        v-for="m in mentors"
-        :key="m.uid"
-        class="p-5 flex items-start gap-4 h-full"
-      >
+      <UiCard v-for="m in mentors" :key="m.uid" class="p-5 flex items-start gap-4 h-full">
         <img
           :src="avatarFor(m)"
           :alt="m.displayName"

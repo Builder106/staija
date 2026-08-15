@@ -1,40 +1,40 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../../components/ui/Container.vue'
-import Section from '../../../components/ui/Section.vue'
-import Heading from '../../../components/ui/Heading.vue'
-import Eyebrow from '../../../components/ui/Eyebrow.vue'
-import UiCard from '../../../components/ui/UiCard.vue'
-import UiButton from '../../../components/ui/UiButton.vue'
-import UiSelect from '../../../components/ui/UiSelect.vue'
-import RichTextEditor from '../../../components/admin/RichTextEditor.vue'
+import type { Document } from '@contentful/rich-text-types';
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import RichTextEditor from '../../../components/admin/RichTextEditor.vue';
+import Container from '../../../components/ui/Container.vue';
+import Eyebrow from '../../../components/ui/Eyebrow.vue';
+import Heading from '../../../components/ui/Heading.vue';
+import Section from '../../../components/ui/Section.vue';
+import UiButton from '../../../components/ui/UiButton.vue';
+import UiCard from '../../../components/ui/UiCard.vue';
+import UiSelect from '../../../components/ui/UiSelect.vue';
+import { useAdminBase } from '../../../composables/useAdminBase';
+import { useFormDirty } from '../../../composables/useFormDirty';
 import {
-  getEntry,
   createEntry,
-  updateEntry,
-  publishEntry,
+  getEntry,
   normalizeSlug,
+  publishEntry,
+  updateEntry,
   type AssignmentSpecFields,
-} from '../../../services/lmsContent'
-import { emptyDocument } from '../../../services/richTextSerializer'
-import { useFormDirty } from '../../../composables/useFormDirty'
-import { useAdminBase } from '../../../composables/useAdminBase'
-import type { Document } from '@contentful/rich-text-types'
+} from '../../../services/lmsContent';
+import { emptyDocument } from '../../../services/richTextSerializer';
 
-const route = useRoute()
-const router = useRouter()
-const { adminBase } = useAdminBase()
+const route = useRoute();
+const router = useRouter();
+const { adminBase } = useAdminBase();
 
-const isNew = computed(() => route.params.id === 'new' || !route.params.id)
-const id = ref<string | null>(isNew.value ? null : (route.params.id as string))
-const loading = ref(!isNew.value)
-const saving = ref(false)
-const publishing = ref(false)
-const error = ref<string | null>(null)
-const isPublished = ref(false)
-const acceptedFileTypesRaw = ref('')
+const isNew = computed(() => route.params.id === 'new' || !route.params.id);
+const id = ref<string | null>(isNew.value ? null : (route.params.id as string));
+const loading = ref(!isNew.value);
+const saving = ref(false);
+const publishing = ref(false);
+const error = ref<string | null>(null);
+const isPublished = ref(false);
+const acceptedFileTypesRaw = ref('');
 
 const form = ref<AssignmentSpecFields>({
   slug: '',
@@ -44,92 +44,93 @@ const form = ref<AssignmentSpecFields>({
   maxFileSizeMb: 10,
   acceptedFileTypes: [],
   dueOffsetDays: undefined,
-})
-const { isDirty, markClean } = useFormDirty(form)
+});
+const { isDirty, markClean } = useFormDirty(form);
 
 async function load() {
-  if (!id.value) return
-  loading.value = true
+  if (!id.value) return;
+  loading.value = true;
   try {
-    const entry = await getEntry(id.value)
-    isPublished.value = entry.isPublished
-    const f = entry.fields
+    const entry = await getEntry(id.value);
+    isPublished.value = entry.isPublished;
+    const f = entry.fields;
     form.value = {
       slug: (f.slug as string) ?? '',
       title: (f.title as string) ?? '',
       instructions: (f.instructions as Document) ?? emptyDocument(),
-      submissionType: ((f.submissionType as 'text' | 'file' | 'link' | 'text_or_file') ?? 'text_or_file'),
+      submissionType:
+        (f.submissionType as 'text' | 'file' | 'link' | 'text_or_file') ?? 'text_or_file',
       maxFileSizeMb: (f.maxFileSizeMb as number) ?? 10,
       acceptedFileTypes: (f.acceptedFileTypes as string[]) ?? [],
       dueOffsetDays: f.dueOffsetDays as number | undefined,
-    }
-    acceptedFileTypesRaw.value = (form.value.acceptedFileTypes ?? []).join(', ')
-    markClean()
+    };
+    acceptedFileTypesRaw.value = (form.value.acceptedFileTypes ?? []).join(', ');
+    markClean();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load assignment.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load assignment.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 const canSave = computed(
-  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value,
-)
+  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value
+);
 
 function syncAcceptedFileTypes() {
   form.value.acceptedFileTypes = acceptedFileTypesRaw.value
     .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 async function save() {
-  if (!canSave.value) return
-  saving.value = true
-  error.value = null
-  syncAcceptedFileTypes()
+  if (!canSave.value) return;
+  saving.value = true;
+  error.value = null;
+  syncAcceptedFileTypes();
   try {
     if (id.value) {
-      await updateEntry(id.value, { type: 'assignmentSpec', fields: form.value })
+      await updateEntry(id.value, { type: 'assignmentSpec', fields: form.value });
     } else {
-      const created = await createEntry({ type: 'assignmentSpec', fields: form.value })
-      id.value = created.id
-      router.replace({ path: `${adminBase.value}/content/assignments/${created.id}` })
+      const created = await createEntry({ type: 'assignmentSpec', fields: form.value });
+      id.value = created.id;
+      router.replace({ path: `${adminBase.value}/content/assignments/${created.id}` });
     }
-    markClean()
+    markClean();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Save failed.'
+    error.value = (err as { message?: string }).message ?? 'Save failed.';
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function saveAndPublish() {
-  if (!canSave.value) return
-  publishing.value = true
-  error.value = null
-  syncAcceptedFileTypes()
+  if (!canSave.value) return;
+  publishing.value = true;
+  error.value = null;
+  syncAcceptedFileTypes();
   try {
-    let entryId = id.value
+    let entryId = id.value;
     if (entryId) {
-      await updateEntry(entryId, { type: 'assignmentSpec', fields: form.value })
+      await updateEntry(entryId, { type: 'assignmentSpec', fields: form.value });
     } else {
-      const created = await createEntry({ type: 'assignmentSpec', fields: form.value })
-      entryId = created.id
-      id.value = created.id
-      router.replace({ path: `${adminBase.value}/content/assignments/${created.id}` })
+      const created = await createEntry({ type: 'assignmentSpec', fields: form.value });
+      entryId = created.id;
+      id.value = created.id;
+      router.replace({ path: `${adminBase.value}/content/assignments/${created.id}` });
     }
-    await publishEntry(entryId!)
-    isPublished.value = true
-    markClean()
+    await publishEntry(entryId!);
+    isPublished.value = true;
+    markClean();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Publish failed.'
+    error.value = (err as { message?: string }).message ?? 'Publish failed.';
   } finally {
-    publishing.value = false
+    publishing.value = false;
   }
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -144,7 +145,7 @@ onMounted(load)
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-2 block">Assignment</Eyebrow>
         <Heading :level="1" class="mb-2">
-          {{ isNew ? 'New assignment' : (form.title || 'Edit assignment') }}
+          {{ isNew ? 'New assignment' : form.title || 'Edit assignment' }}
         </Heading>
         <span
           v-if="!isNew"
@@ -166,7 +167,9 @@ onMounted(load)
           <UiCard class="p-6 md:p-8 bg-surface flex flex-col gap-5">
             <div class="grid md:grid-cols-2 gap-4">
               <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Slug</label>
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Slug</label
+                >
                 <input
                   :value="form.slug"
                   type="text"
@@ -174,10 +177,17 @@ onMounted(load)
                   @input="form.slug = ($event.target as HTMLInputElement).value.toLowerCase()"
                   @blur="form.slug = normalizeSlug(form.slug)"
                 />
-                <p class="text-[11px] text-ink/50">Lowercase letters, numbers, and hyphens only. Anything else gets normalized on save.</p>
+                <p class="text-[11px] text-ink/50">
+                  Lowercase letters, numbers, and hyphens only. Anything else gets normalized on
+                  save.
+                </p>
               </div>
               <div class="flex flex-col gap-2">
-                <label for="assignment-submission-type" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Submission type</label>
+                <label
+                  for="assignment-submission-type"
+                  class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Submission type</label
+                >
                 <UiSelect
                   id="assignment-submission-type"
                   v-model="form.submissionType"
@@ -196,11 +206,21 @@ onMounted(load)
             </div>
             <div class="grid md:grid-cols-2 gap-4">
               <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Max file size (MB)</label>
-                <input v-model.number="form.maxFileSizeMb" type="number" min="1" max="50" class="input" />
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Max file size (MB)</label
+                >
+                <input
+                  v-model.number="form.maxFileSizeMb"
+                  type="number"
+                  min="1"
+                  max="50"
+                  class="input"
+                />
               </div>
               <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Due offset (days)</label>
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Due offset (days)</label
+                >
                 <input
                   v-model.number="form.dueOffsetDays"
                   type="number"
@@ -212,7 +232,10 @@ onMounted(load)
             </div>
             <div class="flex flex-col gap-2">
               <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">
-                Accepted file types <span class="text-ink/40 normal-case">(comma-separated MIME types or extensions)</span>
+                Accepted file types
+                <span class="text-ink/40 normal-case"
+                  >(comma-separated MIME types or extensions)</span
+                >
               </label>
               <input
                 v-model="acceptedFileTypesRaw"
@@ -244,11 +267,7 @@ onMounted(load)
               @click="saveAndPublish"
             >
               <Icon v-if="publishing" icon="lucide:loader-2" width="14" class="animate-spin" />
-              <Icon
-                v-else-if="isPublished && !isDirty"
-                icon="lucide:check"
-                width="14"
-              />
+              <Icon v-else-if="isPublished && !isDirty" icon="lucide:check" width="14" />
               <template v-if="publishing">Publishing…</template>
               <template v-else-if="isPublished && !isDirty">Published</template>
               <template v-else>Save &amp; publish</template>

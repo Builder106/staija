@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Motion } from 'motion-v'
-import { Icon } from '@iconify/vue'
-import Container from '../ui/Container.vue'
-import Section from '../ui/Section.vue'
-import Heading from '../ui/Heading.vue'
-import Body from '../ui/Body.vue'
-import Eyebrow from '../ui/Eyebrow.vue'
-import UiButton from '../ui/UiButton.vue'
-import ProgramFaq from './ProgramFaq.vue'
-import ProgramCtaBanner from './ProgramCtaBanner.vue'
-import { trackApplyClick } from '../../services/analytics'
-import { ProgramService } from '../../services/programService'
-import { useProgram } from '../../composables/useProgram'
+import { Icon } from '@iconify/vue';
+import { Motion } from 'motion-v';
+import { computed, ref } from 'vue';
+import { useProgram } from '../../composables/useProgram';
+import { trackApplyClick } from '../../services/analytics';
+import { ProgramService } from '../../services/programService';
+import Body from '../ui/Body.vue';
+import Container from '../ui/Container.vue';
+import Eyebrow from '../ui/Eyebrow.vue';
+import Heading from '../ui/Heading.vue';
+import Section from '../ui/Section.vue';
+import UiButton from '../ui/UiButton.vue';
+import ProgramCtaBanner from './ProgramCtaBanner.vue';
+import ProgramFaq from './ProgramFaq.vue';
 
 // Dynamerge — the "sprint" register.
 //
@@ -24,36 +24,52 @@ import { useProgram } from '../../composables/useProgram'
 // a status-aware LIVE chip, a horizontal week-by-week sprint board
 // instead of the vertical month spine, interactive track tabs, and
 // faster, snappier motion timing throughout.
-const SLUG = 'dynamerge' as const
+const SLUG = 'dynamerge' as const;
 
-const { program, programDoc, applicationStatus, isApplyOpen, closedReason, isStatusResolved } = useProgram(SLUG)
+const { program, programDoc, applicationStatus, isApplyOpen, closedReason, isStatusResolved } =
+  useProgram(SLUG);
 
 // Real deadline, only when a Firestore doc provides one — never invented.
 const applyDeadline = computed<string | null>(() => {
-  if (applicationStatus.value !== 'open') return null
-  const end = programDoc.value?.dates?.applicationEnd
-  return end ? ProgramService.formatDate(end) : null
-})
+  if (applicationStatus.value !== 'open') return null;
+  const end = programDoc.value?.dates?.applicationEnd;
+  return end ? ProgramService.formatDate(end) : null;
+});
 
 // Timeline entries arrive as "Kicker: rest of sentence." — split for the
 // sprint cards. Guarded so a colon deep inside a sentence doesn't split.
 function splitStep(desc: string): { kicker: string | null; body: string } {
-  const idx = desc.indexOf(':')
-  if (idx === -1 || idx > 24) return { kicker: null, body: desc }
-  return { kicker: desc.slice(0, idx), body: desc.slice(idx + 1).trim() }
+  const idx = desc.indexOf(':');
+  if (idx === -1 || idx > 24) return { kicker: null, body: desc };
+  return { kicker: desc.slice(0, idx), body: desc.slice(idx + 1).trim() };
 }
 
 // Week-2 track choices, expanded into pickable tabs. Copy is prototype
 // content — editable claims only, no numbers; belongs on the Program doc
 // if the section survives review.
-type TrackId = 'ai' | 'biotech' | 'energy'
+type TrackId = 'ai' | 'biotech' | 'energy';
 const TRACKS: { id: TrackId; name: string; icon: string; copy: string }[] = [
-  { id: 'ai', name: 'Artificial Intelligence', icon: 'lucide:brain-circuit', copy: 'Go from first principles to working models, and look hard at where AI is already changing industries across the continent.' },
-  { id: 'biotech', name: 'Biotech', icon: 'lucide:dna', copy: 'Explore how modern biology gets engineered — and how the same tools apply to health challenges African communities actually face.' },
-  { id: 'energy', name: 'Clean Energy', icon: 'lucide:zap', copy: 'Dig into the technologies racing to power the continent, from solar economics to storage, and prototype around a real constraint.' },
-]
-const activeTrackId = ref<TrackId>('ai')
-const activeTrack = computed(() => TRACKS.find((t) => t.id === activeTrackId.value) ?? TRACKS[0])
+  {
+    id: 'ai',
+    name: 'Artificial Intelligence',
+    icon: 'lucide:brain-circuit',
+    copy: 'Go from first principles to working models, and look hard at where AI is already changing industries across the continent.',
+  },
+  {
+    id: 'biotech',
+    name: 'Biotech',
+    icon: 'lucide:dna',
+    copy: 'Explore how modern biology gets engineered — and how the same tools apply to health challenges African communities actually face.',
+  },
+  {
+    id: 'energy',
+    name: 'Clean Energy',
+    icon: 'lucide:zap',
+    copy: 'Dig into the technologies racing to power the continent, from solar economics to storage, and prototype around a real constraint.',
+  },
+];
+const activeTrackId = ref<TrackId>('ai');
+const activeTrack = computed(() => TRACKS.find(t => t.id === activeTrackId.value) ?? TRACKS[0]);
 
 // Marquee sample — decorative reinforcement of the real eligibility rule
 // ("resident of any African country"), not a claim about where students
@@ -76,14 +92,26 @@ const MARQUEE_COUNTRIES = [
   { name: 'Cameroon', flag: '🇨🇲', c1: '#007A5E', c2: '#FCD116' },
   { name: 'Botswana', flag: '🇧🇼', c1: '#75AADB', c2: '#FFFFFF' },
   { name: 'Algeria', flag: '🇩🇿', c1: '#006233', c2: '#D21034' },
-]
+];
 
 const FAQS = [
-  { q: 'How much does Dynamerge cost?', a: 'Nothing. The bootcamp is fully funded, and applying is completely free.' },
-  { q: 'What if my internet connection is unreliable?', a: 'Data stipends are available based on need, so connectivity should never be the reason you don\'t apply.' },
-  { q: 'Do I have to know how to code already?', a: 'No. Week one starts at foundations — an introduction to programming and data analysis.' },
-  { q: 'Can I apply to both programs?', a: 'Yes, but you can only participate in one program per calendar year if accepted to both.' },
-]
+  {
+    q: 'How much does Dynamerge cost?',
+    a: 'Nothing. The bootcamp is fully funded, and applying is completely free.',
+  },
+  {
+    q: 'What if my internet connection is unreliable?',
+    a: "Data stipends are available based on need, so connectivity should never be the reason you don't apply.",
+  },
+  {
+    q: 'Do I have to know how to code already?',
+    a: 'No. Week one starts at foundations — an introduction to programming and data analysis.',
+  },
+  {
+    q: 'Can I apply to both programs?',
+    a: 'Yes, but you can only participate in one program per calendar year if accepted to both.',
+  },
+];
 
 // Touch has no :hover, so a coarse-pointer user otherwise has no way to
 // interact with or momentarily stop the marquee at all (:focus-visible
@@ -91,14 +119,13 @@ const FAQS = [
 // Pressing the strip pauses it; releasing, or the touch getting
 // cancelled/leaving the strip, resumes it. Ignores mouse/pen pointers —
 // those already get the hover-driven pause in CSS.
-const isTouchPaused = ref(false)
+const isTouchPaused = ref(false);
 function onMarqueePointerDown(e: PointerEvent) {
-  if (e.pointerType === 'touch') isTouchPaused.value = true
+  if (e.pointerType === 'touch') isTouchPaused.value = true;
 }
 function onMarqueePointerRelease(e: PointerEvent) {
-  if (e.pointerType === 'touch') isTouchPaused.value = false
+  if (e.pointerType === 'touch') isTouchPaused.value = false;
 }
-
 </script>
 
 <template>
@@ -111,23 +138,32 @@ function onMarqueePointerRelease(e: PointerEvent) {
          py-5 + 40px logo), so header + hero together land exactly on one
          screen and the marquee at the hero's bottom edge is visible
          without scrolling on load. -->
-    <div class="relative flex flex-col justify-center overflow-hidden min-h-[calc(100svh-5rem)] bg-ink-static">
+    <div
+      class="relative flex flex-col justify-center overflow-hidden min-h-[calc(100svh-5rem)] bg-ink-static"
+    >
       <img
         :src="program.heroImg"
         :alt="program.name"
-        width="1080" height="720"
+        width="1080"
+        height="720"
         class="absolute inset-0 z-0 w-full h-full object-cover"
         loading="eager"
         fetchpriority="high"
       />
-      <div class="absolute inset-0 z-0 bg-gradient-to-t from-ink-static via-ink-static/55 to-ink-static/15" />
+      <div
+        class="absolute inset-0 z-0 bg-gradient-to-t from-ink-static via-ink-static/55 to-ink-static/15"
+      />
       <Container class="relative z-10 py-24 grow flex flex-col justify-center">
         <div class="max-w-3xl flex flex-col gap-6">
           <!-- Ojuju (secondary African accent, wght=500) on this short
                eyebrow label only — a non-header spot to test it now
                that Madimi One (below) has the wordmark role. See
                docs/TYPOGRAPHY-SYSTEM.md. -->
-          <Motion :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.3 }">
+          <Motion
+            :initial="{ opacity: 0, y: 10 }"
+            :animate="{ opacity: 1, y: 0 }"
+            :transition="{ duration: 0.3 }"
+          >
             <div
               v-if="isStatusResolved"
               class="inline-flex items-center gap-2.5 rounded-full bg-ink-static/25 border border-white/25 px-4 py-1.5 font-accent-african-secondary text-xs uppercase tracking-[0.18em] text-white"
@@ -180,7 +216,11 @@ function onMarqueePointerRelease(e: PointerEvent) {
                 <Icon :icon="stat.icon" width="20" aria-hidden="true" class="text-white/60" />
                 {{ stat.value }}
               </span>
-              <span v-if="i < program.stats.length - 1" class="inline-block w-px h-4 bg-white/25 mx-3" aria-hidden="true" />
+              <span
+                v-if="i < program.stats.length - 1"
+                class="inline-block w-px h-4 bg-white/25 mx-3"
+                aria-hidden="true"
+              />
             </template>
           </Motion>
 
@@ -204,11 +244,18 @@ function onMarqueePointerRelease(e: PointerEvent) {
                 variant="on-gradient"
                 :to="`/stay-connected?from=${SLUG}&reason=${closedReason}`"
               >
-                {{ closedReason === 'upcoming' ? 'Get notified when applications open' : 'Stay connected for the next cycle' }}
+                {{
+                  closedReason === 'upcoming'
+                    ? 'Get notified when applications open'
+                    : 'Stay connected for the next cycle'
+                }}
               </UiButton>
             </template>
             <UiButton variant="on-gradient-ghost" href="#sprint">See the four weeks</UiButton>
-            <span v-if="applyDeadline" class="font-mono-african text-xs uppercase tracking-[0.14em] text-white/80">
+            <span
+              v-if="applyDeadline"
+              class="font-mono-african text-xs uppercase tracking-[0.14em] text-white/80"
+            >
               Apply by {{ applyDeadline }}
             </span>
           </Motion>
@@ -245,7 +292,8 @@ function onMarqueePointerRelease(e: PointerEvent) {
               <span
                 class="marquee-name inline-block ml-2"
                 :style="{ '--c1': country.c1, '--c2': country.c2 }"
-              >{{ country.name }}</span>
+                >{{ country.name }}</span
+              >
               <span class="inline-block w-px h-4 bg-white/25 ml-10" aria-hidden="true" />
             </span>
           </div>
@@ -287,9 +335,11 @@ function onMarqueePointerRelease(e: PointerEvent) {
                  keeps ≥4.5:1 contrast — the sky end is too light for text. -->
             <div
               class="h-full rounded-2xl p-6 flex flex-col gap-3"
-              :class="i === program.timeline.length - 1
-                ? 'bg-gradient-to-br from-[#6B3FE0] to-[#3f1f8a] text-white'
-                : 'bg-surface border hairline-ink'"
+              :class="
+                i === program.timeline.length - 1
+                  ? 'bg-gradient-to-br from-[#6B3FE0] to-[#3f1f8a] text-white'
+                  : 'bg-surface border hairline-ink'
+              "
             >
               <div
                 class="font-mono-african text-lg uppercase tracking-[0.2em]"
@@ -300,7 +350,10 @@ function onMarqueePointerRelease(e: PointerEvent) {
               <div v-if="splitStep(step.desc).kicker" class="font-display text-xl font-semibold">
                 {{ splitStep(step.desc).kicker }}
               </div>
-              <p class="m-0 text-sm leading-relaxed" :class="i === program.timeline.length - 1 ? 'text-white' : 'text-ink/70'">
+              <p
+                class="m-0 text-sm leading-relaxed"
+                :class="i === program.timeline.length - 1 ? 'text-white' : 'text-ink/70'"
+              >
                 {{ splitStep(step.desc).body }}
               </p>
             </div>
@@ -319,15 +372,21 @@ function onMarqueePointerRelease(e: PointerEvent) {
             After a shared foundations week, the cohort splits into specialized tracks.
           </Body>
 
-          <div class="flex flex-wrap gap-3 mb-8" role="group" aria-label="Choose a track to preview">
+          <div
+            class="flex flex-wrap gap-3 mb-8"
+            role="group"
+            aria-label="Choose a track to preview"
+          >
             <button
               v-for="track in TRACKS"
               :key="track.id"
               type="button"
               class="focus-ring-brand inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold border transition-colors"
-              :class="activeTrackId === track.id
-                ? 'bg-gradient-brand text-white border-transparent'
-                : 'bg-transparent text-ink border-ink/10 hover:border-ink/25'"
+              :class="
+                activeTrackId === track.id
+                  ? 'bg-gradient-brand text-white border-transparent'
+                  : 'bg-transparent text-ink border-ink/10 hover:border-ink/25'
+              "
               :aria-pressed="activeTrackId === track.id"
               @click="activeTrackId = track.id"
             >
@@ -343,7 +402,9 @@ function onMarqueePointerRelease(e: PointerEvent) {
             :transition="{ duration: 0.25 }"
           >
             <div class="pt-8 border-t hairline-ink flex items-start gap-5">
-              <div class="w-12 h-12 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0">
+              <div
+                class="w-12 h-12 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0"
+              >
                 <Icon :icon="activeTrack.icon" width="24" class="text-white" />
               </div>
               <div>
@@ -366,7 +427,9 @@ function onMarqueePointerRelease(e: PointerEvent) {
             <Eyebrow accent class="text-brand-violet mb-4 block">The network</Eyebrow>
             <Heading :level="2" class="mb-6">One continent. One cohort.</Heading>
             <Body large class="mb-6">{{ program.features[2]?.desc }}</Body>
-            <div class="inline-flex items-center gap-2 font-mono-african text-base md:text-lg uppercase tracking-[0.14em] text-brand-violet cursor-pin">
+            <div
+              class="inline-flex items-center gap-2 font-mono-african text-base md:text-lg uppercase tracking-[0.14em] text-brand-violet cursor-pin"
+            >
               <Icon icon="lucide:globe-2" width="20" aria-hidden="true" />
               Open to every African country
             </div>
@@ -375,7 +438,8 @@ function onMarqueePointerRelease(e: PointerEvent) {
             <img
               :src="program.features[2]?.img"
               :alt="program.features[2]?.title"
-              width="600" height="400"
+              width="600"
+              height="400"
               class="w-full h-full object-cover"
               loading="lazy"
             />
@@ -387,17 +451,23 @@ function onMarqueePointerRelease(e: PointerEvent) {
     <!-- Who it's for -->
     <Section class="bg-paper border-t hairline-ink">
       <Container>
-        <div class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12">
+        <div
+          class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12"
+        >
           <div class="md:w-1/3">
             <Heading :level="2" class="mb-4">Who it's for</Heading>
             <p class="text-ink/60 text-sm">
-              We evaluate applications based on curiosity, resilience, and potential for growth.
-              We actively encourage students from underrepresented backgrounds to apply.
+              We evaluate applications based on curiosity, resilience, and potential for growth. We
+              actively encourage students from underrepresented backgrounds to apply.
             </p>
           </div>
           <div class="md:w-2/3 flex flex-col gap-4">
             <div v-for="req in program.eligibilityList" :key="req" class="flex items-start gap-3">
-              <Icon icon="lucide:check-circle-2" width="20" class="text-brand-violet shrink-0 mt-1" />
+              <Icon
+                icon="lucide:check-circle-2"
+                width="20"
+                class="text-brand-violet shrink-0 mt-1"
+              />
               <Body>{{ req }}</Body>
             </div>
           </div>
@@ -407,11 +477,7 @@ function onMarqueePointerRelease(e: PointerEvent) {
 
     <ProgramFaq :faqs="FAQS" />
 
-    <ProgramCtaBanner
-      :slug="SLUG"
-      :is-apply-open="isApplyOpen"
-      :closed-reason="closedReason"
-    />
+    <ProgramCtaBanner :slug="SLUG" :is-apply-open="isApplyOpen" :closed-reason="closedReason" />
   </div>
   <div v-else class="p-24 text-center">Program not found.</div>
 </template>
@@ -447,7 +513,9 @@ function onMarqueePointerRelease(e: PointerEvent) {
 .marquee-flag {
   display: inline-block;
   transform-origin: center;
-  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 220ms ease;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 220ms ease;
 }
 
 .marquee-name {
@@ -457,7 +525,9 @@ function onMarqueePointerRelease(e: PointerEvent) {
   background-position: center;
   -webkit-background-clip: text;
   background-clip: text;
-  transition: color 200ms ease, -webkit-text-fill-color 200ms ease;
+  transition:
+    color 200ms ease,
+    -webkit-text-fill-color 200ms ease;
   -webkit-text-fill-color: rgba(255, 255, 255, 0.8);
 }
 

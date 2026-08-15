@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { Motion } from 'motion-v'
-import { Icon } from '@iconify/vue'
-import Container from '../components/ui/Container.vue'
-import Section from '../components/ui/Section.vue'
-import Heading from '../components/ui/Heading.vue'
-import Body from '../components/ui/Body.vue'
-import Eyebrow from '../components/ui/Eyebrow.vue'
-import UiButton from '../components/ui/UiButton.vue'
-import UiCard from '../components/ui/UiCard.vue'
-import ScrollReveal from '../components/motion/ScrollReveal.vue'
+import { Icon } from '@iconify/vue';
+import { Motion } from 'motion-v';
+import ScrollReveal from '../components/motion/ScrollReveal.vue';
+import Body from '../components/ui/Body.vue';
+import Container from '../components/ui/Container.vue';
+import Eyebrow from '../components/ui/Eyebrow.vue';
+import Heading from '../components/ui/Heading.vue';
+import Section from '../components/ui/Section.vue';
+import UiButton from '../components/ui/UiButton.vue';
+import UiCard from '../components/ui/UiCard.vue';
 
 interface Coverage {
-  outlet: string
-  quote: string
-  url: string
-  date: string
+  outlet: string;
+  quote: string;
+  url: string;
+  date: string;
 }
 
 // Real press coverage goes here once it lands. Until then, the Coverage
 // section below renders nothing rather than fabricated quotes attributed
 // to publications that haven't actually written about STAIJA.
-const COVERAGE: Coverage[] = []
+const COVERAGE: Coverage[] = [];
 
 const ASSETS = [
   {
@@ -41,14 +41,14 @@ const ASSETS = [
     href: '#',
     icon: 'lucide:file-text',
   },
-]
+];
 
 const COLOR_TOKENS = [
   { name: 'Brand Violet', hex: '#8B55FF', swatch: 'bg-brand-violet' },
   { name: 'Brand Sky', hex: '#5EDBE7', swatch: 'bg-brand-sky' },
   { name: 'Ink', hex: '#0E1217', swatch: 'bg-ink' },
   { name: 'Slate', hex: '#F1F5F9', swatch: 'bg-paper border hairline-ink' },
-]
+];
 </script>
 
 <template>
@@ -58,11 +58,12 @@ const COLOR_TOKENS = [
       <Container class="max-w-3xl">
         <Eyebrow class="text-brand-violet mb-4 block">Press</Eyebrow>
         <Heading :level="1" class="mb-6">
-          We're building <span class="text-brand-violet">Africa's next</span> generation of scientist-leaders.
+          We're building <span class="text-brand-violet">Africa's next</span> generation of
+          scientist-leaders.
         </Heading>
         <Body large class="text-ink/70">
-          For interviews, brand assets, or background on STAIJA's programs and outcomes,
-          start here. We aim to reply to all press inquiries within one business day.
+          For interviews, brand assets, or background on STAIJA's programs and outcomes, start here.
+          We aim to reply to all press inquiries within one business day.
         </Body>
       </Container>
     </Section>
@@ -94,11 +95,14 @@ const COLOR_TOKENS = [
             <UiCard class="p-6 bg-paper">
               <h3 class="font-display text-lg font-semibold mb-3 m-0">For interviews</h3>
               <p class="text-sm text-ink/70 mb-4 m-0">
-                Our Executive Director and Program Directors are available for interviews and
-                expert commentary on STEM education, African research capacity, and youth-led
-                science. Most interviews can be scheduled within 48 hours.
+                Our Executive Director and Program Directors are available for interviews and expert
+                commentary on STEM education, African research capacity, and youth-led science. Most
+                interviews can be scheduled within 48 hours.
               </p>
-              <UiButton variant="primary" href="mailto:press@staija.org?subject=Interview%20request">
+              <UiButton
+                variant="primary"
+                href="mailto:press@staija.org?subject=Interview%20request"
+              >
                 Schedule an interview
               </UiButton>
             </UiCard>
@@ -146,7 +150,11 @@ const COLOR_TOKENS = [
           <div class="border-t hairline-ink pt-12">
             <h3 class="font-display text-2xl font-semibold mb-8 text-center m-0">Color palette</h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-              <div v-for="c in COLOR_TOKENS" :key="c.name" class="flex flex-col items-center text-center gap-3">
+              <div
+                v-for="c in COLOR_TOKENS"
+                :key="c.name"
+                class="flex flex-col items-center text-center gap-3"
+              >
                 <div :class="['w-20 h-20 rounded-2xl', c.swatch]" />
                 <div>
                   <div class="font-semibold text-sm text-ink">{{ c.name }}</div>
@@ -182,9 +190,13 @@ const COLOR_TOKENS = [
               :viewport="{ once: true }"
               :transition="{ duration: 0.3, delay: (i % 3) * 0.05 }"
             >
-              <UiCard class="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-shadow">
+              <UiCard
+                class="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-shadow"
+              >
                 <div class="md:w-48 shrink-0">
-                  <div class="font-display text-xl font-semibold text-ink group-hover:text-brand-violet transition-colors">
+                  <div
+                    class="font-display text-xl font-semibold text-ink group-hover:text-brand-violet transition-colors"
+                  >
                     {{ c.outlet }}
                   </div>
                   <div class="text-xs uppercase tracking-widest text-ink/50 mt-1">{{ c.date }}</div>

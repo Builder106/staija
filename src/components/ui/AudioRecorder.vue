@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, onBeforeUnmount } from 'vue'
-import { Icon } from '@iconify/vue'
-import UiButton from './UiButton.vue'
+import { Icon } from '@iconify/vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
+import UiButton from './UiButton.vue';
 
 // In-browser audio recorder. Caps recording length, exposes a Blob via
 // `update:blob` and the achieved duration via `update:durationSec`.
@@ -9,149 +9,157 @@ import UiButton from './UiButton.vue'
 // applicant chose not to record.
 
 interface Props {
-  maxSeconds?: number
+  maxSeconds?: number;
   /** One-line prompt rendered above the controls (e.g. "Prefer to talk it out?"). */
-  prompt?: string
+  prompt?: string;
   /** Metadata about an audio answer the applicant recorded in a previous
    *  session. When present and no in-session recording exists, the
    *  component renders a pre-attached card (filename + duration + Replace
    *  / Remove) instead of the Start-recording button. Required for
    *  cross-device resume — the Blob itself can't survive a reload, but
    *  the staged-file metadata can. */
-  attachedAudio?: { fileName: string; sizeBytes: number; durationSec?: number; contentType?: string } | null
+  attachedAudio?: {
+    fileName: string;
+    sizeBytes: number;
+    durationSec?: number;
+    contentType?: string;
+  } | null;
   /** Shows an inline "Uploading…" hint after a fresh recording is
    *  finalized, while the parent is still pushing bytes to staging. */
-  uploading?: boolean
+  uploading?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   maxSeconds: 90,
   attachedAudio: null,
   uploading: false,
-})
+});
 
-export interface RecordedAudio { blob: Blob; durationSec: number }
+export interface RecordedAudio {
+  blob: Blob;
+  durationSec: number;
+}
 const emit = defineEmits<{
-  (e: 'update:audio', value: RecordedAudio | null): void
+  (e: 'update:audio', value: RecordedAudio | null): void;
   /** Applicant clicked Remove on the pre-attached card. Parent should
    *  wipe the staged-audio metadata + best-effort delete the Storage
    *  object. Distinct from `update:audio(null)` which fires for clearing
    *  a freshly-recorded clip — the parent needs to know the difference
    *  to avoid trying to delete a Storage object that was never written
    *  for this device. */
-  (e: 'clear-attached'): void
-}>()
+  (e: 'clear-attached'): void;
+}>();
 
-type State = 'idle' | 'requesting' | 'recording' | 'recorded' | 'error'
-const state = ref<State>('idle')
-const error = ref<string | null>(null)
-const elapsed = ref(0)
-const audioUrl = ref<string | null>(null)
+type State = 'idle' | 'requesting' | 'recording' | 'recorded' | 'error';
+const state = ref<State>('idle');
+const error = ref<string | null>(null);
+const elapsed = ref(0);
+const audioUrl = ref<string | null>(null);
 
-let recorder: MediaRecorder | null = null
-let stream: MediaStream | null = null
-let chunks: Blob[] = []
-let timer: ReturnType<typeof setInterval> | null = null
+let recorder: MediaRecorder | null = null;
+let stream: MediaStream | null = null;
+let chunks: Blob[] = [];
+let timer: ReturnType<typeof setInterval> | null = null;
 
 function format(sec: number) {
-  const m = Math.floor(sec / 60).toString()
-  const s = (sec % 60).toString().padStart(2, '0')
-  return `${m}:${s}`
+  const m = Math.floor(sec / 60).toString();
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
 }
 
 /** Render priority — fresh in-session recording beats pre-attached
  *  beats idle controls. Once the applicant hits "Start recording" or
  *  has a recorded clip, the attached card is shadowed. */
 const showAttached = computed(
-  () => state.value === 'idle' && !audioUrl.value && props.attachedAudio !== null,
-)
+  () => state.value === 'idle' && !audioUrl.value && props.attachedAudio !== null
+);
 
 function pickReplace() {
-  emit('clear-attached')
-  start()
+  emit('clear-attached');
+  start();
 }
 
 function removeAttached() {
-  emit('clear-attached')
+  emit('clear-attached');
 }
 
 function teardownStream() {
   if (stream) {
-    stream.getTracks().forEach((t) => t.stop())
-    stream = null
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
   }
 }
 
 function clearTimer() {
   if (timer) {
-    clearInterval(timer)
-    timer = null
+    clearInterval(timer);
+    timer = null;
   }
 }
 
 async function start() {
-  error.value = null
+  error.value = null;
   // If we're re-recording, clear the previous capture first.
   if (audioUrl.value) {
-    URL.revokeObjectURL(audioUrl.value)
-    audioUrl.value = null
+    URL.revokeObjectURL(audioUrl.value);
+    audioUrl.value = null;
   }
-  emit('update:audio', null)
-  elapsed.value = 0
-  state.value = 'requesting'
+  emit('update:audio', null);
+  elapsed.value = 0;
+  state.value = 'requesting';
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    chunks = []
-    recorder = new MediaRecorder(stream)
-    recorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) chunks.push(e.data)
-    }
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
     recorder.onstop = () => {
-      const mime = recorder?.mimeType || 'audio/webm'
-      const blob = new Blob(chunks, { type: mime })
-      audioUrl.value = URL.createObjectURL(blob)
-      state.value = 'recorded'
-      emit('update:audio', { blob, durationSec: elapsed.value })
-      teardownStream()
-    }
-    recorder.start()
-    state.value = 'recording'
+      const mime = recorder?.mimeType || 'audio/webm';
+      const blob = new Blob(chunks, { type: mime });
+      audioUrl.value = URL.createObjectURL(blob);
+      state.value = 'recorded';
+      emit('update:audio', { blob, durationSec: elapsed.value });
+      teardownStream();
+    };
+    recorder.start();
+    state.value = 'recording';
     timer = setInterval(() => {
-      elapsed.value += 1
-      if (elapsed.value >= props.maxSeconds) stop()
-    }, 1000)
+      elapsed.value += 1;
+      if (elapsed.value >= props.maxSeconds) stop();
+    }, 1000);
   } catch (err) {
-    teardownStream()
-    state.value = 'error'
-    const msg = err instanceof Error ? err.message : ''
+    teardownStream();
+    state.value = 'error';
+    const msg = err instanceof Error ? err.message : '';
     error.value = msg.includes('Permission')
       ? 'Microphone access was blocked. You can keep going with just the written answer.'
-      : "Couldn't start the recording. You can keep going with just the written answer."
+      : "Couldn't start the recording. You can keep going with just the written answer.";
   }
 }
 
 function stop() {
-  clearTimer()
-  if (recorder && recorder.state !== 'inactive') recorder.stop()
+  clearTimer();
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
 }
 
 function clear() {
-  clearTimer()
-  if (recorder && recorder.state !== 'inactive') recorder.stop()
-  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
-  audioUrl.value = null
-  elapsed.value = 0
-  chunks = []
-  state.value = 'idle'
-  teardownStream()
-  emit('update:audio', null)
+  clearTimer();
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value);
+  audioUrl.value = null;
+  elapsed.value = 0;
+  chunks = [];
+  state.value = 'idle';
+  teardownStream();
+  emit('update:audio', null);
 }
 
 onBeforeUnmount(() => {
-  clearTimer()
-  if (recorder && recorder.state !== 'inactive') recorder.stop()
-  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
-  teardownStream()
-})
+  clearTimer();
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value);
+  teardownStream();
+});
 </script>
 
 <template>
@@ -177,7 +185,9 @@ onBeforeUnmount(() => {
           {{ attachedAudio.fileName }}
         </span>
         <span class="text-xs text-ink/55">
-          <template v-if="attachedAudio.durationSec">{{ format(attachedAudio.durationSec) }} | </template>From your previous session
+          <template v-if="attachedAudio.durationSec"
+            >{{ format(attachedAudio.durationSec) }} | </template
+          >From your previous session
         </span>
       </div>
       <div class="flex items-center gap-3 shrink-0">
@@ -215,7 +225,7 @@ onBeforeUnmount(() => {
       <div class="flex-1 h-1.5 bg-ink/[0.06] rounded-full overflow-hidden">
         <div
           class="h-full bg-rose-500 transition-all"
-          :style="{ width: (elapsed / maxSeconds * 100) + '%' }"
+          :style="{ width: (elapsed / maxSeconds) * 100 + '%' }"
         />
       </div>
       <UiButton variant="primary" @click="stop">

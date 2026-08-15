@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { Icon } from '@iconify/vue'
-import { httpsCallable } from 'firebase/functions'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiSelect from '../../components/ui/UiSelect.vue'
-import { useAuth } from '../../composables/useAuth'
-import { CohortService, EnrollmentService, toMillis } from '../../services/learn'
-import { Timestamp } from 'firebase/firestore'
-import { functions } from '../../config/firebase'
-import type { Cohort } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { Timestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { computed, onMounted, ref } from 'vue';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import UiSelect from '../../components/ui/UiSelect.vue';
+import { useAuth } from '../../composables/useAuth';
+import { functions } from '../../config/firebase';
+import { CohortService, EnrollmentService, toMillis } from '../../services/learn';
+import type { Cohort } from '../../services/types';
 
-const { user } = useAuth()
+const { user } = useAuth();
 
-const cohorts = ref<Cohort[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
-const showForm = ref(false)
-const editingId = ref<string | null>(null)
+const cohorts = ref<Cohort[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
+const showForm = ref(false);
+const editingId = ref<string | null>(null);
 
 const blank = () => ({
   program: 'stepup_scholars' as 'stepup_scholars' | 'dynamerge',
@@ -33,26 +33,23 @@ const blank = () => ({
   endDate: '',
   mentorPool: '',
   status: 'planned' as 'planned' | 'active' | 'completed',
-})
-const form = ref(blank())
-const saving = ref(false)
+});
+const form = ref(blank());
+const saving = ref(false);
 
 const canSave = computed(
   () =>
-    form.value.courseSlug &&
-    form.value.courseVersion &&
-    form.value.startDate &&
-    form.value.endDate,
-)
+    form.value.courseSlug && form.value.courseVersion && form.value.startDate && form.value.endDate
+);
 
 async function load() {
-  loading.value = true
+  loading.value = true;
   try {
-    cohorts.value = await CohortService.listAllCohorts()
+    cohorts.value = await CohortService.listAllCohorts();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load cohorts.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load cohorts.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -61,71 +58,71 @@ async function load() {
 // accidentally graduate a cohort thinking they were marking it
 // inactive or whatever. Active-enrollment count is fetched lazily
 // when the modal opens so the number is fresh.
-const graduateTarget = ref<Cohort | null>(null)
-const graduateCount = ref<number | null>(null)
-const graduateCountLoading = ref(false)
-const graduating = ref(false)
-const graduateError = ref<string | null>(null)
-const graduateResult = ref<{ enrollmentsCompleted: number; rolesFlipped: number } | null>(null)
+const graduateTarget = ref<Cohort | null>(null);
+const graduateCount = ref<number | null>(null);
+const graduateCountLoading = ref(false);
+const graduating = ref(false);
+const graduateError = ref<string | null>(null);
+const graduateResult = ref<{ enrollmentsCompleted: number; rolesFlipped: number } | null>(null);
 
 async function openGraduate(c: Cohort) {
-  graduateTarget.value = c
-  graduateResult.value = null
-  graduateError.value = null
-  graduateCount.value = null
-  graduateCountLoading.value = true
+  graduateTarget.value = c;
+  graduateResult.value = null;
+  graduateError.value = null;
+  graduateCount.value = null;
+  graduateCountLoading.value = true;
   try {
-    const enrollments = await EnrollmentService.getForCohort(c.id ?? '')
-    graduateCount.value = enrollments.length
+    const enrollments = await EnrollmentService.getForCohort(c.id ?? '');
+    graduateCount.value = enrollments.length;
   } catch {
     // Non-fatal — staff can still proceed; the callable returns the
     // real count in its response.
-    graduateCount.value = null
+    graduateCount.value = null;
   } finally {
-    graduateCountLoading.value = false
+    graduateCountLoading.value = false;
   }
 }
 
 function closeGraduate() {
-  graduateTarget.value = null
-  graduateResult.value = null
-  graduateError.value = null
-  graduateCount.value = null
+  graduateTarget.value = null;
+  graduateResult.value = null;
+  graduateError.value = null;
+  graduateCount.value = null;
 }
 
 async function confirmGraduate() {
-  const target = graduateTarget.value
-  if (!target?.id || graduating.value) return
-  graduating.value = true
-  graduateError.value = null
+  const target = graduateTarget.value;
+  if (!target?.id || graduating.value) return;
+  graduating.value = true;
+  graduateError.value = null;
   try {
     const fn = httpsCallable<
       { cohortId: string },
       { ok: true; cohortId: string; enrollmentsCompleted: number; rolesFlipped: number }
-    >(functions, 'graduateCohort')
-    const res = await fn({ cohortId: target.id })
+    >(functions, 'graduateCohort');
+    const res = await fn({ cohortId: target.id });
     graduateResult.value = {
       enrollmentsCompleted: res.data.enrollmentsCompleted,
       rolesFlipped: res.data.rolesFlipped,
-    }
+    };
     // Refresh the cohorts list so the just-graduated cohort shows
     // status='completed' in the table without a manual page refresh.
-    await load()
+    await load();
   } catch (err) {
-    graduateError.value = err instanceof Error ? err.message : 'Graduation failed.'
+    graduateError.value = err instanceof Error ? err.message : 'Graduation failed.';
   } finally {
-    graduating.value = false
+    graduating.value = false;
   }
 }
 
 function openNew() {
-  editingId.value = null
-  form.value = blank()
-  showForm.value = true
+  editingId.value = null;
+  form.value = blank();
+  showForm.value = true;
 }
 
 function openEdit(c: Cohort) {
-  editingId.value = c.id ?? null
+  editingId.value = c.id ?? null;
   form.value = {
     program: c.program,
     courseSlug: c.courseSlug,
@@ -135,14 +132,14 @@ function openEdit(c: Cohort) {
     endDate: new Date(toMillis(c.endDate)).toISOString().slice(0, 10),
     mentorPool: (c.mentorPool ?? []).join(', '),
     status: c.status,
-  }
-  showForm.value = true
+  };
+  showForm.value = true;
 }
 
 async function save() {
-  if (!canSave.value || !user.value) return
-  saving.value = true
-  error.value = null
+  if (!canSave.value || !user.value) return;
+  saving.value = true;
+  error.value = null;
   try {
     const payload = {
       program: form.value.program,
@@ -153,34 +150,34 @@ async function save() {
       endDate: Timestamp.fromDate(new Date(form.value.endDate)).toDate(),
       mentorPool: form.value.mentorPool
         .split(',')
-        .map((s) => s.trim())
+        .map(s => s.trim())
         .filter(Boolean),
       status: form.value.status,
       createdBy: user.value.uid,
-    }
+    };
 
     if (editingId.value) {
-      await CohortService.updateCohort(editingId.value, payload)
+      await CohortService.updateCohort(editingId.value, payload);
     } else {
-      await CohortService.createCohort(payload)
+      await CohortService.createCohort(payload);
     }
-    showForm.value = false
-    await load()
+    showForm.value = false;
+    await load();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Save failed.'
+    error.value = (err as { message?: string }).message ?? 'Save failed.';
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function remove(c: Cohort) {
-  if (!c.id) return
-  if (!confirm(`Delete cohort "${c.name || c.courseSlug}"? This can't be undone.`)) return
+  if (!c.id) return;
+  if (!confirm(`Delete cohort "${c.name || c.courseSlug}"? This can't be undone.`)) return;
   try {
-    await CohortService.deleteCohort(c.id)
-    await load()
+    await CohortService.deleteCohort(c.id);
+    await load();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Delete failed.'
+    error.value = (err as { message?: string }).message ?? 'Delete failed.';
   }
 }
 
@@ -193,25 +190,28 @@ async function remove(c: Cohort) {
 // click can't fire twice. The confirm() is deliberate: re-arming
 // produces user-visible emails on the next cron run, and staff
 // should know they're queueing that side effect.
-const rearmingIds = ref<Set<string>>(new Set())
+const rearmingIds = ref<Set<string>>(new Set());
 
 async function rearmDeferredsCron(c: Cohort) {
-  if (!c.id || rearmingIds.value.has(c.id)) return
-  if (!confirm(
-    `Re-arm the deferred re-offer cron for "${c.name || c.courseSlug}"?\n\n` +
-    `The next daily cron run will email every deferred applicant in this ` +
-    `program. They'll see the three-CTA handshake on their dashboard again.`,
-  )) return
-  rearmingIds.value = new Set([...rearmingIds.value, c.id])
+  if (!c.id || rearmingIds.value.has(c.id)) return;
+  if (
+    !confirm(
+      `Re-arm the deferred re-offer cron for "${c.name || c.courseSlug}"?\n\n` +
+        `The next daily cron run will email every deferred applicant in this ` +
+        `program. They'll see the three-CTA handshake on their dashboard again.`
+    )
+  )
+    return;
+  rearmingIds.value = new Set([...rearmingIds.value, c.id]);
   try {
-    await CohortService.rearmDeferredsCron(c.id)
-    await load()
+    await CohortService.rearmDeferredsCron(c.id);
+    await load();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Re-arm failed.'
+    error.value = (err as { message?: string }).message ?? 'Re-arm failed.';
   } finally {
-    const next = new Set(rearmingIds.value)
-    next.delete(c.id)
-    rearmingIds.value = next
+    const next = new Set(rearmingIds.value);
+    next.delete(c.id);
+    rearmingIds.value = next;
   }
 }
 
@@ -220,7 +220,7 @@ function fmtDate(value: unknown) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  })
+  });
 }
 
 /** Plain ms epoch → short readable date. Separate from `fmtDate`
@@ -228,21 +228,21 @@ function fmtDate(value: unknown) {
  *  number (the cron writes `Date.now()`), not a Firestore Timestamp,
  *  so it bypasses the toMillis wrap. */
 function fmtMsDate(ms: number | undefined): string {
-  if (!ms) return ''
+  if (!ms) return '';
   return new Date(ms).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  })
+  });
 }
 
 const statusClass: Record<string, string> = {
   planned: 'bg-ink/5 text-ink/70 ring-1 ring-ink/10',
   active: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   completed: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
-}
+};
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -391,7 +391,9 @@ onMounted(load)
           </Heading>
           <div class="grid md:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Program</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Program</label
+              >
               <UiSelect
                 v-model="form.program"
                 :options="[
@@ -401,7 +403,9 @@ onMounted(load)
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Status</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Status</label
+              >
               <UiSelect
                 v-model="form.status"
                 :options="[
@@ -412,7 +416,9 @@ onMounted(load)
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Course slug</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Course slug</label
+              >
               <input
                 v-model="form.courseSlug"
                 type="text"
@@ -421,7 +427,9 @@ onMounted(load)
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Course version</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Course version</label
+              >
               <input
                 v-model="form.courseVersion"
                 type="text"
@@ -441,7 +449,9 @@ onMounted(load)
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Start date</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Start date</label
+              >
               <input
                 v-model="form.startDate"
                 type="date"
@@ -449,7 +459,9 @@ onMounted(load)
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">End date</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >End date</label
+              >
               <input
                 v-model="form.endDate"
                 type="date"
@@ -476,7 +488,9 @@ onMounted(load)
               <Icon v-if="saving" icon="lucide:loader-2" width="14" class="animate-spin" />
               {{ saving ? 'Saving…' : editingId ? 'Update cohort' : 'Create cohort' }}
             </UiButton>
-            <UiButton variant="secondary" :disabled="saving" @click="showForm = false">Cancel</UiButton>
+            <UiButton variant="secondary" :disabled="saving" @click="showForm = false"
+              >Cancel</UiButton
+            >
           </div>
         </UiCard>
       </Container>
@@ -510,29 +524,36 @@ onMounted(load)
             <template v-if="graduateResult">
               <div class="p-6 flex flex-col gap-4">
                 <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div
+                    class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"
+                  >
                     <Icon icon="lucide:graduation-cap" width="20" />
                   </div>
                   <div>
                     <Heading :level="3" class="!text-lg !m-0">Cohort graduated</Heading>
                     <p class="text-sm text-ink/60 m-0 mt-1">
-                      {{ graduateTarget.name || graduateTarget.courseSlug }} is now marked completed.
+                      {{ graduateTarget.name || graduateTarget.courseSlug }} is now marked
+                      completed.
                     </p>
                   </div>
                 </div>
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm border-t hairline-ink pt-4">
                   <dt class="text-ink/60">Enrollments completed</dt>
-                  <dd class="text-ink font-semibold tabular-nums m-0 text-right">{{ graduateResult.enrollmentsCompleted }}</dd>
+                  <dd class="text-ink font-semibold tabular-nums m-0 text-right">
+                    {{ graduateResult.enrollmentsCompleted }}
+                  </dd>
                   <dt class="text-ink/60">Students → alumni</dt>
-                  <dd class="text-ink font-semibold tabular-nums m-0 text-right">{{ graduateResult.rolesFlipped }}</dd>
+                  <dd class="text-ink font-semibold tabular-nums m-0 text-right">
+                    {{ graduateResult.rolesFlipped }}
+                  </dd>
                 </dl>
                 <p
                   v-if="graduateResult.enrollmentsCompleted > graduateResult.rolesFlipped"
                   class="text-xs text-ink/55 m-0"
                 >
                   {{ graduateResult.enrollmentsCompleted - graduateResult.rolesFlipped }} student(s)
-                  stayed at their current role — they have another active enrollment
-                  or weren't role='student' to begin with.
+                  stayed at their current role — they have another active enrollment or weren't
+                  role='student' to begin with.
                 </p>
               </div>
               <div class="flex justify-end px-6 py-4 border-t hairline-ink bg-ink/[0.02]">
@@ -543,7 +564,9 @@ onMounted(load)
             <template v-else>
               <div class="p-6 flex flex-col gap-4">
                 <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                  <div
+                    class="w-10 h-10 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center shrink-0"
+                  >
                     <Icon icon="lucide:graduation-cap" width="20" />
                   </div>
                   <div>
@@ -551,10 +574,10 @@ onMounted(load)
                       Graduate {{ graduateTarget.name || graduateTarget.courseSlug }}?
                     </Heading>
                     <p class="text-sm text-ink/60 m-0 mt-1">
-                      The cohort's status flips to <span class="font-semibold">completed</span>,
-                      all active enrollments are marked finished, and qualifying students
-                      transition to <span class="font-semibold">alumni</span>. Idempotent —
-                      safe to re-run if something fails midway.
+                      The cohort's status flips to <span class="font-semibold">completed</span>, all
+                      active enrollments are marked finished, and qualifying students transition to
+                      <span class="font-semibold">alumni</span>. Idempotent — safe to re-run if
+                      something fails midway.
                     </p>
                   </div>
                 </div>
@@ -562,11 +585,16 @@ onMounted(load)
                   <span class="text-ink/60">Active enrollments: </span>
                   <span class="font-semibold tabular-nums text-ink">
                     <template v-if="graduateCountLoading">checking…</template>
-                    <template v-else-if="graduateCount === null">unknown (callable will report)</template>
+                    <template v-else-if="graduateCount === null"
+                      >unknown (callable will report)</template
+                    >
                     <template v-else>{{ graduateCount }}</template>
                   </span>
                 </div>
-                <p v-if="graduateError" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 m-0">
+                <p
+                  v-if="graduateError"
+                  class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 m-0"
+                >
                   {{ graduateError }}
                 </p>
               </div>

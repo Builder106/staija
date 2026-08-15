@@ -19,37 +19,37 @@
  * in Oct/Nov 2026, once the physical kits are out the door. The card
  * will slot in below ReferAFriend.
  */
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import Container from '../components/ui/Container.vue'
-import Section from '../components/ui/Section.vue'
-import StayConnectedHero from '../components/stay-connected/StayConnectedHero.vue'
-import NotifyMeForm from '../components/stay-connected/NotifyMeForm.vue'
-import OtherProgramSuggestion from '../components/stay-connected/OtherProgramSuggestion.vue'
-import ReferAFriend from '../components/stay-connected/ReferAFriend.vue'
-import PublicMentorShowcase from '../components/stay-connected/PublicMentorShowcase.vue'
-import BrowseCards from '../components/stay-connected/BrowseCards.vue'
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import BrowseCards from '../components/stay-connected/BrowseCards.vue';
+import NotifyMeForm from '../components/stay-connected/NotifyMeForm.vue';
+import OtherProgramSuggestion from '../components/stay-connected/OtherProgramSuggestion.vue';
+import PublicMentorShowcase from '../components/stay-connected/PublicMentorShowcase.vue';
+import ReferAFriend from '../components/stay-connected/ReferAFriend.vue';
+import StayConnectedHero from '../components/stay-connected/StayConnectedHero.vue';
+import Container from '../components/ui/Container.vue';
+import Section from '../components/ui/Section.vue';
 
-const route = useRoute()
+const route = useRoute();
 
 // Query params arrive as string | string[] from vue-router; coerce to
 // the first string and normalize. Empty string ("") is the "direct
 // visit" sentinel that the sub-components treat as "no context."
 const from = computed(() => {
-  const v = route.query.from
-  return typeof v === 'string' ? v : ''
-})
+  const v = route.query.from;
+  return typeof v === 'string' ? v : '';
+});
 const reason = computed(() => {
-  const v = route.query.reason
-  return typeof v === 'string' ? v : ''
-})
+  const v = route.query.reason;
+  return typeof v === 'string' ? v : '';
+});
 // Referrer attribution from the URL. The shape (`u-<uid>` /
 // `a-<short>`) is validated centrally inside `referrals.ts` — passing
 // the raw value through to the hero is fine.
 const referrerId = computed(() => {
-  const v = route.query.ref
-  return typeof v === 'string' && v.length > 0 ? v : null
-})
+  const v = route.query.ref;
+  return typeof v === 'string' && v.length > 0 ? v : null;
+});
 </script>
 
 <template>

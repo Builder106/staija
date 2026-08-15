@@ -1,27 +1,31 @@
-import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
-import { getFunctions } from 'firebase/functions'
-import { getAnalytics, type Analytics } from 'firebase/analytics'
-import { getPerformance, type FirebasePerformance } from 'firebase/performance'
+import { getAnalytics, type Analytics } from 'firebase/analytics';
+import { initializeApp } from 'firebase/app';
 import {
+  getToken,
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
-  getToken,
   type AppCheck,
-} from 'firebase/app-check'
+} from 'firebase/app-check';
+import { getAuth } from 'firebase/auth';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
+import { getPerformance, type FirebasePerformance } from 'firebase/performance';
+import { getStorage } from 'firebase/storage';
 
-import { getFirebaseConfig } from '../utils/env.ts'
+import { getFirebaseConfig } from '../utils/env.ts';
 
 // Get Firebase configuration from environment variables
-const firebaseConfig = getFirebaseConfig()
+const firebaseConfig = getFirebaseConfig();
 
 // Log environment info in development
 // logEnvironmentInfo()
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
+const app = initializeApp(firebaseConfig);
 
 // Initialize App Check (browser only — App Check has no Node equivalent and
 // would crash SSR or test runs). Uses reCAPTCHA Enterprise.
@@ -42,22 +46,24 @@ const isDebugAppCheckEnv =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
-    window.location.hostname === 'staging.staija.org')
+    window.location.hostname === 'staging.staija.org');
 
-let appCheck: AppCheck | null = null
+let appCheck: AppCheck | null = null;
 if (typeof window !== 'undefined') {
   if (isDebugAppCheckEnv) {
-    const pinnedToken = import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN as string | undefined
-    ;(self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string }).FIREBASE_APPCHECK_DEBUG_TOKEN = pinnedToken ?? true
+    const pinnedToken = import.meta.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN as string | undefined;
+    (
+      self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string }
+    ).FIREBASE_APPCHECK_DEBUG_TOKEN = pinnedToken ?? true;
   }
-  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY as string | undefined
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY as string | undefined;
   if (recaptchaSiteKey) {
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey),
       isTokenAutoRefreshEnabled: true,
-    })
+    });
   } else if (isDebugAppCheckEnv) {
-    console.warn('[firebase] VITE_RECAPTCHA_ENTERPRISE_SITE_KEY not set — App Check skipped')
+    console.warn('[firebase] VITE_RECAPTCHA_ENTERPRISE_SITE_KEY not set — App Check skipped');
   }
 }
 
@@ -66,17 +72,17 @@ if (typeof window !== 'undefined') {
 // HTTPS endpoints (e.g. file uploads via multipart). Returns null if App
 // Check isn't initialized (e.g. site key missing).
 export async function getAppCheckToken(): Promise<string | null> {
-  if (!appCheck) return null
+  if (!appCheck) return null;
   try {
-    const result = await getToken(appCheck, /* forceRefresh */ false)
-    return result.token
+    const result = await getToken(appCheck, /* forceRefresh */ false);
+    return result.token;
   } catch {
-    return null
+    return null;
   }
 }
 
 // Initialize Firebase services
-export const auth = getAuth(app)
+export const auth = getAuth(app);
 // initializeFirestore (not getFirestore) so we can pass transport options.
 // experimentalAutoDetectLongPolling probes the default WebChannel streaming
 // transport at startup, and on failure transparently falls back to plain
@@ -105,31 +111,29 @@ export const auth = getAuth(app)
 export const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-})
+});
 // Default bucket — used for application uploads (transcripts, IDs,
 // reference letters). Lives in the project's data region (africa-south1)
 // since those are private files served only to the applicant + staff.
-export const storage = getStorage(app)
+export const storage = getStorage(app);
 // Public bucket — used for program editor assets (hero, mentor, feature
 // images) which need a no-cost-tier-eligible region. If
 // VITE_FIREBASE_PUBLIC_BUCKET is unset we fall back to the default bucket
 // so the app keeps working without it.
-const publicBucket = import.meta.env.VITE_FIREBASE_PUBLIC_BUCKET as string | undefined
-export const publicStorage = publicBucket
-  ? getStorage(app, `gs://${publicBucket}`)
-  : storage
-export const functions = getFunctions(app)
+const publicBucket = import.meta.env.VITE_FIREBASE_PUBLIC_BUCKET as string | undefined;
+export const publicStorage = publicBucket ? getStorage(app, `gs://${publicBucket}`) : storage;
+export const functions = getFunctions(app);
 
 // Initialize analytics and performance monitoring (only in production)
-let analytics: Analytics | null = null
-let performance: FirebasePerformance | null = null
+let analytics: Analytics | null = null;
+let performance: FirebasePerformance | null = null;
 
 if (typeof window !== 'undefined' && import.meta.env.PROD) {
-  analytics = getAnalytics(app)
-  performance = getPerformance(app)
+  analytics = getAnalytics(app);
+  performance = getPerformance(app);
 }
 
-export { analytics, performance }
+export { analytics, performance };
 
 // Export the app instance
-export default app
+export default app;

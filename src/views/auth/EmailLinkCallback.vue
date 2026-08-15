@@ -21,7 +21,7 @@
         <div class="prompt-icon"><Icon icon="lucide:mail" /></div>
         <h2>Confirm Your Email</h2>
         <p>Please provide your email address to complete the sign-in process.</p>
-        
+
         <form @submit.prevent="completeSignIn" class="email-form">
           <div class="form-group">
             <label for="email">Email Address</label>
@@ -51,101 +51,104 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { getAdditionalUserInfo } from 'firebase/auth'
-import { Icon } from '@iconify/vue'
-import { AuthService, DatabaseService } from '../../services/firebase'
-import { postLoginRoute } from '../../services/postLoginRedirect'
+import { Icon } from '@iconify/vue';
+import { getAdditionalUserInfo } from 'firebase/auth';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { AuthService, DatabaseService } from '../../services/firebase';
+import { postLoginRoute } from '../../services/postLoginRedirect';
 
-const router = useRouter()
+const router = useRouter();
 
-const loading = ref(true)
-const error = ref('')
-const emailPrompt = ref(false)
-const success = ref(false)
-const completing = ref(false)
-const email = ref('')
+const loading = ref(true);
+const error = ref('');
+const emailPrompt = ref(false);
+const success = ref(false);
+const completing = ref(false);
+const email = ref('');
 
 const completeSignIn = async () => {
-  if (!email.value) return
-  
-  completing.value = true
-  error.value = ''
-  
+  if (!email.value) return;
+
+  completing.value = true;
+  error.value = '';
+
   try {
-    const result = await AuthService.completeSignInWithEmailLink(email.value, window.location.href)
-    
-    const additionalInfo = getAdditionalUserInfo(result)
+    const result = await AuthService.completeSignInWithEmailLink(email.value, window.location.href);
+
+    const additionalInfo = getAdditionalUserInfo(result);
     if (additionalInfo?.isNewUser) {
-      const role = AuthService.getStoredRole() || 'applicant'
-      const displayName = email.value.split('@')[0]
-      
-      await AuthService.createUserProfile(result.user, displayName, role as 'applicant' | 'staff' | 'alumni')
+      const role = AuthService.getStoredRole() || 'applicant';
+      const displayName = email.value.split('@')[0];
+
+      await AuthService.createUserProfile(
+        result.user,
+        displayName,
+        role as 'applicant' | 'staff' | 'alumni'
+      );
     }
-    
-    success.value = true
-    
+
+    success.value = true;
+
     // Redirect after a short delay
     setTimeout(async () => {
-      const user = AuthService.getCurrentUser()
-      let resolvedRole = null
+      const user = AuthService.getCurrentUser();
+      let resolvedRole = null;
       if (user) {
         try {
-          const profile = await DatabaseService.getUserProfile(user.uid)
-          resolvedRole = profile?.role ?? null
+          const profile = await DatabaseService.getUserProfile(user.uid);
+          resolvedRole = profile?.role ?? null;
         } catch {
           // Fall through with role=null — postLoginRoute returns { name: 'home' }
         }
       }
-      router.push(postLoginRoute(resolvedRole))
-    }, 2000)
-    
+      router.push(postLoginRoute(resolvedRole));
+    }, 2000);
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Failed to complete sign in. Please try again.'
-    completing.value = false
+    error.value =
+      err instanceof Error ? err.message : 'Failed to complete sign in. Please try again.';
+    completing.value = false;
   }
-}
+};
 
 const retrySignIn = () => {
-  loading.value = true
-  error.value = ''
-  emailPrompt.value = false
-  success.value = false
-  checkEmailLink()
-}
+  loading.value = true;
+  error.value = '';
+  emailPrompt.value = false;
+  success.value = false;
+  checkEmailLink();
+};
 
 const checkEmailLink = async () => {
   try {
     // Check if this is an email link
     if (!AuthService.isSignInWithEmailLink(window.location.href)) {
-      error.value = 'Invalid or expired sign-in link. Please request a new one.'
-      loading.value = false
-      return
+      error.value = 'Invalid or expired sign-in link. Please request a new one.';
+      loading.value = false;
+      return;
     }
 
     // Try to get stored email
-    const storedEmail = AuthService.getStoredEmail()
-    
+    const storedEmail = AuthService.getStoredEmail();
+
     if (storedEmail) {
       // Complete sign in with stored email
-      email.value = storedEmail
-      await completeSignIn()
+      email.value = storedEmail;
+      await completeSignIn();
     } else {
       // Prompt user for email
-      emailPrompt.value = true
-      loading.value = false
+      emailPrompt.value = true;
+      loading.value = false;
     }
-    
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Failed to process sign-in link.'
-    loading.value = false
+    error.value = err instanceof Error ? err.message : 'Failed to process sign-in link.';
+    loading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  checkEmailLink()
-})
+  checkEmailLink();
+});
 </script>
 
 <style scoped>
@@ -188,8 +191,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .prompt-icon,
@@ -292,7 +299,7 @@ p {
     padding: 2rem;
     margin: 1rem;
   }
-  
+
   .error-actions {
     flex-direction: column;
   }

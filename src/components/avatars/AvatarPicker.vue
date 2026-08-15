@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { Icon } from '@iconify/vue'
-import {
-  avatarThumbForSeed,
-  avatarThumbForSlot,
-  PORTRAIT_SLOT_COUNT,
-} from '../../services/avatar'
+import { Icon } from '@iconify/vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { avatarThumbForSeed, avatarThumbForSlot, PORTRAIT_SLOT_COUNT } from '../../services/avatar';
 
 /**
  * Modal portrait picker. Shows the 10 library portraits plus a
@@ -18,53 +14,53 @@ import {
  */
 
 const props = defineProps<{
-  open: boolean
+  open: boolean;
   // Currently-applied slot, used to highlight the active selection
   // when the modal opens. `null` means "default (seeded)".
-  current: number | null
+  current: number | null;
   // Seed for the "use default" preview cell, so the user sees what
   // their seeded avatar would look like.
-  seed: string
-}>()
+  seed: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'apply', slot: number | null): void
-}>()
+  (e: 'close'): void;
+  (e: 'apply', slot: number | null): void;
+}>();
 
-const draft = ref<number | null>(props.current)
+const draft = ref<number | null>(props.current);
 
 watch(
   () => [props.open, props.current] as const,
   ([open, current]) => {
-    if (open) draft.value = current
-  },
-)
+    if (open) draft.value = current;
+  }
+);
 
 const slots = computed(() =>
   Array.from({ length: PORTRAIT_SLOT_COUNT }, (_, i) => ({
     slot: i,
     src: avatarThumbForSlot(i),
-  })),
-)
+  }))
+);
 
-const seededSrc = computed(() => avatarThumbForSeed(props.seed))
+const seededSrc = computed(() => avatarThumbForSeed(props.seed));
 
 function selectSlot(slot: number | null) {
-  draft.value = slot
+  draft.value = slot;
 }
 
 function apply() {
-  emit('apply', draft.value)
-  emit('close')
+  emit('apply', draft.value);
+  emit('close');
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && props.open) emit('close')
+  if (e.key === 'Escape' && props.open) emit('close');
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
@@ -92,8 +88,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           </header>
 
           <p class="picker-hint">
-            Pick a portrait from the gallery, or stick with the seeded
-            default.
+            Pick a portrait from the gallery, or stick with the seeded default.
           </p>
 
           <div class="picker-grid">
@@ -125,18 +120,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           </div>
 
           <footer class="picker-footer">
-            <button
-              type="button"
-              class="picker-btn picker-btn--ghost"
-              @click="emit('close')"
-            >
+            <button type="button" class="picker-btn picker-btn--ghost" @click="emit('close')">
               Cancel
             </button>
-            <button
-              type="button"
-              class="picker-btn picker-btn--primary"
-              @click="apply"
-            >
+            <button type="button" class="picker-btn picker-btn--primary" @click="apply">
               Apply
             </button>
           </footer>
@@ -218,7 +205,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   border: 2px solid transparent;
   border-radius: 0.625rem;
   cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
 }
 
 .picker-cell:hover {
@@ -258,7 +247,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   font-weight: 500;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
 }
 
 .picker-btn--ghost {
@@ -286,7 +277,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .picker-enter-active .picker-modal,
 .picker-leave-active .picker-modal {
-  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 160ms ease;
+  transition:
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 160ms ease;
 }
 .picker-enter-from,
 .picker-leave-to {

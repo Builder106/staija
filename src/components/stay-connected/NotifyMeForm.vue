@@ -13,80 +13,80 @@
  * was opened with, so a visitor who arrived because StepUp is closed
  * sees "StepUp — next cycle" preselected.
  */
-import { ref, watch } from 'vue'
-import { Icon } from '@iconify/vue'
-import UiButton from '../ui/UiButton.vue'
-import UiCard from '../ui/UiCard.vue'
-import UiSelect from '../ui/UiSelect.vue'
-import Heading from '../ui/Heading.vue'
-import Body from '../ui/Body.vue'
-import { trackNewsletterSignup } from '../../services/analytics'
-import { getAppConfig } from '../../utils/env'
-import { getCapturedReferrerId } from '../../services/referrals'
+import { Icon } from '@iconify/vue';
+import { ref, watch } from 'vue';
+import { trackNewsletterSignup } from '../../services/analytics';
+import { getCapturedReferrerId } from '../../services/referrals';
+import { getAppConfig } from '../../utils/env';
+import Body from '../ui/Body.vue';
+import Heading from '../ui/Heading.vue';
+import UiButton from '../ui/UiButton.vue';
+import UiCard from '../ui/UiCard.vue';
+import UiSelect from '../ui/UiSelect.vue';
 
 const props = defineProps<{
   /** Program slug the visitor was looking at, when known. Used to
    *  preselect the matching interest tag. */
-  from: string
+  from: string;
   /** Why the visitor landed here ('closed', 'eligibility', etc.).
    *  Forwarded to the endpoint as part of `source` so analytics can
    *  attribute drip-campaign performance back to the original gap. */
-  reason: string
-}>()
+  reason: string;
+}>();
 
-type InterestTag = 'stepup-next' | 'dynamerge-next' | 'mentor' | 'general'
+type InterestTag = 'stepup-next' | 'dynamerge-next' | 'mentor' | 'general';
 const OPTIONS: { value: InterestTag; label: string }[] = [
   { value: 'stepup-next', label: 'StepUp Scholars — next cycle' },
   { value: 'dynamerge-next', label: 'Dynamerge — next cycle' },
   { value: 'mentor', label: 'Becoming a mentor' },
   { value: 'general', label: 'Just general STAIJA updates' },
-]
+];
 
 function defaultTag(from: string): InterestTag {
-  if (from === 'stepup-scholars' || from === 'stepup') return 'stepup-next'
-  if (from === 'dynamerge') return 'dynamerge-next'
-  return 'general'
+  if (from === 'stepup-scholars' || from === 'stepup') return 'stepup-next';
+  if (from === 'dynamerge') return 'dynamerge-next';
+  return 'general';
 }
 
-const email = ref('')
-const interestTag = ref<InterestTag>(defaultTag(props.from))
-const honeypot = ref('')
-const status = ref<'idle' | 'submitting' | 'success' | 'error'>('idle')
-const error = ref<string | null>(null)
+const email = ref('');
+const interestTag = ref<InterestTag>(defaultTag(props.from));
+const honeypot = ref('');
+const status = ref<'idle' | 'submitting' | 'success' | 'error'>('idle');
+const error = ref<string | null>(null);
 
 watch(
   () => props.from,
-  (next) => {
+  next => {
     // Only override when the user hasn't touched the dropdown yet
     // (i.e. status is still idle and the current value matches what a
     // prior `from` would've defaulted to).
-    if (status.value !== 'idle') return
-    interestTag.value = defaultTag(next)
-  },
-)
+    if (status.value !== 'idle') return;
+    interestTag.value = defaultTag(next);
+  }
+);
 
 async function handleSubmit(e: Event) {
-  e.preventDefault()
-  if (status.value === 'submitting') return
-  if (honeypot.value) return // silent drop
+  e.preventDefault();
+  if (status.value === 'submitting') return;
+  if (honeypot.value) return; // silent drop
 
-  status.value = 'submitting'
-  error.value = null
+  status.value = 'submitting';
+  error.value = null;
 
-  const endpoint = getAppConfig().newsletterEndpoint
-  const source = `stay-connected:${props.reason || 'direct'}`
+  const endpoint = getAppConfig().newsletterEndpoint;
+  const source = `stay-connected:${props.reason || 'direct'}`;
   // Pull the referrer attribution captured on page load. `null` when
   // this visitor arrived without a `?ref=` in the URL — fine, the
   // server treats absent as "no referrer."
-  const referrerId = getCapturedReferrerId()
+  const referrerId = getCapturedReferrerId();
 
   if (!endpoint) {
     // Endpoint not configured — record the intent locally, mirror the
     // footer's "fake success" pattern so we don't expose half-built
     // plumbing to visitors.
-    trackNewsletterSignup(`${source}:${interestTag.value}`)
-    status.value = 'success'
-    return
+    trackNewsletterSignup(`${source}:${interestTag.value}`);
+    status.value = 'success';
+    return;
   }
 
   try {
@@ -100,17 +100,17 @@ async function handleSubmit(e: Event) {
         ...(props.from ? { program: props.from } : {}),
         ...(referrerId ? { referrerId } : {}),
       }),
-    })
+    });
     if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { error?: string }
-      throw new Error(data.error ?? 'Subscription failed')
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error ?? 'Subscription failed');
     }
-    trackNewsletterSignup(`${source}:${interestTag.value}`)
-    status.value = 'success'
-    email.value = ''
+    trackNewsletterSignup(`${source}:${interestTag.value}`);
+    status.value = 'success';
+    email.value = '';
   } catch (err) {
-    status.value = 'error'
-    error.value = err instanceof Error ? err.message : 'Subscription failed'
+    status.value = 'error';
+    error.value = err instanceof Error ? err.message : 'Subscription failed';
   }
 }
 </script>
@@ -127,12 +127,20 @@ async function handleSubmit(e: Event) {
 
     <form v-if="status !== 'success'" class="flex flex-col gap-4" @submit="handleSubmit">
       <div class="flex flex-col gap-2">
-        <label for="notify-me-interest" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">I'm interested in</label>
+        <label
+          for="notify-me-interest"
+          class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+          >I'm interested in</label
+        >
         <UiSelect id="notify-me-interest" v-model="interestTag" :options="OPTIONS" />
       </div>
 
       <div class="flex flex-col gap-2">
-        <label for="notify-me-email" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Email</label>
+        <label
+          for="notify-me-email"
+          class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+          >Email</label
+        >
         <input
           id="notify-me-email"
           v-model="email"

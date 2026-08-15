@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { Motion } from 'motion-v'
-import { Icon } from '@iconify/vue'
-import Container from '../ui/Container.vue'
-import Section from '../ui/Section.vue'
-import Heading from '../ui/Heading.vue'
-import Body from '../ui/Body.vue'
-import Eyebrow from '../ui/Eyebrow.vue'
-import UiButton from '../ui/UiButton.vue'
-import Parallax from '../motion/Parallax.vue'
-import ProgramFaq from './ProgramFaq.vue'
-import ProgramCtaBanner from './ProgramCtaBanner.vue'
-import { trackApplyClick } from '../../services/analytics'
-import { useProgram } from '../../composables/useProgram'
+import { Icon } from '@iconify/vue';
+import { Motion } from 'motion-v';
+import { useProgram } from '../../composables/useProgram';
+import { trackApplyClick } from '../../services/analytics';
+import Parallax from '../motion/Parallax.vue';
+import Body from '../ui/Body.vue';
+import Container from '../ui/Container.vue';
+import Eyebrow from '../ui/Eyebrow.vue';
+import Heading from '../ui/Heading.vue';
+import Section from '../ui/Section.vue';
+import UiButton from '../ui/UiButton.vue';
+import ProgramCtaBanner from './ProgramCtaBanner.vue';
+import ProgramFaq from './ProgramFaq.vue';
 
 // StepUp Scholars — the "research journal" register.
 //
@@ -24,9 +24,9 @@ import { useProgram } from '../../composables/useProgram'
 // 1:1 mentor bench, and slower, quieter motion. The mono ledger styling
 // deliberately echoes the transactional-email refBox (see
 // functions/src/emailTemplates.ts) so the register carries across media.
-const SLUG = 'stepup-scholars' as const
+const SLUG = 'stepup-scholars' as const;
 
-const { program, isApplyOpen, closedReason } = useProgram(SLUG)
+const { program, isApplyOpen, closedReason } = useProgram(SLUG);
 
 // Deliverable each phase of the arc leaves behind — the tangible
 // artifact that makes the "first question → first paper" progression
@@ -39,14 +39,23 @@ const TIMELINE_OUTPUTS: Record<string, string> = {
   'Month 2–4': 'Original dataset',
   'Month 5': 'Drafted abstract',
   'Month 6': 'Submitted manuscript',
-}
+};
 
 const FAQS = [
-  { q: 'Do I need prior research experience?', a: 'Not at all. We are looking for curiosity and a willingness to learn.' },
-  { q: 'How does the stipend work?', a: 'Accepted students receive a monthly stipend to cover internet, transportation, and basic needs during the program.' },
+  {
+    q: 'Do I need prior research experience?',
+    a: 'Not at all. We are looking for curiosity and a willingness to learn.',
+  },
+  {
+    q: 'How does the stipend work?',
+    a: 'Accepted students receive a monthly stipend to cover internet, transportation, and basic needs during the program.',
+  },
   { q: 'Is there an application fee?', a: 'No, applying to STAIJA programs is completely free.' },
-  { q: 'Can I apply to both programs?', a: 'Yes, but you can only participate in one program per calendar year if accepted to both.' },
-]
+  {
+    q: 'Can I apply to both programs?',
+    a: 'Yes, but you can only participate in one program per calendar year if accepted to both.',
+  },
+];
 </script>
 
 <template>
@@ -58,17 +67,34 @@ const FAQS = [
     <div class="relative min-h-svh flex items-center bg-ink-static overflow-hidden">
       <div class="absolute inset-0 z-0">
         <Parallax :speed="-0.25" :distance="120" class="absolute inset-0">
-          <img :src="program.heroImg" :alt="program.name" width="1280" height="720" class="w-full h-full object-cover opacity-40 scale-110" />
+          <img
+            :src="program.heroImg"
+            :alt="program.name"
+            width="1280"
+            height="720"
+            class="w-full h-full object-cover opacity-40 scale-110"
+          />
         </Parallax>
         <div class="absolute inset-0 wash-violet-6 mix-blend-screen" />
-        <div class="absolute inset-0 bg-gradient-to-t from-ink-static via-ink-static/60 to-transparent" />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-ink-static via-ink-static/60 to-transparent"
+        />
       </div>
 
       <Container class="relative z-10 py-24">
         <div class="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-20 items-center">
           <div class="max-w-2xl flex flex-col gap-6 text-paper-static">
-            <Motion :initial="{ opacity: 0, y: 14 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.55 }">
-              <Eyebrow accent class="text-brand-sky">Research incubator — {{ program.eligibility }}<span class="ml-1.5 tracking-normal align-middle" role="img" aria-label="Nigeria">🇳🇬</span></Eyebrow>
+            <Motion
+              :initial="{ opacity: 0, y: 14 }"
+              :animate="{ opacity: 1, y: 0 }"
+              :transition="{ duration: 0.55 }"
+            >
+              <Eyebrow accent class="text-brand-sky"
+                >Research incubator — {{ program.eligibility
+                }}<span class="ml-1.5 tracking-normal align-middle" role="img" aria-label="Nigeria"
+                  >🇳🇬</span
+                ></Eyebrow
+              >
             </Motion>
 
             <Motion
@@ -110,10 +136,15 @@ const FAQS = [
                   variant="on-gradient"
                   :to="`/stay-connected?from=${SLUG}&reason=${closedReason}`"
                 >
-                  {{ closedReason === 'upcoming' ? 'Get notified when applications open' : 'Stay connected for the next cycle' }}
+                  {{
+                    closedReason === 'upcoming'
+                      ? 'Get notified when applications open'
+                      : 'Stay connected for the next cycle'
+                  }}
                 </UiButton>
                 <span class="text-sm text-paper-static/70">
-                  Applications {{ closedReason === 'upcoming' ? 'open soon' : 'are closed for this cycle' }}.
+                  Applications
+                  {{ closedReason === 'upcoming' ? 'open soon' : 'are closed for this cycle' }}.
                 </span>
               </template>
               <UiButton variant="on-gradient-ghost" href="#arc">Read the six-month arc</UiButton>
@@ -127,7 +158,9 @@ const FAQS = [
             :animate="{ opacity: 1, y: 0 }"
             :transition="{ duration: 0.6, delay: 0.35 }"
           >
-            <div class="w-full lg:w-80 border border-brand-violet/25 bg-gradient-to-b from-brand-violet/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-sm rounded-2xl p-6 font-mono-african cursor-pin">
+            <div
+              class="w-full lg:w-80 border border-brand-violet/25 bg-gradient-to-b from-brand-violet/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-sm rounded-2xl p-6 font-mono-african cursor-pin"
+            >
               <div class="text-lg font-semibold uppercase tracking-[0.16em] text-brand-violet">
                 Program record
               </div>
@@ -137,7 +170,9 @@ const FAQS = [
                   :key="stat.label"
                   class="flex items-baseline justify-between gap-6 py-3 border-b border-dotted border-brand-violet/25 last:border-0"
                 >
-                  <dt class="text-sm uppercase tracking-[0.14em] text-paper-static/60">{{ stat.label }}</dt>
+                  <dt class="text-sm uppercase tracking-[0.14em] text-paper-static/60">
+                    {{ stat.label }}
+                  </dt>
                   <dd class="m-0 text-lg text-violet-100">{{ stat.value }}</dd>
                 </div>
               </dl>
@@ -154,7 +189,9 @@ const FAQS = [
       <Container>
         <div class="max-w-5xl mx-auto">
           <Eyebrow accent class="text-brand-violet mb-4 block">The work</Eyebrow>
-          <Heading :level="2" class="mb-16 max-w-2xl">Six months of doing science, not hearing about it.</Heading>
+          <Heading :level="2" class="mb-16 max-w-2xl"
+            >Six months of doing science, not hearing about it.</Heading
+          >
 
           <div class="flex flex-col gap-16 md:gap-24">
             <Motion
@@ -166,11 +203,25 @@ const FAQS = [
               :viewport="{ once: true, margin: '-60px' }"
               :transition="{ duration: 0.6 }"
             >
-              <div class="aspect-[4/3] rounded-2xl overflow-hidden" :class="i % 2 === 1 && 'md:order-2'">
-                <img :src="feature.img" :alt="feature.title" width="600" height="400" class="w-full h-full object-cover" loading="lazy" />
+              <div
+                class="aspect-[4/3] rounded-2xl overflow-hidden"
+                :class="i % 2 === 1 && 'md:order-2'"
+              >
+                <img
+                  :src="feature.img"
+                  :alt="feature.title"
+                  width="600"
+                  height="400"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
               <div>
-                <div class="font-mono-african text-3xl md:text-4xl font-semibold text-brand-violet mb-3">{{ String(i + 1).padStart(2, '0') }}</div>
+                <div
+                  class="font-mono-african text-3xl md:text-4xl font-semibold text-brand-violet mb-3"
+                >
+                  {{ String(i + 1).padStart(2, '0') }}
+                </div>
                 <Heading :level="3" class="mb-3">{{ feature.title }}</Heading>
                 <Body large>{{ feature.desc }}</Body>
               </div>
@@ -201,7 +252,9 @@ const FAQS = [
             </defs>
           </svg>
 
-          <ol class="list-none p-0 m-0 grid grid-cols-[auto_28px_1fr] md:grid-cols-[180px_28px_1fr] gap-x-5 md:gap-x-8">
+          <ol
+            class="list-none p-0 m-0 grid grid-cols-[auto_28px_1fr] md:grid-cols-[180px_28px_1fr] gap-x-5 md:gap-x-8"
+          >
             <Motion
               v-for="(step, i) in program.timeline"
               :key="step.date"
@@ -246,7 +299,9 @@ const FAQS = [
                   :transition="{ duration: 0.4, delay: i * 0.12, ease: 'easeOut' }"
                 >
                   <span class="absolute w-7 h-7 rounded-full bg-brand-violet/40 blur-md" />
-                  <span class="relative w-7 h-7 rounded-full bg-gradient-to-br from-brand-violet to-brand-sky shadow-lg shadow-brand-violet/30 ring-4 ring-surface" />
+                  <span
+                    class="relative w-7 h-7 rounded-full bg-gradient-to-br from-brand-violet to-brand-sky shadow-lg shadow-brand-violet/30 ring-4 ring-surface"
+                  />
                 </Motion>
               </div>
 
@@ -288,13 +343,21 @@ const FAQS = [
                       <path d="M16 18v-2" />
                     </template>
                     <template v-else>
-                      <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
+                      <path
+                        d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"
+                      />
                       <path d="m21.854 2.147-10.94 10.939" />
                     </template>
                   </svg>
                   <div v-if="TIMELINE_OUTPUTS[step.date]" class="leading-tight">
-                    <div class="font-mono-african text-xs uppercase tracking-[0.2em] text-brand-violet/60">Output</div>
-                    <div class="font-sans text-lg font-medium text-ink mt-0.5">{{ TIMELINE_OUTPUTS[step.date] }}</div>
+                    <div
+                      class="font-mono-african text-xs uppercase tracking-[0.2em] text-brand-violet/60"
+                    >
+                      Output
+                    </div>
+                    <div class="font-sans text-lg font-medium text-ink mt-0.5">
+                      {{ TIMELINE_OUTPUTS[step.date] }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -307,17 +370,23 @@ const FAQS = [
     <!-- Who it's for -->
     <Section class="bg-paper border-t hairline-ink">
       <Container>
-        <div class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12">
+        <div
+          class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12"
+        >
           <div class="md:w-1/3">
             <Heading :level="2" class="mb-4">Who it's for</Heading>
             <Body class="text-ink/60">
-              We evaluate applications based on curiosity, resilience, and potential for growth.
-              We actively encourage students from underrepresented backgrounds to apply.
+              We evaluate applications based on curiosity, resilience, and potential for growth. We
+              actively encourage students from underrepresented backgrounds to apply.
             </Body>
           </div>
           <div class="md:w-2/3 flex flex-col gap-4">
             <div v-for="req in program.eligibilityList" :key="req" class="flex items-start gap-3">
-              <Icon icon="lucide:check-circle-2" width="20" class="text-brand-violet shrink-0 mt-1" />
+              <Icon
+                icon="lucide:check-circle-2"
+                width="20"
+                class="text-brand-violet shrink-0 mt-1"
+              />
               <Body>{{ req }}</Body>
             </div>
           </div>
@@ -327,11 +396,7 @@ const FAQS = [
 
     <ProgramFaq :faqs="FAQS" />
 
-    <ProgramCtaBanner
-      :slug="SLUG"
-      :is-apply-open="isApplyOpen"
-      :closed-reason="closedReason"
-    />
+    <ProgramCtaBanner :slug="SLUG" :is-apply-open="isApplyOpen" :closed-reason="closedReason" />
   </div>
   <div v-else class="p-24 text-center">Program not found.</div>
 </template>

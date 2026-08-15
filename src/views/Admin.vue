@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watchEffect } from 'vue'
-import { Icon } from '@iconify/vue'
-import Container from '../components/ui/Container.vue'
-import Section from '../components/ui/Section.vue'
-import Heading from '../components/ui/Heading.vue'
-import Body from '../components/ui/Body.vue'
-import Eyebrow from '../components/ui/Eyebrow.vue'
-import UiCard from '../components/ui/UiCard.vue'
-import UiChip from '../components/ui/UiChip.vue'
-import { DatabaseService } from '../services/firebase'
-import type { Application } from '../services/firebase'
-import { useAuth } from '../composables/useAuth'
-import { usePermissions } from '../composables/usePermissions'
-import { useAdminBase } from '../composables/useAdminBase'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref, watchEffect } from 'vue';
+import Body from '../components/ui/Body.vue';
+import Container from '../components/ui/Container.vue';
+import Eyebrow from '../components/ui/Eyebrow.vue';
+import Heading from '../components/ui/Heading.vue';
+import Section from '../components/ui/Section.vue';
+import UiCard from '../components/ui/UiCard.vue';
+import UiChip from '../components/ui/UiChip.vue';
+import { useAdminBase } from '../composables/useAdminBase';
+import { useAuth } from '../composables/useAuth';
+import { usePermissions } from '../composables/usePermissions';
+import type { Application } from '../services/firebase';
+import { DatabaseService } from '../services/firebase';
 
-const { displayName } = useAuth()
+const { displayName } = useAuth();
 // `isAdmin` is strict — staff is NOT admin. We use it to hide tiles that
 // link to admin-only screens (Users & roles, Firestore raw access).
 // `isStaff` returns true for staff AND admin in this codebase, so it's
 // not a useful distinguisher here — we explicitly check isAdmin.
-const { isAdmin } = usePermissions()
+const { isAdmin } = usePermissions();
 // Preserves /admin vs /staff in every internal link on this page —
 // see useAdminBase for the rationale.
-const { adminBase } = useAdminBase()
+const { adminBase } = useAdminBase();
 
 // Role-aware labels so a staff account doesn't see "ADMIN" branding
 // across the page. `isAdmin` is strict (admin only); anyone else
 // landing here is by definition staff (the route's `view_all_users`
 // permission gate admits both, and only admin/staff hold it).
-const roleLabel = computed(() => (isAdmin.value ? 'Admin' : 'Staff'))
+const roleLabel = computed(() => (isAdmin.value ? 'Admin' : 'Staff'));
 
 // Override the route-level document.title ("Admin Panel — STAIJA")
 // so a staff member's browser tab also reads "Staff Panel — STAIJA".
@@ -37,100 +37,101 @@ const roleLabel = computed(() => (isAdmin.value ? 'Admin' : 'Staff'))
 // the auth listener and stamp the wrong label on a slow load.
 watchEffect(() => {
   if (typeof document !== 'undefined') {
-    document.title = `${roleLabel.value} Panel — STAIJA`
+    document.title = `${roleLabel.value} Panel — STAIJA`;
   }
-})
+});
 
-const applications = ref<Application[]>([])
-const loading = ref(true)
-const error = ref('')
+const applications = ref<Application[]>([]);
+const loading = ref(true);
+const error = ref('');
 
 const firstName = computed(() => {
-  const name = displayName.value ?? ''
-  return name.split(/[\s@]/)[0] || 'there'
-})
+  const name = displayName.value ?? '';
+  return name.split(/[\s@]/)[0] || 'there';
+});
 
-const submittedCount = computed(() =>
-  applications.value.filter((a) => a.status === 'submitted').length,
-)
-const underReviewCount = computed(() =>
-  applications.value.filter((a) => a.status === 'under_review').length,
-)
-const acceptedCount = computed(() =>
-  applications.value.filter((a) => a.status === 'accepted').length,
-)
+const submittedCount = computed(
+  () => applications.value.filter(a => a.status === 'submitted').length
+);
+const underReviewCount = computed(
+  () => applications.value.filter(a => a.status === 'under_review').length
+);
+const acceptedCount = computed(
+  () => applications.value.filter(a => a.status === 'accepted').length
+);
 // Accepted applicants who deferred their spot. Surfaces the cycle-
 // change re-offer queue at first paint of /admin so staff doesn't
 // have to remember "oh right, I should filter the queue when a new
 // cohort opens".
-const deferredCount = computed(() =>
-  applications.value.filter(
-    (a) => a.status === 'accepted' && a.spotResponse === 'deferred',
-  ).length,
-)
+const deferredCount = computed(
+  () =>
+    applications.value.filter(a => a.status === 'accepted' && a.spotResponse === 'deferred').length
+);
 
 const pendingReview = computed(() =>
-  applications.value.filter((a) => a.status === 'submitted').slice(0, 5),
-)
+  applications.value.filter(a => a.status === 'submitted').slice(0, 5)
+);
 
 const deferredApplicants = computed(() =>
   applications.value
-    .filter((a) => a.status === 'accepted' && a.spotResponse === 'deferred')
-    .slice(0, 5),
-)
+    .filter(a => a.status === 'accepted' && a.spotResponse === 'deferred')
+    .slice(0, 5)
+);
 
 async function loadData() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
-    applications.value = await DatabaseService.getAllApplications()
+    applications.value = await DatabaseService.getAllApplications();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load admin data.'
+    error.value = err instanceof Error ? err.message : 'Failed to load admin data.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function programLabel(p: Application['program']) {
-  return p === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge'
+  return p === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge';
 }
 
 function applicantName(a: Application): string {
-  const parts = [a.personalInfo?.firstName, a.personalInfo?.lastName].filter(Boolean)
-  return parts.length ? parts.join(' ') : (a.personalInfo?.email || 'Unnamed applicant')
+  const parts = [a.personalInfo?.firstName, a.personalInfo?.lastName].filter(Boolean);
+  return parts.length ? parts.join(' ') : a.personalInfo?.email || 'Unnamed applicant';
 }
 
 function timeAgo(value: unknown): string {
-  const ms = Date.now() - toMillis(value)
-  const min = Math.floor(ms / 60000)
-  if (min < 1) return 'just now'
-  if (min < 60) return `${min} min ago`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} hr ago`
-  const day = Math.floor(hr / 24)
-  if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`
+  const ms = Date.now() - toMillis(value);
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} hr ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`;
   return new Date(toMillis(value)).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  })
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function toMillis(value: unknown): number {
-  if (value instanceof Date) return value.getTime()
+  if (value instanceof Date) return value.getTime();
   if (
     value &&
     typeof value === 'object' &&
     'toDate' in value &&
     typeof (value as { toDate: () => Date }).toDate === 'function'
   ) {
-    return (value as { toDate: () => Date }).toDate().getTime()
+    return (value as { toDate: () => Date }).toDate().getTime();
   }
   if (typeof value === 'string' || typeof value === 'number') {
-    return new Date(value).getTime()
+    return new Date(value).getTime();
   }
-  return 0
+  return 0;
 }
 
-onMounted(loadData)
+onMounted(loadData);
 </script>
 
 <template>
@@ -139,10 +140,13 @@ onMounted(loadData)
       <!-- Greeting -->
       <div class="flex flex-col gap-3 mb-12">
         <Eyebrow class="text-brand-violet">{{ roleLabel }}</Eyebrow>
-        <Heading :level="1">Hi, <span class="text-brand-violet">{{ firstName }}</span>.</Heading>
+        <Heading :level="1"
+          >Hi, <span class="text-brand-violet">{{ firstName }}</span
+          >.</Heading
+        >
         <Body class="text-ink/70 max-w-xl">
-          Review applications, manage users, set up mentor pairings.
-          Editorial content lives in Contentful — the link is below.
+          Review applications, manage users, set up mentor pairings. Editorial content lives in
+          Contentful — the link is below.
         </Body>
       </div>
 
@@ -210,7 +214,9 @@ onMounted(loadData)
                 {{ deferredCount }}
               </div>
               <p class="text-sm text-ink/60 m-0">
-                {{ deferredCount === 1 ? 'Awaiting re-offer' : 'Awaiting re-offer when cycle opens' }}
+                {{
+                  deferredCount === 1 ? 'Awaiting re-offer' : 'Awaiting re-offer when cycle opens'
+                }}
               </p>
             </UiCard>
           </RouterLink>
@@ -277,10 +283,7 @@ onMounted(loadData)
                  application; the bulk "Re-offer all" entry point
                  lives on /admin/applications?response=deferred where
                  staff can multi-select before firing. -->
-            <div
-              v-if="deferredApplicants.length > 0"
-              class="flex flex-col gap-4 mt-10"
-            >
+            <div v-if="deferredApplicants.length > 0" class="flex flex-col gap-4 mt-10">
               <div class="flex items-end justify-between gap-4">
                 <div>
                   <Heading :level="2">Deferred applicants</Heading>
@@ -302,8 +305,13 @@ onMounted(loadData)
                   :to="`${adminBase}/applications/${app.id}`"
                   class="block group focus-ring-brand rounded-2xl"
                 >
-                  <UiCard hoverable class="p-5 flex items-center gap-4 !border-amber-200/60 bg-amber-50/20">
-                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <UiCard
+                    hoverable
+                    class="p-5 flex items-center gap-4 !border-amber-200/60 bg-amber-50/20"
+                  >
+                    <div
+                      class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"
+                    >
                       <Icon icon="lucide:clock" width="18" />
                     </div>
                     <div class="flex-1 flex flex-col gap-1 min-w-0">
@@ -336,7 +344,9 @@ onMounted(loadData)
                 :to="`${adminBase}/applications`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:clipboard-list" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -350,7 +360,9 @@ onMounted(loadData)
                 :to="`${adminBase}/users`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:users" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -363,7 +375,9 @@ onMounted(loadData)
                 :to="`${adminBase}/programs`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:settings" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -376,7 +390,9 @@ onMounted(loadData)
                 :to="`${adminBase}/cohorts`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:layers" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -389,7 +405,9 @@ onMounted(loadData)
                 :to="`${adminBase}/enroll`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:user-plus" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -402,7 +420,9 @@ onMounted(loadData)
                 :to="`${adminBase}/content`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:file-text" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -415,7 +435,9 @@ onMounted(loadData)
                 :to="`${adminBase}/referrals`"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:trophy" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -431,7 +453,9 @@ onMounted(loadData)
                 rel="noopener noreferrer"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:external-link" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">
@@ -450,7 +474,9 @@ onMounted(loadData)
                 rel="noopener noreferrer"
                 class="flex items-start gap-4 p-5 rounded-2xl border hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5 transition-colors focus-ring-brand"
               >
-                <div class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0"
+                >
                   <Icon icon="lucide:database" width="20" class="text-brand-violet" />
                 </div>
                 <div class="flex flex-col gap-0.5 min-w-0">

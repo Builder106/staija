@@ -7,11 +7,11 @@
  * Hidden under prefers-reduced-motion.
  */
 
-import { Motion, useScroll } from 'motion-v'
-import { useReducedMotion } from '../../composables/useReducedMotion'
+import { Motion, useScroll } from 'motion-v';
+import { useReducedMotion } from '../../composables/useReducedMotion';
 
-const { scrollYProgress } = useScroll()
-const reduce = useReducedMotion()
+const { scrollYProgress } = useScroll();
+const reduce = useReducedMotion();
 </script>
 
 <template>

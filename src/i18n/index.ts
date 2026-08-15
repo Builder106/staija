@@ -9,16 +9,16 @@
  *     yo.json fall back to en.json automatically.
  */
 
-import { createI18n, type I18nOptions } from 'vue-i18n'
-import en from './locales/en.json'
-import yo from './locales/yo.json'
+import { createI18n, type I18nOptions } from 'vue-i18n';
+import en from './locales/en.json';
+import yo from './locales/yo.json';
 
-export type LocaleCode = 'en' | 'yo'
+export type LocaleCode = 'en' | 'yo';
 
 export interface LocaleEntry {
-  code: LocaleCode
-  label: string // displayed in switcher
-  nativeLabel: string // shown to native speakers in their own script
+  code: LocaleCode;
+  label: string; // displayed in switcher
+  nativeLabel: string; // shown to native speakers in their own script
 }
 
 // Locales the LocaleSwitcher exposes to end-users. Yorùbá ('yo') is
@@ -32,21 +32,21 @@ export interface LocaleEntry {
 // the priority surfaces (Home + StepUp + Donate per PRD §4.12) covered.
 export const SUPPORTED_LOCALES: LocaleEntry[] = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
-]
+];
 
-const STORAGE_KEY = 'staija.locale'
-const DEFAULT_LOCALE: LocaleCode = 'en'
+const STORAGE_KEY = 'staija.locale';
+const DEFAULT_LOCALE: LocaleCode = 'en';
 
 function detectInitialLocale(): LocaleCode {
-  if (typeof window === 'undefined') return DEFAULT_LOCALE
-  const stored = window.localStorage.getItem(STORAGE_KEY) as LocaleCode | null
-  if (stored && SUPPORTED_LOCALES.some((l) => l.code === stored)) return stored
+  if (typeof window === 'undefined') return DEFAULT_LOCALE;
+  const stored = window.localStorage.getItem(STORAGE_KEY) as LocaleCode | null;
+  if (stored && SUPPORTED_LOCALES.some(l => l.code === stored)) return stored;
 
   // Honor browser language if it matches a supported locale.
-  const browser = navigator.language.split('-')[0]
-  if (SUPPORTED_LOCALES.some((l) => l.code === browser)) return browser as LocaleCode
+  const browser = navigator.language.split('-')[0];
+  if (SUPPORTED_LOCALES.some(l => l.code === browser)) return browser as LocaleCode;
 
-  return DEFAULT_LOCALE
+  return DEFAULT_LOCALE;
 }
 
 const options: I18nOptions = {
@@ -62,20 +62,20 @@ const options: I18nOptions = {
     en,
     yo,
   },
-}
+};
 
-export const i18n = createI18n(options)
+export const i18n = createI18n(options);
 
 export function setLocale(code: LocaleCode): void {
-  if (!SUPPORTED_LOCALES.some((l) => l.code === code)) return
+  if (!SUPPORTED_LOCALES.some(l => l.code === code)) return;
   // Type cast: legacy: false means i18n.global.locale is a Ref<string>.
-  ;(i18n.global.locale as unknown as { value: string }).value = code
+  (i18n.global.locale as unknown as { value: string }).value = code;
   if (typeof window !== 'undefined') {
-    window.localStorage.setItem(STORAGE_KEY, code)
-    document.documentElement.lang = code
+    window.localStorage.setItem(STORAGE_KEY, code);
+    document.documentElement.lang = code;
   }
 }
 
 export function currentLocale(): LocaleCode {
-  return (i18n.global.locale as unknown as { value: LocaleCode }).value
+  return (i18n.global.locale as unknown as { value: LocaleCode }).value;
 }

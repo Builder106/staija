@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Icon } from '@iconify/vue'
-import { useTheme } from '../composables/useTheme'
+import { Icon } from '@iconify/vue';
+import { computed } from 'vue';
+import { useTheme } from '../composables/useTheme';
 
-const { choice, toggle } = useTheme()
+const { choice, toggle } = useTheme();
 
 // Each cycle position: which icon, what label. Keeping it a single
 // button (not a popover) for header real-estate; cycle order is
 // light → dark → system → light.
 const display = computed(() => {
   if (choice.value === 'light') {
-    return { icon: 'lucide:sun', label: 'Light theme', next: 'dark' }
+    return { icon: 'lucide:sun', label: 'Light theme', next: 'dark' };
   }
   if (choice.value === 'dark') {
-    return { icon: 'lucide:moon', label: 'Dark theme', next: 'system' }
+    return { icon: 'lucide:moon', label: 'Dark theme', next: 'system' };
   }
-  return { icon: 'lucide:monitor', label: 'System theme', next: 'light' }
-})
+  return { icon: 'lucide:monitor', label: 'System theme', next: 'light' };
+});
 </script>
 
 <template>

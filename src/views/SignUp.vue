@@ -1,53 +1,57 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../components/ui/Container.vue'
-import Section from '../components/ui/Section.vue'
-import Heading from '../components/ui/Heading.vue'
-import Body from '../components/ui/Body.vue'
-import UiButton from '../components/ui/UiButton.vue'
-import { AuthService, toFriendlyAuthMessage } from '../services/auth'
-import { primeProfileCache } from '../router'
-import { postLoginRoute } from '../services/postLoginRedirect'
+import { Icon } from '@iconify/vue';
+import { computed, ref } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import Body from '../components/ui/Body.vue';
+import Container from '../components/ui/Container.vue';
+import Heading from '../components/ui/Heading.vue';
+import Section from '../components/ui/Section.vue';
+import UiButton from '../components/ui/UiButton.vue';
+import { primeProfileCache } from '../router';
+import { AuthService, toFriendlyAuthMessage } from '../services/auth';
+import { postLoginRoute } from '../services/postLoginRedirect';
 
-const router = useRouter()
-const firstName = ref('')
-const lastName = ref('')
-const email = ref('')
-const password = ref('')
-const submitting = ref(false)
-const error = ref<string | null>(null)
+const router = useRouter();
+const firstName = ref('');
+const lastName = ref('');
+const email = ref('');
+const password = ref('');
+const submitting = ref(false);
+const error = ref<string | null>(null);
 
-const displayName = computed(() => [firstName.value, lastName.value].filter(Boolean).join(' '))
+const displayName = computed(() => [firstName.value, lastName.value].filter(Boolean).join(' '));
 
 async function onSubmit(e: Event) {
-  e.preventDefault()
-  error.value = null
-  submitting.value = true
+  e.preventDefault();
+  error.value = null;
+  submitting.value = true;
   try {
-    const cred = await AuthService.signUp(email.value, password.value, displayName.value || email.value)
+    const cred = await AuthService.signUp(
+      email.value,
+      password.value,
+      displayName.value || email.value
+    );
     // New sign-ups always land as applicant.
-    primeProfileCache(cred.user.uid, 'applicant')
-    router.push({ name: 'applicant-dashboard' })
+    primeProfileCache(cred.user.uid, 'applicant');
+    router.push({ name: 'applicant-dashboard' });
   } catch (err: unknown) {
-    error.value = toFriendlyAuthMessage(err, 'Sign up failed')
+    error.value = toFriendlyAuthMessage(err, 'Sign up failed');
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
 async function onGoogle() {
-  error.value = null
-  submitting.value = true
+  error.value = null;
+  submitting.value = true;
   try {
-    const { credential, role } = await AuthService.signInWithGoogle()
-    primeProfileCache(credential.user.uid, role)
-    router.push(postLoginRoute(role))
+    const { credential, role } = await AuthService.signInWithGoogle();
+    primeProfileCache(credential.user.uid, role);
+    router.push(postLoginRoute(role));
   } catch (err: unknown) {
-    error.value = toFriendlyAuthMessage(err, 'Google sign up failed')
+    error.value = toFriendlyAuthMessage(err, 'Google sign up failed');
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 </script>
@@ -56,7 +60,9 @@ async function onGoogle() {
   <div class="flex flex-col bg-paper min-h-screen">
     <Section class="!py-8 md:!py-16 flex-1 flex flex-col justify-center">
       <Container class="max-w-6xl">
-        <div class="grid lg:grid-cols-2 bg-surface rounded-[24px] border hairline-ink overflow-hidden shadow-sm min-h-[600px]">
+        <div
+          class="grid lg:grid-cols-2 bg-surface rounded-[24px] border hairline-ink overflow-hidden shadow-sm min-h-[600px]"
+        >
           <!-- Form -->
           <div class="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
             <div class="max-w-md w-full mx-auto">
@@ -115,7 +121,11 @@ async function onGoogle() {
                   <p class="text-xs text-ink/50 mt-1 m-0">Must be at least 8 characters long.</p>
                 </div>
 
-                <div v-if="error" role="alert" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <div
+                  v-if="error"
+                  role="alert"
+                  class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3"
+                >
                   {{ error }}
                 </div>
 
@@ -147,7 +157,11 @@ async function onGoogle() {
 
               <p class="mt-8 text-center text-sm text-ink/70">
                 Already have an account?
-                <RouterLink to="/login" class="font-semibold text-brand-violet hover:underline underline-offset-2">Sign in</RouterLink>
+                <RouterLink
+                  to="/login"
+                  class="font-semibold text-brand-violet hover:underline underline-offset-2"
+                  >Sign in</RouterLink
+                >
               </p>
             </div>
           </div>

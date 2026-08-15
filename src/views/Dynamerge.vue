@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DynamergeDetailView from '../components/programs/DynamergeDetailView.vue'
+import DynamergeDetailView from '../components/programs/DynamergeDetailView.vue';
 </script>
 
 <template>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterView } from 'vue-router'
-import SiteHeader from '../components/SiteHeader.vue'
-import SiteFooter from '../components/SiteFooter.vue'
+import { ref } from 'vue';
+import { RouterView } from 'vue-router';
+import SiteFooter from '../components/SiteFooter.vue';
+import SiteHeader from '../components/SiteHeader.vue';
 
 // Click-feedback cursor (.cursor-click) while a mouse/pen button is held
 // down anywhere on the site — layered on top of the cursor-dot default.
@@ -11,12 +11,12 @@ import SiteFooter from '../components/SiteFooter.vue'
 // down *and* still over this exact element, which is unreliable the
 // moment a descendant's own :active/cursor rule takes over. Touch is
 // excluded — there's no visible cursor to swap on a touchscreen.
-const isClicking = ref(false)
+const isClicking = ref(false);
 function onRootPointerDown(e: PointerEvent) {
-  if (e.pointerType !== 'touch') isClicking.value = true
+  if (e.pointerType !== 'touch') isClicking.value = true;
 }
 function onRootPointerRelease(e: PointerEvent) {
-  if (e.pointerType !== 'touch') isClicking.value = false
+  if (e.pointerType !== 'touch') isClicking.value = false;
 }
 </script>
 

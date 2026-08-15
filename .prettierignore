@@ -6,6 +6,9 @@ tools/
 e2e/
 tests/
 coverage/
+functions/
+trailer/
+take_screens.mjs
 *.lock
 *.log
 .vercel
@@ -13,5 +16,6 @@ coverage/
 .env*
 *.md
 *.json
+*.jsonc
 *.yaml
 *.yml

@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import {
-  listEntries,
-  type LmsContentType,
-} from '../../services/lmsContent'
-import { useAdminBase } from '../../composables/useAdminBase'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
+import { useAdminBase } from '../../composables/useAdminBase';
+import { listEntries, type LmsContentType } from '../../services/lmsContent';
 
 // `newPath` is stored as a suffix relative to the admin/staff base
 // (e.g. `/content/lessons/new`) so the template can prepend whichever
 // prefix the current visitor is on. Avoids the onboarding card
 // pivoting URLs from /staff/* to /admin/* mid-flow.
 interface Step {
-  key: LmsContentType
-  number: number
-  title: string
-  why: string
-  newPath: string
-  ctaLabel: string
+  key: LmsContentType;
+  number: number;
+  title: string;
+  why: string;
+  newPath: string;
+  ctaLabel: string;
 }
 
 const STEPS: Step[] = [
@@ -54,11 +51,11 @@ const STEPS: Step[] = [
     newPath: '/content/courses/new',
     ctaLabel: 'New course',
   },
-]
+];
 
-const { adminBase } = useAdminBase()
+const { adminBase } = useAdminBase();
 
-const DISMISS_KEY = 'staija:lms-onboarding-dismissed'
+const DISMISS_KEY = 'staija:lms-onboarding-dismissed';
 
 const counts = ref<Record<LmsContentType, number | null>>({
   course: null,
@@ -66,53 +63,51 @@ const counts = ref<Record<LmsContentType, number | null>>({
   lesson: null,
   assignmentSpec: null,
   quiz: null,
-})
-const loading = ref(true)
-const dismissed = ref(false)
+});
+const loading = ref(true);
+const dismissed = ref(false);
 
 onMounted(async () => {
   // Read dismissal flag synchronously so the card doesn't flash in
   // for users who already hid it before counts come back.
   try {
-    dismissed.value = localStorage.getItem(DISMISS_KEY) === '1'
+    dismissed.value = localStorage.getItem(DISMISS_KEY) === '1';
   } catch {
     /* localStorage unavailable (private mode, SSR) — show the card */
   }
   if (dismissed.value) {
-    loading.value = false
-    return
+    loading.value = false;
+    return;
   }
-  await loadCounts()
-})
+  await loadCounts();
+});
 
 async function loadCounts() {
-  loading.value = true
+  loading.value = true;
   try {
     // Limit=1 — we only care whether at least one exists per type, not
     // exact counts. Four parallel HEAD-like requests instead of a full
     // listing keeps the dashboard snappy.
-    const types: LmsContentType[] = ['course', 'module', 'lesson', 'assignmentSpec']
-    const results = await Promise.all(
-      types.map((t) => listEntries(t, { limit: 1 }).catch(() => [])),
-    )
+    const types: LmsContentType[] = ['course', 'module', 'lesson', 'assignmentSpec'];
+    const results = await Promise.all(types.map(t => listEntries(t, { limit: 1 }).catch(() => [])));
     types.forEach((t, i) => {
-      counts.value[t] = results[i].length
-    })
+      counts.value[t] = results[i].length;
+    });
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 const completedCount = computed(() => {
-  return STEPS.filter((s) => (counts.value[s.key] ?? 0) > 0).length
-})
+  return STEPS.filter(s => (counts.value[s.key] ?? 0) > 0).length;
+});
 
-const allDone = computed(() => completedCount.value === STEPS.length)
+const allDone = computed(() => completedCount.value === STEPS.length);
 
 const nextStepKey = computed(() => {
-  const next = STEPS.find((s) => (counts.value[s.key] ?? 0) === 0)
-  return next?.key ?? null
-})
+  const next = STEPS.find(s => (counts.value[s.key] ?? 0) === 0);
+  return next?.key ?? null;
+});
 
 // Hide once everything is done OR the editor has dismissed it.
 // Stay hidden while counts are loading so the card doesn't flash in
@@ -121,22 +116,22 @@ const nextStepKey = computed(() => {
 // workspace we accept a small pop-in once counts return — onboarding
 // isn't time-sensitive on the first visit.
 const visible = computed(() => {
-  if (dismissed.value) return false
-  if (loading.value) return false
-  return !allDone.value
-})
+  if (dismissed.value) return false;
+  if (loading.value) return false;
+  return !allDone.value;
+});
 
 function dismiss() {
-  dismissed.value = true
+  dismissed.value = true;
   try {
-    localStorage.setItem(DISMISS_KEY, '1')
+    localStorage.setItem(DISMISS_KEY, '1');
   } catch {
     /* swallow — non-fatal, card just won't stay hidden across reloads */
   }
 }
 
 function isDone(step: Step) {
-  return (counts.value[step.key] ?? 0) > 0
+  return (counts.value[step.key] ?? 0) > 0;
 }
 </script>
 
@@ -147,7 +142,9 @@ function isDone(step: Step) {
   >
     <div class="flex items-start justify-between gap-4">
       <div class="flex flex-col gap-1.5">
-        <span class="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-brand-violet">
+        <span
+          class="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-brand-violet"
+        >
           <Icon icon="lucide:sparkles" width="12" />
           Getting started
         </span>
@@ -155,9 +152,8 @@ function isDone(step: Step) {
           Author your first course in four steps.
         </h2>
         <p class="text-sm text-ink/65 max-w-2xl leading-relaxed">
-          STAIJA's LMS uses bottom-up authoring — small pieces first, then
-          group them. Work through these in order and you'll have a
-          publishable course by the end.
+          STAIJA's LMS uses bottom-up authoring — small pieces first, then group them. Work through
+          these in order and you'll have a publishable course by the end.
         </p>
       </div>
       <button

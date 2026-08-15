@@ -1,4 +1,4 @@
-import type { UserRole, Permission } from './types'
+import type { Permission, UserRole } from './types';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   admin: [
@@ -21,7 +21,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'manage_profile',
     'grade_submissions',
     'manage_cohorts',
-    'manage_sessions'
+    'manage_sessions',
   ],
 
   staff: [
@@ -37,7 +37,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'manage_profile',
     'grade_submissions',
     'manage_cohorts',
-    'manage_sessions'
+    'manage_sessions',
   ],
 
   alumni: [
@@ -46,7 +46,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'network_with_alumni',
     'view_public_content',
     'contact_support',
-    'manage_profile'
+    'manage_profile',
   ],
 
   applicant: [
@@ -55,7 +55,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'edit_own_applications',
     'view_public_content',
     'contact_support',
-    'manage_profile'
+    'manage_profile',
   ],
 
   student: [
@@ -68,7 +68,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'access_mentor_support',
     'view_public_content',
     'contact_support',
-    'manage_profile'
+    'manage_profile',
   ],
 
   mentor: [
@@ -80,36 +80,36 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'access_mentor_support',
     'view_public_content',
     'contact_support',
-    'manage_profile'
-  ]
-}
+    'manage_profile',
+  ],
+};
 
 // Derived runtime lists. Admin UIs that need to iterate every role or every
 // permission (e.g. UserManagement.vue) should import these instead of
 // hardcoding their own arrays — new roles or permissions then show up in
 // the admin dropdowns without an extra edit somewhere else.
-export const ALL_ROLES: UserRole[] =
-  Object.keys(ROLE_PERMISSIONS) as UserRole[]
+export const ALL_ROLES: UserRole[] = Object.keys(ROLE_PERMISSIONS) as UserRole[];
 
-export const ALL_PERMISSIONS: Permission[] =
-  Array.from(new Set(Object.values(ROLE_PERMISSIONS).flat()))
+export const ALL_PERMISSIONS: Permission[] = Array.from(
+  new Set(Object.values(ROLE_PERMISSIONS).flat())
+);
 
 export class PermissionService {
   static hasPermission(userRole: UserRole, permission: Permission): boolean {
-    const permissions = ROLE_PERMISSIONS[userRole] || []
-    return permissions.includes(permission)
+    const permissions = ROLE_PERMISSIONS[userRole] || [];
+    return permissions.includes(permission);
   }
 
   static hasAnyPermission(userRole: UserRole, permissions: Permission[]): boolean {
-    return permissions.some(permission => this.hasPermission(userRole, permission))
+    return permissions.some(permission => this.hasPermission(userRole, permission));
   }
 
   static hasAllPermissions(userRole: UserRole, permissions: Permission[]): boolean {
-    return permissions.every(permission => this.hasPermission(userRole, permission))
+    return permissions.every(permission => this.hasPermission(userRole, permission));
   }
 
   static getRolePermissions(role: UserRole): Permission[] {
-    return ROLE_PERMISSIONS[role] || []
+    return ROLE_PERMISSIONS[role] || [];
   }
 
   // Identity checks: "is this user *exactly* this role?"
@@ -122,35 +122,35 @@ export class PermissionService {
   // permissions. Use `hasPermission(role, '...')` to ask capability
   // questions.
   static isAdminRole(role: UserRole): boolean {
-    return role === 'admin'
+    return role === 'admin';
   }
 
   static isStaffRole(role: UserRole): boolean {
-    return role === 'admin' || role === 'staff'
+    return role === 'admin' || role === 'staff';
   }
 
   static isAlumniRole(role: UserRole): boolean {
-    return role === 'alumni'
+    return role === 'alumni';
   }
 
   static isStudentRole(role: UserRole): boolean {
-    return role === 'student'
+    return role === 'student';
   }
 
   static isMentorRole(role: UserRole): boolean {
-    return role === 'mentor'
+    return role === 'mentor';
   }
 
   static canAssignRole(currentRole: UserRole, targetRole: UserRole): boolean {
-    if (currentRole === 'admin') return true
+    if (currentRole === 'admin') return true;
     if (currentRole === 'staff') {
-      return ['applicant', 'staff', 'alumni', 'mentor'].includes(targetRole)
+      return ['applicant', 'staff', 'alumni', 'mentor'].includes(targetRole);
     }
-    return false
+    return false;
   }
 
   static isValidRoleTransition(currentRole: UserRole, newRole: UserRole): boolean {
-    if (currentRole === newRole) return true
+    if (currentRole === newRole) return true;
 
     // Lifecycle transitions:
     //   applicant → student (accepted), alumni (accepted but program ended),
@@ -166,14 +166,14 @@ export class PermissionService {
     // firestore.rules. Drift means client-side validation passes
     // while the server rule rejects (or vice versa).
     const allowedTransitions: Record<UserRole, UserRole[]> = {
-      'applicant': ['student', 'alumni', 'mentor'],
-      'student': ['alumni', 'applicant', 'mentor'],
-      'alumni': ['applicant', 'student', 'mentor'],
-      'mentor': ['staff', 'alumni'],
-      'staff': ['admin', 'applicant', 'mentor'],
-      'admin': ['staff', 'applicant', 'alumni', 'mentor']
-    }
+      applicant: ['student', 'alumni', 'mentor'],
+      student: ['alumni', 'applicant', 'mentor'],
+      alumni: ['applicant', 'student', 'mentor'],
+      mentor: ['staff', 'alumni'],
+      staff: ['admin', 'applicant', 'mentor'],
+      admin: ['staff', 'applicant', 'alumni', 'mentor'],
+    };
 
-    return allowedTransitions[currentRole]?.includes(newRole) ?? false
+    return allowedTransitions[currentRole]?.includes(newRole) ?? false;
   }
 }

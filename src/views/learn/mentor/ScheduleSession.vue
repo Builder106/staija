@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../../components/ui/Container.vue'
-import Section from '../../../components/ui/Section.vue'
-import Heading from '../../../components/ui/Heading.vue'
-import Body from '../../../components/ui/Body.vue'
-import Eyebrow from '../../../components/ui/Eyebrow.vue'
-import UiCard from '../../../components/ui/UiCard.vue'
-import UiButton from '../../../components/ui/UiButton.vue'
-import UiSelect from '../../../components/ui/UiSelect.vue'
-import { useAuth } from '../../../composables/useAuth'
-import { CohortService, scheduleSession } from '../../../services/learn'
-import type { Cohort } from '../../../services/types'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import Body from '../../../components/ui/Body.vue';
+import Container from '../../../components/ui/Container.vue';
+import Eyebrow from '../../../components/ui/Eyebrow.vue';
+import Heading from '../../../components/ui/Heading.vue';
+import Section from '../../../components/ui/Section.vue';
+import UiButton from '../../../components/ui/UiButton.vue';
+import UiCard from '../../../components/ui/UiCard.vue';
+import UiSelect from '../../../components/ui/UiSelect.vue';
+import { useAuth } from '../../../composables/useAuth';
+import { CohortService, scheduleSession } from '../../../services/learn';
+import type { Cohort } from '../../../services/types';
 
-const router = useRouter()
-const { user } = useAuth()
+const router = useRouter();
+const { user } = useAuth();
 
-const cohorts = ref<Cohort[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
+const cohorts = ref<Cohort[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
 
 const form = ref({
   cohortId: '',
@@ -29,8 +29,8 @@ const form = ref({
   endsAt: '',
   meetingUrl: '',
   meetingProvider: 'zoom' as 'zoom' | 'meet' | 'other',
-})
-const submitting = ref(false)
+});
+const submitting = ref(false);
 
 const canSubmit = computed(
   () =>
@@ -38,28 +38,28 @@ const canSubmit = computed(
     form.value.title.trim() &&
     form.value.startsAt &&
     form.value.endsAt &&
-    form.value.meetingUrl.trim(),
-)
+    form.value.meetingUrl.trim()
+);
 
 async function load() {
-  if (!user.value) return
-  loading.value = true
+  if (!user.value) return;
+  loading.value = true;
   try {
-    const all = await CohortService.listAllCohorts()
+    const all = await CohortService.listAllCohorts();
     cohorts.value = all.filter(
-      (c) => (c.mentorPool ?? []).includes(user.value!.uid) && c.status !== 'completed',
-    )
+      c => (c.mentorPool ?? []).includes(user.value!.uid) && c.status !== 'completed'
+    );
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load cohorts.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load cohorts.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function submit() {
-  if (!canSubmit.value || submitting.value) return
-  submitting.value = true
-  error.value = null
+  if (!canSubmit.value || submitting.value) return;
+  submitting.value = true;
+  error.value = null;
   try {
     const result = await scheduleSession({
       cohortId: form.value.cohortId,
@@ -69,23 +69,26 @@ async function submit() {
       endsAt: new Date(form.value.endsAt).toISOString(),
       meetingUrl: form.value.meetingUrl.trim(),
       meetingProvider: form.value.meetingProvider,
-    })
-    router.push({ name: 'learn-session', params: { id: result.sessionId } })
+    });
+    router.push({ name: 'learn-session', params: { id: result.sessionId } });
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Could not schedule.'
+    error.value = (err as { message?: string }).message ?? 'Could not schedule.';
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
   <div class="flex flex-col bg-paper min-h-screen">
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-2xl">
-        <RouterLink to="/mentor" class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1">
+        <RouterLink
+          to="/mentor"
+          class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
+        >
           <Icon icon="lucide:arrow-left" width="12" /> Mentor portal
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-2 block">Schedule</Eyebrow>
@@ -113,14 +116,18 @@ onMounted(load)
         <UiCard v-else class="p-6 md:p-10 bg-surface">
           <div class="flex flex-col gap-5">
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Cohort</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Cohort</label
+              >
               <UiSelect
                 v-model="form.cohortId"
                 placeholder="Select a cohort…"
-                :options="cohorts.map((c) => ({
-                  value: c.id ?? '',
-                  label: `${c.name || c.courseSlug} (${c.program.replace('_', ' ')})`,
-                }))"
+                :options="
+                  cohorts.map(c => ({
+                    value: c.id ?? '',
+                    label: `${c.name || c.courseSlug} (${c.program.replace('_', ' ')})`,
+                  }))
+                "
               />
             </div>
 
@@ -148,7 +155,9 @@ onMounted(load)
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Starts</label>
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Starts</label
+                >
                 <input
                   v-model="form.startsAt"
                   type="datetime-local"
@@ -156,7 +165,9 @@ onMounted(load)
                 />
               </div>
               <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Ends</label>
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Ends</label
+                >
                 <input
                   v-model="form.endsAt"
                   type="datetime-local"
@@ -184,8 +195,8 @@ onMounted(load)
               <UiSelect
                 v-model="form.meetingProvider"
                 :options="[
-                  { value: 'zoom',  label: 'Zoom' },
-                  { value: 'meet',  label: 'Google Meet' },
+                  { value: 'zoom', label: 'Zoom' },
+                  { value: 'meet', label: 'Google Meet' },
                   { value: 'other', label: 'Other' },
                 ]"
               />

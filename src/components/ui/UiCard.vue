@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ hoverable?: boolean }>()
+defineProps<{ hoverable?: boolean }>();
 </script>
 
 <template>

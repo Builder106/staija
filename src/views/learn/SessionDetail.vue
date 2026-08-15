@@ -1,67 +1,67 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import { useAuth } from '../../composables/useAuth'
-import { SessionService, rsvpSession, toMillis } from '../../services/learn'
-import type { LiveSession, SessionRsvp } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { useAuth } from '../../composables/useAuth';
+import { SessionService, rsvpSession, toMillis } from '../../services/learn';
+import type { LiveSession, SessionRsvp } from '../../services/types';
 
-const route = useRoute()
-const { user } = useAuth()
+const route = useRoute();
+const { user } = useAuth();
 
-const loading = ref(true)
-const session = ref<LiveSession | null>(null)
-const myRsvp = ref<SessionRsvp | null>(null)
-const updating = ref(false)
-const error = ref<string | null>(null)
+const loading = ref(true);
+const session = ref<LiveSession | null>(null);
+const myRsvp = ref<SessionRsvp | null>(null);
+const updating = ref(false);
+const error = ref<string | null>(null);
 
 const isJoinable = computed(() => {
-  if (!session.value) return false
-  const start = toMillis(session.value.startsAt)
-  const end = toMillis(session.value.endsAt)
-  const now = Date.now()
+  if (!session.value) return false;
+  const start = toMillis(session.value.startsAt);
+  const end = toMillis(session.value.endsAt);
+  const now = Date.now();
   // 15 min before start through end of session
-  return now >= start - 15 * 60 * 1000 && now <= end
-})
+  return now >= start - 15 * 60 * 1000 && now <= end;
+});
 
-const isPast = computed(() => session.value && toMillis(session.value.endsAt) < Date.now())
+const isPast = computed(() => session.value && toMillis(session.value.endsAt) < Date.now());
 
 async function load() {
-  if (!user.value) return
-  loading.value = true
+  if (!user.value) return;
+  loading.value = true;
   try {
-    const id = route.params.id as string
+    const id = route.params.id as string;
     const [s, r] = await Promise.all([
       SessionService.getSession(id),
       SessionService.getRsvp(id, user.value.uid),
-    ])
-    session.value = s
-    myRsvp.value = r
-    if (!s) error.value = 'Session not found.'
+    ]);
+    session.value = s;
+    myRsvp.value = r;
+    if (!s) error.value = 'Session not found.';
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load session.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load session.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function setRsvp(value: 'yes' | 'no' | 'maybe') {
-  if (!session.value || updating.value) return
-  updating.value = true
-  error.value = null
+  if (!session.value || updating.value) return;
+  updating.value = true;
+  error.value = null;
   try {
-    await rsvpSession({ sessionId: session.value.id ?? '', rsvped: value })
-    myRsvp.value = await SessionService.getRsvp(session.value.id ?? '', user.value!.uid)
+    await rsvpSession({ sessionId: session.value.id ?? '', rsvped: value });
+    myRsvp.value = await SessionService.getRsvp(session.value.id ?? '', user.value!.uid);
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'RSVP failed.'
+    error.value = (err as { message?: string }).message ?? 'RSVP failed.';
   } finally {
-    updating.value = false
+    updating.value = false;
   }
 }
 
@@ -73,10 +73,10 @@ function fmtFull(ts: unknown) {
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  })
+  });
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>

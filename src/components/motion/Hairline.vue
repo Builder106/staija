@@ -11,10 +11,10 @@
  * Reduced motion: renders as a static line.
  */
 
-import { Motion } from 'motion-v'
-import { useReducedMotion } from '../../composables/useReducedMotion'
+import { Motion } from 'motion-v';
+import { useReducedMotion } from '../../composables/useReducedMotion';
 
-const reduce = useReducedMotion()
+const reduce = useReducedMotion();
 </script>
 
 <template>

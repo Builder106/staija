@@ -1,68 +1,68 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { User } from 'firebase/auth'
-import { AuthService } from '../services/auth'
-import { DatabaseService } from '../services/database'
-import type { UserProfile } from '../services/types'
+import type { User } from 'firebase/auth';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { AuthService } from '../services/auth';
+import { DatabaseService } from '../services/database';
+import type { UserProfile } from '../services/types';
 
-const user = ref<User | null>(null)
-const userProfile = ref<UserProfile | null>(null)
-const loading = ref(true)
+const user = ref<User | null>(null);
+const userProfile = ref<UserProfile | null>(null);
+const loading = ref(true);
 
-let subscriberCount = 0
-let unsubscribe: (() => void) | null = null
+let subscriberCount = 0;
+let unsubscribe: (() => void) | null = null;
 
 function startListening() {
-  if (unsubscribe) return
+  if (unsubscribe) return;
 
-  unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser) => {
-    user.value = firebaseUser
+  unsubscribe = AuthService.onAuthStateChanged(async firebaseUser => {
+    user.value = firebaseUser;
     if (firebaseUser) {
       try {
-        userProfile.value = await DatabaseService.getUserProfile(firebaseUser.uid)
+        userProfile.value = await DatabaseService.getUserProfile(firebaseUser.uid);
       } catch {
-        userProfile.value = null
+        userProfile.value = null;
       }
     } else {
-      userProfile.value = null
+      userProfile.value = null;
     }
-    loading.value = false
-  })
+    loading.value = false;
+  });
 }
 
 function stopListening() {
   if (unsubscribe) {
-    unsubscribe()
-    unsubscribe = null
+    unsubscribe();
+    unsubscribe = null;
   }
 }
 
 export function useAuth() {
   onMounted(() => {
-    subscriberCount++
-    startListening()
-  })
+    subscriberCount++;
+    startListening();
+  });
 
   onUnmounted(() => {
-    subscriberCount--
+    subscriberCount--;
     if (subscriberCount <= 0) {
-      subscriberCount = 0
-      stopListening()
+      subscriberCount = 0;
+      stopListening();
     }
-  })
+  });
 
-  const isAuthenticated = computed(() => !!user.value)
-  const role = computed(() => userProfile.value?.role ?? null)
-  const displayName = computed(() =>
-    userProfile.value?.displayName || user.value?.displayName || user.value?.email || null
-  )
+  const isAuthenticated = computed(() => !!user.value);
+  const role = computed(() => userProfile.value?.role ?? null);
+  const displayName = computed(
+    () => userProfile.value?.displayName || user.value?.displayName || user.value?.email || null
+  );
 
   async function refreshProfile() {
-    if (!user.value) return
-    userProfile.value = await DatabaseService.getUserProfile(user.value.uid)
+    if (!user.value) return;
+    userProfile.value = await DatabaseService.getUserProfile(user.value.uid);
   }
 
   async function signOut() {
-    await AuthService.signOut()
+    await AuthService.signOut();
   }
 
   return {
@@ -74,5 +74,5 @@ export function useAuth() {
     displayName,
     refreshProfile,
     signOut,
-  }
+  };
 }

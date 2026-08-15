@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { documentToHtmlString } from '@contentful/rich-text-html-renderer'
-import { BLOCKS, INLINES, MARKS, type Document } from '@contentful/rich-text-types'
+import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
+import { BLOCKS, INLINES, MARKS, type Document } from '@contentful/rich-text-types';
+import { computed } from 'vue';
 
 // Single shared Contentful Rich-Text renderer for the whole app — used by
 // the LMS LessonView/AssignmentView and (going forward) BlogPost.vue.
@@ -12,15 +12,15 @@ import { BLOCKS, INLINES, MARKS, type Document } from '@contentful/rich-text-typ
 // `body` arrives as a Contentful `Document`. Plain strings (legacy
 // content) fall through as-is so callers can ignore the difference.
 
-const props = defineProps<{ body: unknown }>()
+const props = defineProps<{ body: unknown }>();
 
 const html = computed(() => {
-  if (!props.body) return ''
-  if (typeof props.body === 'string') return props.body
+  if (!props.body) return '';
+  if (typeof props.body === 'string') return props.body;
   try {
     return documentToHtmlString(props.body as Document, {
       renderMark: {
-        [MARKS.CODE]: (text) =>
+        [MARKS.CODE]: text =>
           `<code class="font-mono text-[0.9em] bg-ink/[0.06] px-1.5 py-0.5 rounded">${text}</code>`,
       },
       renderNode: {
@@ -39,30 +39,31 @@ const html = computed(() => {
         [BLOCKS.QUOTE]: (_node, next) =>
           `<blockquote class="border-l-4 border-brand-violet pl-4 my-5 italic text-ink/70">${next(_node.content)}</blockquote>`,
         [BLOCKS.HR]: () => `<hr class="my-8 border-t hairline-ink" />`,
-        [BLOCKS.EMBEDDED_ASSET]: (node) => {
+        [BLOCKS.EMBEDDED_ASSET]: node => {
           // The asset reference resolves to fields.file.url after
           // Contentful's link resolution. The mirror leaves links
           // unresolved, so callers passing raw entries may get
           // undefined here — render nothing rather than break.
-          const target = (node.data as { target?: { fields?: { file?: { url?: string }; title?: string } } })
-            .target
-          const url = target?.fields?.file?.url
-          const title = target?.fields?.title ?? ''
-          if (!url) return ''
-          const src = url.startsWith('//') ? `https:${url}` : url
-          return `<img src="${src}" alt="${title}" class="my-6 rounded-lg w-full" loading="lazy" />`
+          const target = (
+            node.data as { target?: { fields?: { file?: { url?: string }; title?: string } } }
+          ).target;
+          const url = target?.fields?.file?.url;
+          const title = target?.fields?.title ?? '';
+          if (!url) return '';
+          const src = url.startsWith('//') ? `https:${url}` : url;
+          return `<img src="${src}" alt="${title}" class="my-6 rounded-lg w-full" loading="lazy" />`;
         },
         [INLINES.HYPERLINK]: (node, next) => {
-          const uri = (node.data as { uri?: string }).uri ?? '#'
-          return `<a href="${uri}" target="_blank" rel="noopener noreferrer" class="text-brand-violet underline hover:no-underline">${next(node.content)}</a>`
+          const uri = (node.data as { uri?: string }).uri ?? '#';
+          return `<a href="${uri}" target="_blank" rel="noopener noreferrer" class="text-brand-violet underline hover:no-underline">${next(node.content)}</a>`;
         },
       },
-    })
+    });
   } catch (err) {
-    console.error('[RichText] render failed', err)
-    return ''
+    console.error('[RichText] render failed', err);
+    return '';
   }
-})
+});
 </script>
 
 <template>

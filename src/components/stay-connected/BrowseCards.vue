@@ -5,23 +5,38 @@
  * you, here's where to keep poking." Intentionally simple — no images,
  * no descriptions of length, no animation budget.
  */
-import { RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import UiCard from '../ui/UiCard.vue'
-import Heading from '../ui/Heading.vue'
+import { Icon } from '@iconify/vue';
+import { RouterLink } from 'vue-router';
+import Heading from '../ui/Heading.vue';
+import UiCard from '../ui/UiCard.vue';
 
 interface BrowseLink {
-  to: string
-  label: string
-  hint: string
-  icon: string
+  to: string;
+  label: string;
+  hint: string;
+  icon: string;
 }
 
 const links: BrowseLink[] = [
-  { to: '/blog', label: 'Read student stories', hint: 'Profiles, dispatches from the lab, talks.', icon: 'lucide:book-open' },
-  { to: '/events', label: 'Upcoming events', hint: 'Info sessions, talks, and workshops.', icon: 'lucide:calendar' },
-  { to: '/about', label: 'About STAIJA', hint: 'Who we are and why this work exists.', icon: 'lucide:info' },
-]
+  {
+    to: '/blog',
+    label: 'Read student stories',
+    hint: 'Profiles, dispatches from the lab, talks.',
+    icon: 'lucide:book-open',
+  },
+  {
+    to: '/events',
+    label: 'Upcoming events',
+    hint: 'Info sessions, talks, and workshops.',
+    icon: 'lucide:calendar',
+  },
+  {
+    to: '/about',
+    label: 'About STAIJA',
+    hint: 'Who we are and why this work exists.',
+    icon: 'lucide:info',
+  },
+];
 </script>
 
 <template>

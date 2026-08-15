@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import { SubmissionService, toMillis } from '../../services/learn'
-import type { AssignmentSubmission } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { onMounted, ref } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { SubmissionService, toMillis } from '../../services/learn';
+import type { AssignmentSubmission } from '../../services/types';
 
-const route = useRoute()
+const route = useRoute();
 
-const loading = ref(true)
-const submission = ref<AssignmentSubmission | null>(null)
-const error = ref<string | null>(null)
+const loading = ref(true);
+const submission = ref<AssignmentSubmission | null>(null);
+const error = ref<string | null>(null);
 
 async function load() {
-  loading.value = true
+  loading.value = true;
   try {
-    const id = route.params.id as string
-    const s = await SubmissionService.getSubmission(id)
-    if (!s) error.value = 'Submission not found.'
-    else submission.value = s
+    const id = route.params.id as string;
+    const s = await SubmissionService.getSubmission(id);
+    if (!s) error.value = 'Submission not found.';
+    else submission.value = s;
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load submission.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load submission.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -38,23 +38,26 @@ function fmtDate(value: unknown) {
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  })
+  });
 }
 
 const statusClass: Record<string, string> = {
   submitted: 'bg-ink/5 text-ink/70 ring-1 ring-ink/10',
   returned: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   graded: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
-}
+};
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
   <div class="flex flex-col bg-paper min-h-screen">
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-3xl">
-        <RouterLink to="/learn" class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1">
+        <RouterLink
+          to="/learn"
+          class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
+        >
           <Icon icon="lucide:arrow-left" width="12" /> Back to course
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-2 block">Submission</Eyebrow>

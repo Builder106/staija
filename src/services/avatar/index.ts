@@ -22,7 +22,7 @@
  * can compile without importing `./parts` (which contains 20 MB of
  * inlined SVG data). Update when the portrait library grows.
  */
-export const PORTRAIT_SLOT_COUNT = 10
+export const PORTRAIT_SLOT_COUNT = 10;
 
 /**
  * Convenience helper — given a user-ish object (anything with a uid
@@ -30,7 +30,7 @@ export const PORTRAIT_SLOT_COUNT = 10
  * it doesn't change if the user updates their email.
  */
 export function avatarSeedFor(user: { uid?: string; email?: string | null }): string {
-  return user.uid ?? user.email ?? 'staija-default'
+  return user.uid ?? user.email ?? 'staija-default';
 }
 
 /**
@@ -45,10 +45,10 @@ export function avatarSeedFor(user: { uid?: string; email?: string | null }): st
 export function avatarThumbForSlot(slot: number): string {
   if (slot < 0 || slot >= PORTRAIT_SLOT_COUNT) {
     throw new Error(
-      `avatarThumbForSlot: slot ${slot} is out of range (0–${PORTRAIT_SLOT_COUNT - 1})`,
-    )
+      `avatarThumbForSlot: slot ${slot} is out of range (0–${PORTRAIT_SLOT_COUNT - 1})`
+    );
   }
-  return `/avatars/portrait-${slot}.png`
+  return `/avatars/portrait-${slot}.png`;
 }
 
 /**
@@ -60,7 +60,7 @@ export function avatarThumbForSlot(slot: number): string {
  * Currently slot 6 = portrait-twa-glasses (per the slot mapping in
  * tools/avatars/prompts.ts).
  */
-const DEFAULT_PORTRAIT_SLOT = 6
+const DEFAULT_PORTRAIT_SLOT = 6;
 
 /**
  * URL of the universal-default thumbnail. The `seed` parameter is
@@ -68,7 +68,7 @@ const DEFAULT_PORTRAIT_SLOT = 6
  * ignored — every default-state user gets the same portrait.
  */
 export function avatarThumbForSeed(_seed: string): string {
-  return avatarThumbForSlot(DEFAULT_PORTRAIT_SLOT)
+  return avatarThumbForSlot(DEFAULT_PORTRAIT_SLOT);
 }
 
 /**
@@ -80,17 +80,17 @@ export function avatarThumbForSeed(_seed: string): string {
  * static thumbnail URLs. Components render via `<img src>` directly.
  */
 export function resolveAvatarSrc(input: {
-  photoURL?: string | null
-  avatarSlot?: number | null
-  seed: string
+  photoURL?: string | null;
+  avatarSlot?: number | null;
+  seed: string;
 }): string {
-  if (input.photoURL) return input.photoURL
+  if (input.photoURL) return input.photoURL;
   if (
     typeof input.avatarSlot === 'number' &&
     input.avatarSlot >= 0 &&
     input.avatarSlot < PORTRAIT_SLOT_COUNT
   ) {
-    return avatarThumbForSlot(input.avatarSlot)
+    return avatarThumbForSlot(input.avatarSlot);
   }
-  return avatarThumbForSeed(input.seed)
+  return avatarThumbForSeed(input.seed);
 }

@@ -1,47 +1,45 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiSelect from '../../components/ui/UiSelect.vue'
-import { CohortService, EnrollmentService, enrollStudent } from '../../services/learn'
-import { DatabaseService } from '../../services/database'
-import type { Application, Cohort, Enrollment, UserProfile } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import UiSelect from '../../components/ui/UiSelect.vue';
+import { DatabaseService } from '../../services/database';
+import { CohortService, EnrollmentService, enrollStudent } from '../../services/learn';
+import type { Application, Cohort, Enrollment, UserProfile } from '../../services/types';
 
-const route = useRoute()
+const route = useRoute();
 
-const cohorts = ref<Cohort[]>([])
-const candidates = ref<UserProfile[]>([])
+const cohorts = ref<Cohort[]>([]);
+const candidates = ref<UserProfile[]>([]);
 /** Full users list so we can resolve mentor uids → names in the
  *  pairing picker. The mentorPool on a cohort is a list of uids; the
  *  legacy picker showed those raw, which was useless ("ic1yK2dR…").
  *  Keeping the full set on hand also lets us future-proof for staff
  *  surfaces that need to display the cohort roster, etc. */
-const allUsers = ref<UserProfile[]>([])
+const allUsers = ref<UserProfile[]>([]);
 /** Active enrollments in the currently-selected cohort, indexed for
  *  per-mentor load. Refetched whenever the cohort selection changes
  *  so the load counts stay fresh — staff don't have to refresh the
  *  page after a teammate enrolls someone in a parallel session. */
-const cohortEnrollments = ref<Enrollment[]>([])
-const cohortEnrollmentsLoading = ref(false)
-const loading = ref(true)
-const error = ref<string | null>(null)
-const success = ref<string | null>(null)
+const cohortEnrollments = ref<Enrollment[]>([]);
+const cohortEnrollmentsLoading = ref(false);
+const loading = ref(true);
+const error = ref<string | null>(null);
+const success = ref<string | null>(null);
 
-const selectedStudentId = ref('')
-const selectedCohortId = ref('')
-const selectedMentorId = ref('')
-const submitting = ref(false)
+const selectedStudentId = ref('');
+const selectedCohortId = ref('');
+const selectedMentorId = ref('');
+const submitting = ref(false);
 
-const selectedCohort = computed(() =>
-  cohorts.value.find((c) => c.id === selectedCohortId.value),
-)
+const selectedCohort = computed(() => cohorts.value.find(c => c.id === selectedCohortId.value));
 
 /** The selected applicant's own applications, fetched on selection
  *  change. Drives the cohort filter so staff can't accidentally
@@ -50,73 +48,71 @@ const selectedCohort = computed(() =>
  *  loud at submit time is worse UX than not surfacing the wrong
  *  cohort to begin with). null while loading or before a student is
  *  picked. */
-const applicantApplications = ref<Application[] | null>(null)
-const applicantAppsLoading = ref(false)
+const applicantApplications = ref<Application[] | null>(null);
+const applicantAppsLoading = ref(false);
 
 /** Programs the selected applicant has an accepted+confirmed
  *  application for. The enrollStudent callable requires this match
  *  (and a spotResponse='accepted' on the matching app); we mirror
  *  that gate in the picker so staff see the eligible cohorts only. */
 const eligiblePrograms = computed<Set<string>>(() => {
-  const apps = applicantApplications.value
-  if (!apps) return new Set()
-  const programs = new Set<string>()
+  const apps = applicantApplications.value;
+  if (!apps) return new Set();
+  const programs = new Set<string>();
   for (const a of apps) {
     if (a.status === 'accepted' && a.spotResponse === 'accepted' && a.program) {
-      programs.add(a.program)
+      programs.add(a.program);
     }
   }
-  return programs
-})
+  return programs;
+});
 
 /** Existing-student short-circuit: a candidate who's already
  *  `role='student'` is enrolling in a second cohort, which doesn't
  *  re-run the application gate (matches the enrollStudent callable's
  *  role-flip skip). For them, every active cohort is fair game. */
 const selectedCandidate = computed(() =>
-  candidates.value.find((u) => u.uid === selectedStudentId.value),
-)
-const candidateIsExistingStudent = computed(
-  () => selectedCandidate.value?.role === 'student',
-)
+  candidates.value.find(u => u.uid === selectedStudentId.value)
+);
+const candidateIsExistingStudent = computed(() => selectedCandidate.value?.role === 'student');
 
 /** Cohorts the staff can actually enroll the selected applicant
  *  into. Falls back to the full list when no applicant is selected
  *  yet, or when the candidate is an existing student. */
 const eligibleCohorts = computed<Cohort[]>(() => {
-  if (!selectedStudentId.value) return cohorts.value
-  if (candidateIsExistingStudent.value) return cohorts.value
-  if (!applicantApplications.value) return [] // still loading
-  return cohorts.value.filter((c) => eligiblePrograms.value.has(c.program))
-})
+  if (!selectedStudentId.value) return cohorts.value;
+  if (candidateIsExistingStudent.value) return cohorts.value;
+  if (!applicantApplications.value) return []; // still loading
+  return cohorts.value.filter(c => eligiblePrograms.value.has(c.program));
+});
 
 /** Tracks why eligibleCohorts is empty so the picker can render an
  *  honest empty state instead of a silent "no options" dropdown. */
 const cohortEmptyReason = computed<string | null>(() => {
-  if (!selectedStudentId.value) return null
-  if (candidateIsExistingStudent.value) return null
-  if (applicantAppsLoading.value) return 'Loading applications…'
-  if (!applicantApplications.value) return null
+  if (!selectedStudentId.value) return null;
+  if (candidateIsExistingStudent.value) return null;
+  if (applicantAppsLoading.value) return 'Loading applications…';
+  if (!applicantApplications.value) return null;
   if (eligiblePrograms.value.size === 0) {
-    const apps = applicantApplications.value
+    const apps = applicantApplications.value;
     if (apps.length === 0) {
-      return 'No applications on file for this person.'
+      return 'No applications on file for this person.';
     }
-    const hasAccepted = apps.some((a) => a.status === 'accepted')
+    const hasAccepted = apps.some(a => a.status === 'accepted');
     if (!hasAccepted) {
-      return "No accepted applications yet. Decide on this applicant's submission first."
+      return "No accepted applications yet. Decide on this applicant's submission first.";
     }
-    return "Applicant hasn't confirmed their spot yet. Confirm the spot response first, then enroll."
+    return "Applicant hasn't confirmed their spot yet. Confirm the spot response first, then enroll.";
   }
   if (eligibleCohorts.value.length === 0) {
-    return 'No active cohort matches this applicant\'s accepted program.'
+    return "No active cohort matches this applicant's accepted program.";
   }
-  return null
-})
+  return null;
+});
 
 const canSubmit = computed(
-  () => selectedStudentId.value && selectedCohortId.value && !submitting.value,
-)
+  () => selectedStudentId.value && selectedCohortId.value && !submitting.value
+);
 
 /** Mentor pool resolved to display-friendly options with active load
  *  per mentor in the SELECTED cohort. The picker becomes useful:
@@ -131,104 +127,100 @@ const canSubmit = computed(
  *  when staff want to override. */
 const mentorOptions = computed<{ value: string; label: string }[]>(() => {
   if (!selectedCohort.value) {
-    return [{ value: '', label: 'Pick a cohort first' }]
+    return [{ value: '', label: 'Pick a cohort first' }];
   }
-  const pool = selectedCohort.value.mentorPool ?? []
+  const pool = selectedCohort.value.mentorPool ?? [];
   if (pool.length === 0) {
-    return [{ value: '', label: 'No mentor pool on this cohort — add one first' }]
+    return [{ value: '', label: 'No mentor pool on this cohort — add one first' }];
   }
-  const userByUid = new Map(allUsers.value.map((u) => [u.uid, u]))
-  const loadByUid = new Map<string, number>()
+  const userByUid = new Map(allUsers.value.map(u => [u.uid, u]));
+  const loadByUid = new Map<string, number>();
   for (const e of cohortEnrollments.value) {
-    if (e.mentorId) loadByUid.set(e.mentorId, (loadByUid.get(e.mentorId) ?? 0) + 1)
+    if (e.mentorId) loadByUid.set(e.mentorId, (loadByUid.get(e.mentorId) ?? 0) + 1);
   }
   const labelFor = (uid: string): { name: string; load: number } => {
-    const user = userByUid.get(uid)
-    const name = user?.displayName?.trim() || user?.email || `${uid.slice(0, 8)}…`
-    return { name, load: loadByUid.get(uid) ?? 0 }
-  }
-  const entries = pool
-    .map((uid) => ({ uid, ...labelFor(uid) }))
-    .sort((a, b) => a.load - b.load)
-  const studentWord = (n: number) => (n === 1 ? 'student' : 'students')
-  const autoPick = entries[0]
+    const user = userByUid.get(uid);
+    const name = user?.displayName?.trim() || user?.email || `${uid.slice(0, 8)}…`;
+    return { name, load: loadByUid.get(uid) ?? 0 };
+  };
+  const entries = pool.map(uid => ({ uid, ...labelFor(uid) })).sort((a, b) => a.load - b.load);
+  const studentWord = (n: number) => (n === 1 ? 'student' : 'students');
+  const autoPick = entries[0];
   const autoLabel = cohortEnrollmentsLoading.value
     ? 'Auto | loading mentor loads…'
-    : `Auto | would pick ${autoPick.name} (${autoPick.load} ${studentWord(autoPick.load)})`
+    : `Auto | would pick ${autoPick.name} (${autoPick.load} ${studentWord(autoPick.load)})`;
   return [
     { value: '', label: autoLabel },
-    ...entries.map((e) => ({
+    ...entries.map(e => ({
       value: e.uid,
       label: `${e.name} | ${e.load} ${studentWord(e.load)}`,
     })),
-  ]
-})
+  ];
+});
 
 /** Fetch the selected applicant's own applications whenever the
  *  student picker changes. Powers the cohort filter; clears any
  *  prior selection so a stale Dynamerge cohort doesn't carry over
  *  when staff switches to a StepUp-accepted applicant. */
-watch(selectedStudentId, async (uid) => {
-  selectedCohortId.value = ''
-  applicantApplications.value = null
-  if (!uid) return
-  const candidate = candidates.value.find((u) => u.uid === uid)
+watch(selectedStudentId, async uid => {
+  selectedCohortId.value = '';
+  applicantApplications.value = null;
+  if (!uid) return;
+  const candidate = candidates.value.find(u => u.uid === uid);
   // Existing students don't go through the application gate (second-
   // cohort enrollment), so skip the fetch entirely.
   if (candidate?.role === 'student') {
-    applicantApplications.value = []
-    return
+    applicantApplications.value = [];
+    return;
   }
-  applicantAppsLoading.value = true
+  applicantAppsLoading.value = true;
   try {
-    applicantApplications.value = await DatabaseService.getUserApplications(uid)
+    applicantApplications.value = await DatabaseService.getUserApplications(uid);
   } catch (err) {
-    console.warn('[EnrollStudent] applicant applications load failed', err)
-    applicantApplications.value = []
+    console.warn('[EnrollStudent] applicant applications load failed', err);
+    applicantApplications.value = [];
   } finally {
-    applicantAppsLoading.value = false
+    applicantAppsLoading.value = false;
   }
-})
+});
 
 /** Fetch the cohort's active enrollments whenever the selected cohort
  *  changes. Safe to re-run; getForCohort is a single query. */
-watch(selectedCohortId, async (cohortId) => {
+watch(selectedCohortId, async cohortId => {
   // Reset the manual mentor pick whenever the cohort changes — a
   // mentor from cohort A isn't necessarily in cohort B's pool.
-  selectedMentorId.value = ''
+  selectedMentorId.value = '';
   if (!cohortId) {
-    cohortEnrollments.value = []
-    return
+    cohortEnrollments.value = [];
+    return;
   }
-  cohortEnrollmentsLoading.value = true
+  cohortEnrollmentsLoading.value = true;
   try {
-    cohortEnrollments.value = await EnrollmentService.getForCohort(cohortId)
+    cohortEnrollments.value = await EnrollmentService.getForCohort(cohortId);
   } catch (err) {
     // Non-fatal — the picker still shows mentors, just without load
     // counts. Better than blocking the staff workflow.
-    console.warn('[EnrollStudent] cohort enrollment load failed', err)
-    cohortEnrollments.value = []
+    console.warn('[EnrollStudent] cohort enrollment load failed', err);
+    cohortEnrollments.value = [];
   } finally {
-    cohortEnrollmentsLoading.value = false
+    cohortEnrollmentsLoading.value = false;
   }
-})
+});
 
 async function load() {
-  loading.value = true
-  error.value = null
+  loading.value = true;
+  error.value = null;
   try {
     const [cs, users] = await Promise.all([
       CohortService.listAllCohorts(),
       DatabaseService.getAllUsers(),
-    ])
-    cohorts.value = cs.filter((c) => c.status !== 'completed')
-    allUsers.value = users
+    ]);
+    cohorts.value = cs.filter(c => c.status !== 'completed');
+    allUsers.value = users;
     // Phase 1: enroll any applicant or student. The applicant role is the
     // common case (just got accepted); already-students may need a second
     // course.
-    candidates.value = users.filter(
-      (u) => u.role === 'applicant' || u.role === 'student',
-    )
+    candidates.value = users.filter(u => u.role === 'applicant' || u.role === 'student');
     // Pre-fill from ?applicant=<uid> on the URL. AdminApplications'
     // "Place in cohort" button hands the student off via this query
     // param so staff don't have to scroll through the whole candidate
@@ -236,47 +228,48 @@ async function load() {
     // values that actually exist in the candidate set — a stale uid
     // from a copy-pasted URL silently no-ops instead of locking the
     // picker to nothing.
-    const presetApplicant = route.query.applicant
-    if (typeof presetApplicant === 'string' && candidates.value.some((u) => u.uid === presetApplicant)) {
-      selectedStudentId.value = presetApplicant
+    const presetApplicant = route.query.applicant;
+    if (
+      typeof presetApplicant === 'string' &&
+      candidates.value.some(u => u.uid === presetApplicant)
+    ) {
+      selectedStudentId.value = presetApplicant;
     }
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function submit() {
-  if (!canSubmit.value) return
-  submitting.value = true
-  error.value = null
-  success.value = null
+  if (!canSubmit.value) return;
+  submitting.value = true;
+  error.value = null;
+  success.value = null;
   try {
     const result = await enrollStudent({
       studentId: selectedStudentId.value,
       cohortId: selectedCohortId.value,
       mentorId: selectedMentorId.value || undefined,
-    })
+    });
     // Resolve the assigned mentor's uid → display name against the
     // already-loaded users list. Falls back to email, then to the
     // short uid prefix so a staff race (mentor added between page
     // load and submit) still produces a readable message.
-    const mentor = allUsers.value.find((u) => u.uid === result.mentorId)
+    const mentor = allUsers.value.find(u => u.uid === result.mentorId);
     const mentorLabel =
-      mentor?.displayName?.trim() ||
-      mentor?.email ||
-      `${result.mentorId.slice(0, 8)}…`
-    success.value = `Enrolled — assigned to ${mentorLabel}.`
-    selectedStudentId.value = ''
-    selectedMentorId.value = ''
+      mentor?.displayName?.trim() || mentor?.email || `${result.mentorId.slice(0, 8)}…`;
+    success.value = `Enrolled — assigned to ${mentorLabel}.`;
+    selectedStudentId.value = '';
+    selectedMentorId.value = '';
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Enroll failed.'
+    error.value = (err as { message?: string }).message ?? 'Enroll failed.';
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -303,30 +296,36 @@ onMounted(load)
             <!-- Pick the student first so the cohort picker can
                  filter to programs they're actually eligible for. -->
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Student</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Student</label
+              >
               <UiSelect
                 v-model="selectedStudentId"
                 placeholder="Select a student…"
-                :options="candidates.map((u) => ({
-                  value: u.uid,
-                  label: `${u.displayName || u.email} — ${u.role}`,
-                }))"
+                :options="
+                  candidates.map(u => ({
+                    value: u.uid,
+                    label: `${u.displayName || u.email} — ${u.role}`,
+                  }))
+                "
               />
-              <p class="text-xs text-ink/50">
-                Showing applicants and existing students.
-              </p>
+              <p class="text-xs text-ink/50">Showing applicants and existing students.</p>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Cohort</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Cohort</label
+              >
               <UiSelect
                 v-model="selectedCohortId"
                 placeholder="Select a cohort…"
                 :disabled="!!cohortEmptyReason"
-                :options="eligibleCohorts.map((c) => ({
-                  value: c.id ?? '',
-                  label: `${c.name || c.courseSlug} (${c.program.replace('_', ' ')}, ${c.status})`,
-                }))"
+                :options="
+                  eligibleCohorts.map(c => ({
+                    value: c.id ?? '',
+                    label: `${c.name || c.courseSlug} (${c.program.replace('_', ' ')}, ${c.status})`,
+                  }))
+                "
               />
               <!-- Honest empty state when the cohort list filters to
                    nothing. Tells staff exactly what to do next
@@ -336,22 +335,25 @@ onMounted(load)
               <p v-if="cohortEmptyReason" class="text-xs text-amber-700 m-0">
                 {{ cohortEmptyReason }}
               </p>
-              <p v-else-if="selectedStudentId && !candidateIsExistingStudent" class="text-xs text-ink/50 m-0">
+              <p
+                v-else-if="selectedStudentId && !candidateIsExistingStudent"
+                class="text-xs text-ink/50 m-0"
+              >
                 Filtered to programs this applicant has confirmed.
               </p>
             </div>
 
             <div v-if="selectedCohort" class="flex flex-col gap-2">
               <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">
-                Mentor <span class="text-ink/40 normal-case">(optional — auto-picks the least-loaded mentor if blank)</span>
+                Mentor
+                <span class="text-ink/40 normal-case"
+                  >(optional — auto-picks the least-loaded mentor if blank)</span
+                >
               </label>
-              <UiSelect
-                v-model="selectedMentorId"
-                :options="mentorOptions"
-              />
+              <UiSelect v-model="selectedMentorId" :options="mentorOptions" />
               <p class="text-xs text-ink/50 m-0">
-                Counts reflect this cohort's active enrollments only — a mentor with 5
-                students across two cohorts still shows 0 here if none are in this cohort.
+                Counts reflect this cohort's active enrollments only — a mentor with 5 students
+                across two cohorts still shows 0 here if none are in this cohort.
               </p>
             </div>
 

@@ -61,46 +61,58 @@
     <link rel="dns-prefetch" href="https://images.unsplash.com" />
     <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
     <title>STAIJA</title>
-    <meta name="description" content="STAIJA nurtures Africa's next generation of scientist‑leaders through research programs, mentorship and community." />
+    <meta
+      name="description"
+      content="STAIJA nurtures Africa's next generation of scientist‑leaders through research programs, mentorship and community."
+    />
     <link rel="canonical" href="https://staija.org/" />
     <meta property="og:site_name" content="STAIJA" />
     <meta property="og:title" content="STAIJA — Africa's next generation of scientist-leaders" />
-    <meta property="og:description" content="Research programs, mentorship, and community for high-school and gap-year students across Africa." />
+    <meta
+      property="og:description"
+      content="Research programs, mentorship, and community for high-school and gap-year students across Africa."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://staija.org/" />
     <meta property="og:image" content="https://staija.org/og-image.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="2560" />
     <meta property="og:image:height" content="1280" />
-    <meta property="og:image:alt" content="STAIJA — nurturing Africa's next generation of scientist-leaders." />
+    <meta
+      property="og:image:alt"
+      content="STAIJA — nurturing Africa's next generation of scientist-leaders."
+    />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="STAIJA — Africa's next generation of scientist-leaders" />
-    <meta name="twitter:description" content="Research programs, mentorship, and community for high-school and gap-year students across Africa." />
+    <meta
+      name="twitter:description"
+      content="Research programs, mentorship, and community for high-school and gap-year students across Africa."
+    />
     <meta name="twitter:image" content="https://staija.org/og-image.jpg" />
-    <meta name="twitter:image:alt" content="STAIJA — nurturing Africa's next generation of scientist-leaders." />
+    <meta
+      name="twitter:image:alt"
+      content="STAIJA — nurturing Africa's next generation of scientist-leaders."
+    />
     <meta name="theme-color" content="#F1F5F9" />
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem('staija.theme')
+          var stored = localStorage.getItem('staija.theme');
           var choice =
-            stored === 'light' || stored === 'dark' || stored === 'system'
-              ? stored
-              : 'system'
+            stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
           var resolved =
             choice === 'system'
               ? window.matchMedia('(prefers-color-scheme: dark)').matches
                 ? 'dark'
                 : 'light'
-              : choice
-          document.documentElement.dataset.theme = resolved
-          document.documentElement.style.colorScheme = resolved
-          var meta = document.querySelector('meta[name="theme-color"]')
-          if (meta) meta.content = resolved === 'dark' ? '#0B0E12' : '#F1F5F9'
-        } catch (e) {
-        }
-      })()
+              : choice;
+          document.documentElement.dataset.theme = resolved;
+          document.documentElement.style.colorScheme = resolved;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.content = resolved === 'dark' ? '#0B0E12' : '#F1F5F9';
+        } catch (e) {}
+      })();
     </script>
     <style>
       @font-face {
@@ -120,12 +132,12 @@
         line-gap-override: 0%;
       }
       .theme-toggle {
-        background: rgba(241,245,249,0.05);
-        border: 1px solid rgba(241,245,249,0.1);
+        background: rgba(241, 245, 249, 0.05);
+        border: 1px solid rgba(241, 245, 249, 0.1);
         border-radius: 9999px;
         font-family: 'IBM Plex Sans Fallback', Arial, sans-serif;
         font-size: 0.75rem;
-        color: rgba(241,245,249,0.8);
+        color: rgba(241, 245, 249, 0.8);
       }
     </style>
   </head>
@@ -138,35 +150,79 @@
            Footer: flex-shrink-0, 559px.
            This prevents the initial flex:1 sizing (viewport-constrained) then
            min-height expansion that causes the layout shift. -->
-      <div style="display: flex; flex-direction: column; min-height: 100vh; background: #F1F5F9; color: #0B0E12;">
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          background: #f1f5f9;
+          color: #0b0e12;
+        "
+      >
         <!-- Header: flex-shrink-0, fixed 85px -->
-        <header style="flex: 0 0 85px; padding: 20px 1.5rem; background: #F1F5F9; border-bottom: 1px solid #E2E8F0;" aria-hidden="true">
-          <div style="max-width: 80rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 100%;">
-            <div style="width: 40px; height: 40px; background: #E2E8F0; border-radius: 0.375rem;"></div>
-            <nav style="display: none;" aria-hidden="true"></nav>
-            <div style="min-width: 260px;"></div>
+        <header
+          style="
+            flex: 0 0 85px;
+            padding: 20px 1.5rem;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+          "
+          aria-hidden="true"
+        >
+          <div
+            style="
+              max-width: 80rem;
+              margin: 0 auto;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              height: 100%;
+            "
+          >
+            <div
+              style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 0.375rem"
+            ></div>
+            <nav style="display: none" aria-hidden="true"></nav>
+            <div style="min-width: 260px"></div>
           </div>
         </header>
         <!-- Main: FIXED height 3017px (matches Lighthouse Vue render). NO flex:1.
              This prevents the flex container from initially sizing main to
              viewport-remaining (256px) then expanding to min-height (3017px). -->
-        <main style="height: 3017px; display: flex; flex-direction: column;">
+        <main style="height: 3017px; display: flex; flex-direction: column">
           <!-- Section placeholders: fixed heights matching Lighthouse-measured Vue render.
                Sum = 951+1+245+1+516+1+707+1+598 = 3021px (4px rounding vs 3017px). -->
-          <div style="height: 951px;"></div>
-          <div style="height: 1px; background: rgba(14, 18, 23, 0.08);"></div>
-          <div style="height: 245px;"></div>
-          <div style="height: 1px; background: rgba(14, 18, 23, 0.08);"></div>
-          <div style="height: 516px;"></div>
-          <div style="height: 1px; background: rgba(14, 18, 23, 0.08);"></div>
-          <div style="height: 707px;"></div>
-          <div style="height: 1px; background: rgba(14, 18, 23, 0.08);"></div>
-          <div style="height: 598px;"></div>
+          <div style="height: 951px"></div>
+          <div style="height: 1px; background: rgba(14, 18, 23, 0.08)"></div>
+          <div style="height: 245px"></div>
+          <div style="height: 1px; background: rgba(14, 18, 23, 0.08)"></div>
+          <div style="height: 516px"></div>
+          <div style="height: 1px; background: rgba(14, 18, 23, 0.08)"></div>
+          <div style="height: 707px"></div>
+          <div style="height: 1px; background: rgba(14, 18, 23, 0.08)"></div>
+          <div style="height: 598px"></div>
         </main>
         <!-- Footer: flex-shrink-0, fixed 559px (matches Lighthouse) -->
-        <footer style="flex: 0 0 559px; background: #0B0E12; color: #F1F5F9; font-family: 'IBM Plex Sans Fallback', Arial, sans-serif;" aria-hidden="true">
-          <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #7C3AED, #06B6D4);"></div>
-          <div style="height: 100%;"></div>
+        <footer
+          style="
+            flex: 0 0 559px;
+            background: #0b0e12;
+            color: #f1f5f9;
+            font-family: 'IBM Plex Sans Fallback', Arial, sans-serif;
+          "
+          aria-hidden="true"
+        >
+          <div
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 2px;
+              background: linear-gradient(90deg, #7c3aed, #06b6d4);
+            "
+          ></div>
+          <div style="height: 100%"></div>
         </footer>
       </div>
     </div>

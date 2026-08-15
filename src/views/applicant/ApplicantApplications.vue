@@ -36,12 +36,12 @@
             :match-width="false"
             placeholder="All Statuses"
             :options="[
-              { value: '',             label: 'All Statuses' },
-              { value: 'draft',        label: 'Draft' },
-              { value: 'submitted',    label: 'Submitted' },
+              { value: '', label: 'All Statuses' },
+              { value: 'draft', label: 'Draft' },
+              { value: 'submitted', label: 'Submitted' },
               { value: 'under_review', label: 'Under Review' },
-              { value: 'accepted',     label: 'Accepted' },
-              { value: 'rejected',     label: 'Rejected' },
+              { value: 'accepted', label: 'Accepted' },
+              { value: 'rejected', label: 'Rejected' },
             ]"
           />
           <UiSelect
@@ -49,19 +49,19 @@
             :match-width="false"
             placeholder="All Programs"
             :options="[
-              { value: '',                label: 'All Programs' },
+              { value: '', label: 'All Programs' },
               { value: 'stepup_scholars', label: 'StepUp Scholars' },
-              { value: 'dynamerge',       label: 'Dynamerge' },
+              { value: 'dynamerge', label: 'Dynamerge' },
             ]"
           />
           <UiSelect
             v-model="sortBy"
             :match-width="false"
             :options="[
-              { value: 'createdAt',   label: 'Date Created' },
+              { value: 'createdAt', label: 'Date Created' },
               { value: 'submittedAt', label: 'Date Submitted' },
-              { value: 'program',     label: 'Program' },
-              { value: 'status',      label: 'Status' },
+              { value: 'program', label: 'Program' },
+              { value: 'status', label: 'Status' },
             ]"
           />
         </div>
@@ -81,19 +81,13 @@
         <p v-if="hasFilters">
           No applications match your current filters. Try adjusting your search criteria.
         </p>
-        <p v-else>
-          You haven't created any applications yet. Pick a program to get started.
-        </p>
+        <p v-else>You haven't created any applications yet. Pick a program to get started.</p>
         <!-- Filters-applied view doesn't need a Create button — empty
              rows are an artefact of the filter, not the absence of
              work. Filters-cleared zero-state sends the user to /programs
              so they choose which to apply to, then the program page's
              Apply CTA hands off to the wizard. -->
-        <button
-          v-if="!hasFilters"
-          @click="navigateTo('/programs')"
-          class="btn-primary"
-        >
+        <button v-if="!hasFilters" @click="navigateTo('/programs')" class="btn-primary">
           Browse programs
         </button>
       </div>
@@ -119,7 +113,7 @@
               {{ application.personalInfo.firstName }} {{ application.personalInfo.lastName }}
             </h3>
             <p class="applicant-email">{{ application.personalInfo.email }}</p>
-            
+
             <div class="application-details">
               <div class="detail-item">
                 <span class="detail-label">Created:</span>
@@ -131,16 +125,16 @@
               </div>
               <div class="detail-item">
                 <span class="detail-label">Research Interests:</span>
-                <span class="detail-value">{{ application.researchInterests.slice(0, 2).join(', ') }}{{ application.researchInterests.length > 2 ? '...' : '' }}</span>
+                <span class="detail-value"
+                  >{{ application.researchInterests.slice(0, 2).join(', ')
+                  }}{{ application.researchInterests.length > 2 ? '...' : '' }}</span
+                >
               </div>
             </div>
           </div>
 
           <div class="card-actions">
-            <button
-              @click.stop="viewApplication(application.id!)"
-              class="btn-view"
-            >
+            <button @click.stop="viewApplication(application.id!)" class="btn-view">
               View Details
             </button>
             <button
@@ -194,163 +188,160 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import { DatabaseService, AuthService, type Application } from '../../services/firebase'
-import UiSelect from '../../components/ui/UiSelect.vue'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import UiSelect from '../../components/ui/UiSelect.vue';
+import { AuthService, DatabaseService, type Application } from '../../services/firebase';
 
-const router = useRouter()
+const router = useRouter();
 
 // Reactive data
-const applications = ref<Application[]>([])
-const loading = ref(true)
-const error = ref('')
+const applications = ref<Application[]>([]);
+const loading = ref(true);
+const error = ref('');
 
 // Filters
-const searchQuery = ref('')
-const statusFilter = ref('')
-const programFilter = ref('')
-const sortBy = ref('createdAt')
+const searchQuery = ref('');
+const statusFilter = ref('');
+const programFilter = ref('');
+const sortBy = ref('createdAt');
 
 // Apply-to-another gating. Two-program system: hide the apply button
 // once the user has any application (draft or decided) covering every
 // program. Mirrors ApplicantDashboard's logic.
-const ALL_PROGRAMS: Application['program'][] = ['stepup_scholars', 'dynamerge']
+const ALL_PROGRAMS: Application['program'][] = ['stepup_scholars', 'dynamerge'];
 const remainingProgram = computed<Application['program'] | null>(() => {
-  const covered = new Set(applications.value.map((a) => a.program))
-  return ALL_PROGRAMS.find((p) => !covered.has(p)) ?? null
-})
+  const covered = new Set(applications.value.map(a => a.program));
+  return ALL_PROGRAMS.find(p => !covered.has(p)) ?? null;
+});
 const remainingProgramSlug = computed(() =>
   remainingProgram.value === 'stepup_scholars'
     ? 'stepup-scholars'
     : remainingProgram.value === 'dynamerge'
-    ? 'dynamerge'
-    : '',
-)
+      ? 'dynamerge'
+      : ''
+);
 const remainingProgramLabel = computed(() =>
   remainingProgram.value === 'stepup_scholars'
     ? 'StepUp Scholars'
     : remainingProgram.value === 'dynamerge'
-    ? 'Dynamerge'
-    : '',
-)
+      ? 'Dynamerge'
+      : ''
+);
 
 // Computed properties
 const filteredApplications = computed(() => {
-  let filtered = applications.value
+  let filtered = applications.value;
 
   // Apply search filter
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(app => 
-      app.personalInfo.firstName.toLowerCase().includes(query) ||
-      app.personalInfo.lastName.toLowerCase().includes(query) ||
-      app.personalInfo.email.toLowerCase().includes(query) ||
-      app.researchInterests.some(interest => 
-        interest.toLowerCase().includes(query)
-      )
-    )
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(
+      app =>
+        app.personalInfo.firstName.toLowerCase().includes(query) ||
+        app.personalInfo.lastName.toLowerCase().includes(query) ||
+        app.personalInfo.email.toLowerCase().includes(query) ||
+        app.researchInterests.some(interest => interest.toLowerCase().includes(query))
+    );
   }
 
   // Apply status filter
   if (statusFilter.value) {
-    filtered = filtered.filter(app => app.status === statusFilter.value)
+    filtered = filtered.filter(app => app.status === statusFilter.value);
   }
 
   // Apply program filter
   if (programFilter.value) {
-    filtered = filtered.filter(app => app.program === programFilter.value)
+    filtered = filtered.filter(app => app.program === programFilter.value);
   }
 
   // Apply sorting
   filtered.sort((a, b) => {
     switch (sortBy.value) {
       case 'createdAt':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case 'submittedAt':
-        if (!a.submittedAt && !b.submittedAt) return 0
-        if (!a.submittedAt) return 1
-        if (!b.submittedAt) return -1
-        return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+        if (!a.submittedAt && !b.submittedAt) return 0;
+        if (!a.submittedAt) return 1;
+        if (!b.submittedAt) return -1;
+        return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
       case 'program':
-        return a.program.localeCompare(b.program)
+        return a.program.localeCompare(b.program);
       case 'status':
-        return a.status.localeCompare(b.status)
+        return a.status.localeCompare(b.status);
       default:
-        return 0
+        return 0;
     }
-  })
+  });
 
-  return filtered
-})
+  return filtered;
+});
 
 const hasFilters = computed(() => {
-  return searchQuery.value || statusFilter.value || programFilter.value
-})
+  return searchQuery.value || statusFilter.value || programFilter.value;
+});
 
 // Statistics
-const submittedCount = computed(() => 
-  applications.value.filter(app => app.status === 'submitted').length
-)
+const submittedCount = computed(
+  () => applications.value.filter(app => app.status === 'submitted').length
+);
 
-const draftCount = computed(() => 
-  applications.value.filter(app => app.status === 'draft').length
-)
+const draftCount = computed(() => applications.value.filter(app => app.status === 'draft').length);
 
-const underReviewCount = computed(() => 
-  applications.value.filter(app => app.status === 'under_review').length
-)
+const underReviewCount = computed(
+  () => applications.value.filter(app => app.status === 'under_review').length
+);
 
-const acceptedCount = computed(() => 
-  applications.value.filter(app => app.status === 'accepted').length
-)
+const acceptedCount = computed(
+  () => applications.value.filter(app => app.status === 'accepted').length
+);
 
-const rejectedCount = computed(() => 
-  applications.value.filter(app => app.status === 'rejected').length
-)
+const rejectedCount = computed(
+  () => applications.value.filter(app => app.status === 'rejected').length
+);
 
 // Methods
 const loadApplications = async () => {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
 
   try {
-    const currentUser = AuthService.getCurrentUser()
+    const currentUser = AuthService.getCurrentUser();
     if (!currentUser) {
-      router.push('/login')
-      return
+      router.push('/login');
+      return;
     }
 
-    const userApps = await DatabaseService.getUserApplications(currentUser.uid)
-    applications.value = userApps
+    const userApps = await DatabaseService.getUserApplications(currentUser.uid);
+    applications.value = userApps;
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Failed to load applications'
+    error.value = err instanceof Error ? err.message : 'Failed to load applications';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const viewApplication = (applicationId: string) => {
-  router.push(`/applicant/applications/${applicationId}`)
-}
+  router.push(`/applicant/applications/${applicationId}`);
+};
 
 const editApplication = (applicationId: string) => {
-  router.push(`/applicant/applications/${applicationId}/edit`)
-}
+  router.push(`/applicant/applications/${applicationId}/edit`);
+};
 
 const navigateTo = (path: string) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 const formatDate = (date: Date | undefined) => {
-  if (!date) return 'Unknown'
+  if (!date) return 'Unknown';
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
-  })
-}
+    day: 'numeric',
+  });
+};
 
 const formatStatus = (status: string) => {
   const statusMap: Record<string, string> = {
@@ -358,15 +349,15 @@ const formatStatus = (status: string) => {
     submitted: 'Submitted',
     under_review: 'Under Review',
     accepted: 'Accepted',
-    rejected: 'Rejected'
-  }
-  return statusMap[status] || status
-}
+    rejected: 'Rejected',
+  };
+  return statusMap[status] || status;
+};
 
 // Lifecycle
 onMounted(() => {
-  loadApplications()
-})
+  loadApplications();
+});
 </script>
 
 <style scoped>
@@ -450,7 +441,8 @@ onMounted(() => {
   margin-bottom: 2rem;
 }
 
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   text-align: center;
   padding: 4rem 2rem;
   color: var(--color-text-secondary);
@@ -467,8 +459,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-icon {
@@ -594,7 +590,8 @@ onMounted(() => {
   gap: 0.5rem;
 }
 
-.btn-view, .btn-edit {
+.btn-view,
+.btn-edit {
   padding: 0.5rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
@@ -690,26 +687,26 @@ onMounted(() => {
   .applications-list {
     padding: 1rem;
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
-  
+
   .filters-row {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .filter-controls {
     flex-direction: column;
   }
-  
+
   .applications-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }

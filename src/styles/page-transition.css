@@ -2,10 +2,14 @@
    their own entrance via motion-v, so this is just a tasteful seam. */
 
 .page-enter-active {
-  transition: opacity 220ms ease-out, transform 220ms ease-out;
+  transition:
+    opacity 220ms ease-out,
+    transform 220ms ease-out;
 }
 .page-leave-active {
-  transition: opacity 160ms ease-in, transform 160ms ease-in;
+  transition:
+    opacity 160ms ease-in,
+    transform 160ms ease-in;
 }
 .page-enter-from {
   opacity: 0;

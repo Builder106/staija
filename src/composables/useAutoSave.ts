@@ -16,32 +16,32 @@
  * `status` is a ref<'idle' | 'saving' | 'saved' | 'error'> for UI hints.
  */
 
-import { ref, watch, onBeforeUnmount, onMounted, type Ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue';
 
-const STORAGE_PREFIX = 'staija.draft.'
-const TTL_MS = 14 * 24 * 60 * 60 * 1000 // 14 days, per PRD §4.3
+const STORAGE_PREFIX = 'staija.draft.';
+const TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, per PRD §4.3
 
 interface StoredDraft<T> {
-  v: 1
-  savedAt: number
-  data: T
+  v: 1;
+  savedAt: number;
+  data: T;
 }
 
 export interface AutoSaveOptions {
   /** Milliseconds to wait after the last change before persisting. Default 30s. */
-  debounceMs?: number
+  debounceMs?: number;
   /** Skip the initial restore on mount (e.g. when editing an existing record). */
-  skipRestore?: boolean
+  skipRestore?: boolean;
 }
 
 export interface AutoSaveHandle {
-  restored: Ref<boolean>
-  status: Ref<'idle' | 'saving' | 'saved' | 'error'>
-  lastSavedAt: Ref<Date | null>
+  restored: Ref<boolean>;
+  status: Ref<'idle' | 'saving' | 'saved' | 'error'>;
+  lastSavedAt: Ref<Date | null>;
   /** Force a write right now (e.g. on tab close). */
-  flush: () => void
+  flush: () => void;
   /** Wipe the saved draft. Call after a successful submit. */
-  clear: () => void
+  clear: () => void;
   /**
    * Non-destructive read of the stored draft's savedAt timestamp.
    * Returns null if no draft exists, the draft is past TTL, or
@@ -49,151 +49,151 @@ export interface AutoSaveHandle {
    * flows that need to compare local-draft freshness against a
    * server `updatedAt` before deciding to restore.
    */
-  peek: () => Date | null
+  peek: () => Date | null;
   /**
    * Destructive — pulls the stored draft into state if one exists
    * within TTL. Returns true if state was overwritten. Designed for
    * `skipRestore: true` callers that want to make the restore
    * decision themselves after loading remote data.
    */
-  restore: () => boolean
+  restore: () => boolean;
 }
 
 export function useAutoSave<T extends object>(
   key: string,
   state: Ref<T>,
-  options: AutoSaveOptions = {},
+  options: AutoSaveOptions = {}
 ): AutoSaveHandle {
-  const debounceMs = options.debounceMs ?? 30_000
-  const fullKey = STORAGE_PREFIX + key
-  const restored = ref(false)
-  const status = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const lastSavedAt = ref<Date | null>(null)
-  let timer: ReturnType<typeof setTimeout> | null = null
-  let stopped = false
+  const debounceMs = options.debounceMs ?? 30_000;
+  const fullKey = STORAGE_PREFIX + key;
+  const restored = ref(false);
+  const status = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const lastSavedAt = ref<Date | null>(null);
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let stopped = false;
 
   function safeStorage(): Storage | null {
-    if (typeof window === 'undefined') return null
+    if (typeof window === 'undefined') return null;
     try {
       // Storage may throw on private mode in some browsers.
-      window.localStorage.setItem('__staija_probe__', '1')
-      window.localStorage.removeItem('__staija_probe__')
-      return window.localStorage
+      window.localStorage.setItem('__staija_probe__', '1');
+      window.localStorage.removeItem('__staija_probe__');
+      return window.localStorage;
     } catch {
-      return null
+      return null;
     }
   }
 
   function persist() {
-    if (stopped) return
-    const storage = safeStorage()
+    if (stopped) return;
+    const storage = safeStorage();
     if (!storage) {
-      status.value = 'error'
-      return
+      status.value = 'error';
+      return;
     }
-    status.value = 'saving'
+    status.value = 'saving';
     try {
       const payload: StoredDraft<T> = {
         v: 1,
         savedAt: Date.now(),
         data: state.value,
-      }
-      storage.setItem(fullKey, JSON.stringify(payload))
-      lastSavedAt.value = new Date(payload.savedAt)
-      status.value = 'saved'
+      };
+      storage.setItem(fullKey, JSON.stringify(payload));
+      lastSavedAt.value = new Date(payload.savedAt);
+      status.value = 'saved';
     } catch (err) {
-      console.warn('[useAutoSave] persist failed', err)
-      status.value = 'error'
+      console.warn('[useAutoSave] persist failed', err);
+      status.value = 'error';
     }
   }
 
   function readDraft(): StoredDraft<T> | null {
-    const storage = safeStorage()
-    if (!storage) return null
-    const raw = storage.getItem(fullKey)
-    if (!raw) return null
+    const storage = safeStorage();
+    if (!storage) return null;
+    const raw = storage.getItem(fullKey);
+    if (!raw) return null;
     try {
-      const parsed = JSON.parse(raw) as StoredDraft<T>
-      if (parsed.v !== 1 || typeof parsed.savedAt !== 'number') return null
+      const parsed = JSON.parse(raw) as StoredDraft<T>;
+      if (parsed.v !== 1 || typeof parsed.savedAt !== 'number') return null;
       if (Date.now() - parsed.savedAt > TTL_MS) {
-        storage.removeItem(fullKey)
-        return null
+        storage.removeItem(fullKey);
+        return null;
       }
-      return parsed
+      return parsed;
     } catch (err) {
-      console.warn('[useAutoSave] read failed; clearing draft', err)
-      storage.removeItem(fullKey)
-      return null
+      console.warn('[useAutoSave] read failed; clearing draft', err);
+      storage.removeItem(fullKey);
+      return null;
     }
   }
 
   function peek(): Date | null {
-    const draft = readDraft()
-    return draft ? new Date(draft.savedAt) : null
+    const draft = readDraft();
+    return draft ? new Date(draft.savedAt) : null;
   }
 
   function restore(): boolean {
-    const draft = readDraft()
-    if (!draft) return false
+    const draft = readDraft();
+    if (!draft) return false;
     // Shallow-merge: only override keys that were saved, so the form's
     // default shape (any new fields added since the draft) survives.
-    Object.assign(state.value as object, draft.data)
-    restored.value = true
-    lastSavedAt.value = new Date(draft.savedAt)
-    status.value = 'saved'
-    return true
+    Object.assign(state.value as object, draft.data);
+    restored.value = true;
+    lastSavedAt.value = new Date(draft.savedAt);
+    status.value = 'saved';
+    return true;
   }
 
   function flush() {
     if (timer) {
-      clearTimeout(timer)
-      timer = null
+      clearTimeout(timer);
+      timer = null;
     }
-    persist()
+    persist();
   }
 
   function clear() {
-    stopped = true
+    stopped = true;
     if (timer) {
-      clearTimeout(timer)
-      timer = null
+      clearTimeout(timer);
+      timer = null;
     }
-    const storage = safeStorage()
-    storage?.removeItem(fullKey)
-    status.value = 'idle'
-    lastSavedAt.value = null
+    const storage = safeStorage();
+    storage?.removeItem(fullKey);
+    status.value = 'idle';
+    lastSavedAt.value = null;
   }
 
   onMounted(() => {
-    if (!options.skipRestore) restore()
-  })
+    if (!options.skipRestore) restore();
+  });
 
   watch(
     state,
     () => {
-      if (stopped) return
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(persist, debounceMs)
+      if (stopped) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(persist, debounceMs);
     },
-    { deep: true },
-  )
+    { deep: true }
+  );
 
   // Persist on tab close / page hide so a 30s window doesn't lose work.
   function handleBeforeUnload() {
-    if (!stopped) flush()
+    if (!stopped) flush();
   }
   if (typeof window !== 'undefined') {
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    window.addEventListener('pagehide', handleBeforeUnload)
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
   }
 
   onBeforeUnmount(() => {
-    if (timer) clearTimeout(timer)
+    if (timer) clearTimeout(timer);
     if (typeof window !== 'undefined') {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      window.removeEventListener('pagehide', handleBeforeUnload)
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
     }
-  })
+  });
 
-  return { restored, status, lastSavedAt, flush, clear, peek, restore }
+  return { restored, status, lastSavedAt, flush, clear, peek, restore };
 }

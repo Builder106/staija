@@ -4,9 +4,9 @@
 // setup function runs per component instance) and reset to 0 every
 // mount, defeating the point. A separate `<script>` block runs once at
 // module evaluation, giving us a real shared counter.
-let _uidCounter = 0
+let _uidCounter = 0;
 function nextDialogUid(): string {
-  return `ui-confirm-${++_uidCounter}`
+  return `ui-confirm-${++_uidCounter}`;
 }
 </script>
 
@@ -24,23 +24,23 @@ function nextDialogUid(): string {
  * red and the leading icon becomes a triangle-warning. Default variant
  * is neutral and fine for "are you sure?" / "save changes?" prompts.
  */
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { Icon } from '@iconify/vue'
+import { Icon } from '@iconify/vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
-const uid = nextDialogUid()
+const uid = nextDialogUid();
 
 interface Props {
   /** v-model:open. Two-way bound so the dialog can close itself when the
    *  user clicks the backdrop, hits Escape, or cancels. */
-  open: boolean
-  title: string
-  body?: string
-  confirmLabel?: string
-  cancelLabel?: string
-  variant?: 'default' | 'destructive'
+  open: boolean;
+  title: string;
+  body?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: 'default' | 'destructive';
   /** Render this iconify icon at the top-left of the dialog. Defaults
    *  vary by variant (warning for destructive, info-circle otherwise). */
-  icon?: string
+  icon?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,43 +49,43 @@ const props = withDefaults(defineProps<Props>(), {
   cancelLabel: 'Cancel',
   variant: 'default',
   icon: '',
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'confirm'): void
-  (e: 'cancel'): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'confirm'): void;
+  (e: 'cancel'): void;
+}>();
 
-const confirmBtn = ref<HTMLButtonElement | null>(null)
+const confirmBtn = ref<HTMLButtonElement | null>(null);
 
 const resolvedIcon = computed(() => {
-  if (props.icon) return props.icon
-  return props.variant === 'destructive' ? 'lucide:triangle-alert' : 'lucide:circle-help'
-})
+  if (props.icon) return props.icon;
+  return props.variant === 'destructive' ? 'lucide:triangle-alert' : 'lucide:circle-help';
+});
 
 function close() {
-  emit('update:open', false)
+  emit('update:open', false);
 }
 
 function handleConfirm() {
-  emit('confirm')
-  close()
+  emit('confirm');
+  close();
 }
 
 function handleCancel() {
-  emit('cancel')
-  close()
+  emit('cancel');
+  close();
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (!props.open) return
+  if (!props.open) return;
   if (e.key === 'Escape') {
-    e.preventDefault()
-    handleCancel()
+    e.preventDefault();
+    handleCancel();
   } else if (e.key === 'Enter' && document.activeElement === confirmBtn.value) {
     // Already on the confirm button — let the default click handler fire.
-    return
+    return;
   }
 }
 
@@ -94,16 +94,16 @@ function onKeydown(e: KeyboardEvent) {
 // Teleport hasn't mounted the node yet on the same microtask.
 watch(
   () => props.open,
-  (isOpen) => {
+  isOpen => {
     if (isOpen) {
-      nextTick(() => confirmBtn.value?.focus())
+      nextTick(() => confirmBtn.value?.focus());
     }
-  },
-)
+  }
+);
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('keydown', onKeydown)
-  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+  window.addEventListener('keydown', onKeydown);
+  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 }
 </script>
 
@@ -244,7 +244,10 @@ if (typeof window !== 'undefined') {
   font-family: inherit;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 .ui-confirm-btn:focus-visible {
   outline: none;
@@ -314,7 +317,9 @@ if (typeof window !== 'undefined') {
 }
 .ui-confirm-enter-active .ui-confirm-modal,
 .ui-confirm-leave-active .ui-confirm-modal {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.18s ease;
 }
 .ui-confirm-enter-from .ui-confirm-modal,
 .ui-confirm-leave-to .ui-confirm-modal {

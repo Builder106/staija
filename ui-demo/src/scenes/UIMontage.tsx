@@ -1,5 +1,14 @@
 import React from "react";
-import { AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 
 type Card = {
   src: string;
@@ -17,12 +26,35 @@ const CARD_H = 680;
 // events" / "No stories match"), which read as a dead product on camera —
 // so the montage shows the three contentful community pages instead.
 const cards: Card[] = [
-  { src: "staija_ui_about.png", imgWidth: 2560, imgHeight: 3986, label: "/about", tilt: -2.2, panFactor: 0.9 },
-  { src: "staija_ui_get_involved.png", imgWidth: 2560, imgHeight: 4152, label: "/get-involved", tilt: 0, panFactor: 1 },
-  { src: "staija_ui_stay_connected.png", imgWidth: 2560, imgHeight: 4416, label: "/stay-connected", tilt: 2.2, panFactor: 1.1 },
+  {
+    src: "staija_ui_about.png",
+    imgWidth: 2560,
+    imgHeight: 3986,
+    label: "/about",
+    tilt: -2.2,
+    panFactor: 0.9,
+  },
+  {
+    src: "staija_ui_get_involved.png",
+    imgWidth: 2560,
+    imgHeight: 4152,
+    label: "/get-involved",
+    tilt: 0,
+    panFactor: 1,
+  },
+  {
+    src: "staija_ui_stay_connected.png",
+    imgWidth: 2560,
+    imgHeight: 4416,
+    label: "/stay-connected",
+    tilt: 2.2,
+    panFactor: 1.1,
+  },
 ];
 
-export const UIMontage: React.FC<{ durationInFrames: number }> = ({ durationInFrames }) => {
+export const UIMontage: React.FC<{ durationInFrames: number }> = ({
+  durationInFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -44,31 +76,64 @@ export const UIMontage: React.FC<{ durationInFrames: number }> = ({ durationInFr
           }}
         />
 
-        <div className="absolute left-0 right-0 text-center" style={{ top: 96 }}>
+        <div
+          className="absolute left-0 right-0 text-center"
+          style={{ top: 96 }}
+        >
           <p
             className="text-sm font-medium tracking-[0.3em] mb-5"
-            style={{ fontFamily: "var(--font-mono)", color: "var(--color-brand-sky)" }}
+            style={{
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-brand-sky)",
+            }}
           >
             03 — COMMUNITY
           </p>
-          <h2 className="text-7xl font-bold tracking-tight text-white" style={{ fontFamily: "var(--font-display)" }}>
+          <h2
+            className="text-7xl font-bold tracking-tight text-white"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             Beyond the programs.
           </h2>
         </div>
 
-        <div className="absolute left-0 right-0 flex justify-center gap-10" style={{ top: 360 }}>
+        <div
+          className="absolute left-0 right-0 flex justify-center gap-10"
+          style={{ top: 360 }}
+        >
           {cards.map((card, i) => {
-            const cardIn = spring({ frame: frame - i * 6, fps, config: { damping: 100 }, from: 60, to: 0 });
+            const cardIn = spring({
+              frame: frame - i * 6,
+              fps,
+              config: { damping: 100 },
+              from: 60,
+              to: 0,
+            });
             const displayedH = (CARD_W / card.imgWidth) * card.imgHeight;
             const maxScroll = Math.max(0, displayedH - CARD_H);
             const pan = interpolate(
               frame,
               [20, durationInFrames - 25],
-              [0, Math.min(maxScroll, 2.2 * card.panFactor * (durationInFrames - 45))],
-              { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) },
+              [
+                0,
+                Math.min(
+                  maxScroll,
+                  2.2 * card.panFactor * (durationInFrames - 45),
+                ),
+              ],
+              {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.inOut(Easing.cubic),
+              },
             );
             return (
-              <div key={card.src} style={{ transform: `translateY(${cardIn}px) rotate(${card.tilt}deg)` }}>
+              <div
+                key={card.src}
+                style={{
+                  transform: `translateY(${cardIn}px) rotate(${card.tilt}deg)`,
+                }}
+              >
                 <div
                   className="shadow-2xl"
                   style={{
@@ -82,12 +147,19 @@ export const UIMontage: React.FC<{ durationInFrames: number }> = ({ durationInFr
                 >
                   <Img
                     src={staticFile(card.src)}
-                    style={{ width: CARD_W, display: "block", transform: `translateY(-${pan}px)` }}
+                    style={{
+                      width: CARD_W,
+                      display: "block",
+                      transform: `translateY(-${pan}px)`,
+                    }}
                   />
                 </div>
                 <p
                   className="text-center text-base mt-5"
-                  style={{ fontFamily: "var(--font-mono)", color: "rgba(241, 245, 249, 0.55)" }}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    color: "rgba(241, 245, 249, 0.55)",
+                  }}
                 >
                   staija.org{card.label}
                 </p>

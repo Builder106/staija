@@ -18,87 +18,89 @@
  * non-mentor profiles via this surface even if the underlying
  * doc happens to be readable (e.g. when the viewer is staff).
  */
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import { doc, getDoc } from 'firebase/firestore'
-import Container from '../components/ui/Container.vue'
-import Section from '../components/ui/Section.vue'
-import Heading from '../components/ui/Heading.vue'
-import Body from '../components/ui/Body.vue'
-import Eyebrow from '../components/ui/Eyebrow.vue'
-import UiButton from '../components/ui/UiButton.vue'
-import UiCard from '../components/ui/UiCard.vue'
-import { db } from '../config/firebase'
-import { resolveAvatarSrc } from '../services/avatar'
-import { useAuth } from '../composables/useAuth'
-import type { UserProfile } from '../services/types'
+import { Icon } from '@iconify/vue';
+import { doc, getDoc } from 'firebase/firestore';
+import { computed, onMounted, ref, watch } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import Body from '../components/ui/Body.vue';
+import Container from '../components/ui/Container.vue';
+import Eyebrow from '../components/ui/Eyebrow.vue';
+import Heading from '../components/ui/Heading.vue';
+import Section from '../components/ui/Section.vue';
+import UiButton from '../components/ui/UiButton.vue';
+import UiCard from '../components/ui/UiCard.vue';
+import { useAuth } from '../composables/useAuth';
+import { db } from '../config/firebase';
+import { resolveAvatarSrc } from '../services/avatar';
+import type { UserProfile } from '../services/types';
 
-const route = useRoute()
-const { user } = useAuth()
+const route = useRoute();
+const { user } = useAuth();
 
-const profile = ref<UserProfile | null>(null)
-const loading = ref(true)
+const profile = ref<UserProfile | null>(null);
+const loading = ref(true);
 /** Distinguishes "doc doesn't exist" from "doc exists but isn't a
  *  mentor". The first is a bad URL; the second is a legitimate
  *  request to view someone who isn't a mentor (admin paste-error,
  *  outdated link after a role change, etc.) and deserves clearer
  *  empty-state copy. */
-const errorKind = ref<'not-found' | 'not-mentor' | 'load-failed' | null>(null)
+const errorKind = ref<'not-found' | 'not-mentor' | 'load-failed' | null>(null);
 
-const uid = computed(() => String(route.params.uid ?? ''))
-const isSelf = computed(() => user.value?.uid === uid.value)
+const uid = computed(() => String(route.params.uid ?? ''));
+const isSelf = computed(() => user.value?.uid === uid.value);
 
 async function load() {
-  loading.value = true
-  errorKind.value = null
-  profile.value = null
+  loading.value = true;
+  errorKind.value = null;
+  profile.value = null;
   if (!uid.value) {
-    errorKind.value = 'not-found'
-    loading.value = false
-    return
+    errorKind.value = 'not-found';
+    loading.value = false;
+    return;
   }
   try {
-    const snap = await getDoc(doc(db, 'users', uid.value))
+    const snap = await getDoc(doc(db, 'users', uid.value));
     if (!snap.exists()) {
-      errorKind.value = 'not-found'
-      return
+      errorKind.value = 'not-found';
+      return;
     }
-    const data = snap.data() as UserProfile
+    const data = snap.data() as UserProfile;
     if (data.role !== 'mentor') {
       // Doc readable but the subject isn't a mentor — surface as
       // "not a mentor" rather than "doesn't exist" so the link the
       // viewer followed can be diagnosed.
-      profile.value = data
-      errorKind.value = 'not-mentor'
-      return
+      profile.value = data;
+      errorKind.value = 'not-mentor';
+      return;
     }
-    profile.value = data
+    profile.value = data;
   } catch {
-    errorKind.value = 'load-failed'
+    errorKind.value = 'load-failed';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 // Re-load when the route param changes (clicking a different
 // mentor link without full navigation).
-watch(uid, () => { void load() })
+watch(uid, () => {
+  void load();
+});
 
 const avatarSrc = computed(() => {
-  if (!profile.value) return ''
+  if (!profile.value) return '';
   return resolveAvatarSrc({
     photoURL: profile.value.photoURL ?? null,
     avatarSlot: profile.value.avatarSlot,
     seed: profile.value.uid,
-  })
-})
+  });
+});
 
 const displayName = computed(
-  () => profile.value?.displayName?.trim() || profile.value?.email || 'Mentor',
-)
+  () => profile.value?.displayName?.trim() || profile.value?.email || 'Mentor'
+);
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -205,8 +207,8 @@ onMounted(load)
             <p v-else class="text-sm text-ink/55 italic m-0">
               No bio yet.<span v-if="isSelf">
                 <RouterLink to="/account/settings" class="ml-1 text-brand-violet hover:underline">
-                  Add one
-                </RouterLink>.
+                  Add one </RouterLink
+                >.
               </span>
             </p>
           </UiCard>
@@ -225,8 +227,8 @@ onMounted(load)
             <p v-else class="text-sm text-ink/55 italic m-0">
               Not specified.<span v-if="isSelf">
                 <RouterLink to="/account/settings" class="ml-1 text-brand-violet hover:underline">
-                  Add it
-                </RouterLink>.
+                  Add it </RouterLink
+                >.
               </span>
             </p>
           </UiCard>
@@ -234,8 +236,8 @@ onMounted(load)
           <div v-if="isSelf" class="text-xs text-ink/50 text-center">
             Edit these fields from
             <RouterLink to="/account/settings" class="text-brand-violet hover:underline">
-              account settings
-            </RouterLink>.
+              account settings </RouterLink
+            >.
           </div>
         </Container>
       </Section>

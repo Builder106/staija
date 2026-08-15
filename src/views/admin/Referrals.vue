@@ -12,62 +12,62 @@
  * to staff/admin — route also requires `view_all_users` so the page
  * matches the surfaces alongside it in the Quick Actions panel.
  */
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import UiButton from '../../components/ui/UiButton.vue'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { useAdminBase } from '../../composables/useAdminBase';
 import {
   fetchReferralLeaderboard,
   type ReferralLeaderboardRow,
-} from '../../services/referralLeaderboard'
-import { useAdminBase } from '../../composables/useAdminBase'
+} from '../../services/referralLeaderboard';
 
-const { adminBase } = useAdminBase()
+const { adminBase } = useAdminBase();
 
-const rows = ref<ReferralLeaderboardRow[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
+const rows = ref<ReferralLeaderboardRow[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
 
-const totalSignups = computed(() =>
-  rows.value.reduce((sum, r) => sum + r.signupCount, 0),
-)
-const identifiedCount = computed(() => rows.value.filter((r) => r.identified).length)
-const anonymousCount = computed(() => rows.value.filter((r) => !r.uid).length)
+const totalSignups = computed(() => rows.value.reduce((sum, r) => sum + r.signupCount, 0));
+const identifiedCount = computed(() => rows.value.filter(r => r.identified).length);
+const anonymousCount = computed(() => rows.value.filter(r => !r.uid).length);
 
 async function load() {
-  loading.value = true
-  error.value = null
+  loading.value = true;
+  error.value = null;
   try {
-    rows.value = await fetchReferralLeaderboard(25)
+    rows.value = await fetchReferralLeaderboard(25);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load referrals.'
+    error.value = err instanceof Error ? err.message : 'Failed to load referrals.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function timeAgo(value: Date | null): string {
-  if (!value) return '—'
-  const ms = Date.now() - value.getTime()
-  const min = Math.floor(ms / 60000)
-  if (min < 1) return 'just now'
-  if (min < 60) return `${min} min ago`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} hr ago`
-  const day = Math.floor(hr / 24)
-  if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`
+  if (!value) return '—';
+  const ms = Date.now() - value.getTime();
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} hr ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`;
   return value.toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  })
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -77,9 +77,9 @@ onMounted(load)
         <Eyebrow class="text-brand-violet">Admin</Eyebrow>
         <Heading :level="1">Referral leaderboard.</Heading>
         <Body class="text-ink/70 max-w-2xl">
-          Top referrers from the /stay-connected share links. Counts increment when a
-          referred visitor confirms a newsletter signup, so the ranking only credits
-          conversions, not raw clicks.
+          Top referrers from the /stay-connected share links. Counts increment when a referred
+          visitor confirms a newsletter signup, so the ranking only credits conversions, not raw
+          clicks.
         </Body>
       </div>
 
@@ -113,18 +113,13 @@ onMounted(load)
         Loading…
       </div>
 
-      <UiCard
-        v-else-if="error"
-        class="p-6 flex flex-col gap-3 !border-red-200 bg-red-50/60"
-      >
+      <UiCard v-else-if="error" class="p-6 flex flex-col gap-3 !border-red-200 bg-red-50/60">
         <div class="flex items-center gap-3 text-red-700">
           <Icon icon="lucide:alert-circle" width="20" />
           <span class="font-semibold">Couldn't load referrals.</span>
         </div>
         <p class="text-sm text-ink/70 m-0">{{ error }}</p>
-        <UiButton variant="secondary" class="self-start" @click="load">
-          Try again
-        </UiButton>
+        <UiButton variant="secondary" class="self-start" @click="load"> Try again </UiButton>
       </UiCard>
 
       <UiCard
@@ -136,8 +131,8 @@ onMounted(load)
         </div>
         <Heading :level="3" class="!text-lg !m-0">No referrals yet.</Heading>
         <Body class="text-ink/65 text-sm m-0 max-w-md">
-          The leaderboard fills in once visitors start subscribing through someone's
-          share link from /stay-connected.
+          The leaderboard fills in once visitors start subscribing through someone's share link from
+          /stay-connected.
         </Body>
       </UiCard>
 
@@ -145,10 +140,20 @@ onMounted(load)
         <table class="w-full text-sm">
           <thead class="bg-paper/50 border-b hairline-ink">
             <tr class="text-left">
-              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide w-12">#</th>
-              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide">Referrer</th>
-              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide text-right">Signups</th>
-              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide">Most recent</th>
+              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide w-12">
+                #
+              </th>
+              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide">
+                Referrer
+              </th>
+              <th
+                class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide text-right"
+              >
+                Signups
+              </th>
+              <th class="px-5 py-3 text-xs font-semibold text-ink/70 uppercase tracking-wide">
+                Most recent
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -159,9 +164,11 @@ onMounted(load)
             >
               <td class="px-5 py-4 align-middle">
                 <span
-                  :class="i === 0
-                    ? 'font-display font-semibold text-base text-brand-violet'
-                    : 'font-display text-base text-ink/55'"
+                  :class="
+                    i === 0
+                      ? 'font-display font-semibold text-base text-brand-violet'
+                      : 'font-display text-base text-ink/55'
+                  "
                 >
                   {{ i + 1 }}
                 </span>
@@ -200,10 +207,10 @@ onMounted(load)
       </UiCard>
 
       <p class="mt-6 text-xs text-ink/55 max-w-2xl">
-        Counts come from <code class="font-mono text-ink/70">referralStats</code> — incremented server-side
-        by <code class="font-mono text-ink/70">subscribeNewsletter</code> on every confirmed signup, so
-        cancelled or bounced subscriptions don't deflate the leaderboard. Anonymous
-        rows use the visitor's locally-minted share id, which stays stable per browser.
+        Counts come from <code class="font-mono text-ink/70">referralStats</code> — incremented
+        server-side by <code class="font-mono text-ink/70">subscribeNewsletter</code> on every
+        confirmed signup, so cancelled or bounced subscriptions don't deflate the leaderboard.
+        Anonymous rows use the visitor's locally-minted share id, which stays stable per browser.
       </p>
     </Container>
   </Section>

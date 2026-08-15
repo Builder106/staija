@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 /**
  * Shared motion values for the avatar wrapper. Centralized so the
@@ -14,18 +14,18 @@ export const AVATAR_DURATIONS = {
   mount: 0.28,
   hover: 0.2,
   breath: 4,
-} as const
+} as const;
 
 export const AVATAR_EASINGS = {
   back: [0.34, 1.56, 0.64, 1] as [number, number, number, number],
   out: [0.16, 1, 0.3, 1] as [number, number, number, number],
   inOut: [0.65, 0, 0.35, 1] as [number, number, number, number],
-}
+};
 
 export const AVATAR_BREATH_AMPLITUDE = {
   idle: 0.018,
   hero: 0.025,
-} as const
+} as const;
 
 /**
  * Reactive `prefers-reduced-motion: reduce` flag. Components that
@@ -35,23 +35,23 @@ export const AVATAR_BREATH_AMPLITUDE = {
  * reload.
  */
 export function usePrefersReducedMotion() {
-  const prefersReducedMotion = ref(false)
+  const prefersReducedMotion = ref(false);
 
-  let mql: MediaQueryList | null = null
+  let mql: MediaQueryList | null = null;
   const onChange = (e: MediaQueryListEvent) => {
-    prefersReducedMotion.value = e.matches
-  }
+    prefersReducedMotion.value = e.matches;
+  };
 
   onMounted(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return
-    mql = window.matchMedia('(prefers-reduced-motion: reduce)')
-    prefersReducedMotion.value = mql.matches
-    mql.addEventListener('change', onChange)
-  })
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    prefersReducedMotion.value = mql.matches;
+    mql.addEventListener('change', onChange);
+  });
 
   onBeforeUnmount(() => {
-    mql?.removeEventListener('change', onChange)
-  })
+    mql?.removeEventListener('change', onChange);
+  });
 
-  return { prefersReducedMotion }
+  return { prefersReducedMotion };
 }

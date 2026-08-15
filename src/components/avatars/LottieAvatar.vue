@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import lottie, { type AnimationItem } from 'lottie-web'
+import lottie, { type AnimationItem } from 'lottie-web';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 /**
  * Plays a Lottie animation in a circular avatar frame, with a PNG
@@ -24,14 +24,14 @@ const props = withDefaults(
     // Parsed Lottie JSON. When null/undefined, only the fallback
     // renders. Use a dynamic-import so the JSON doesn't bloat the
     // bundle of pages that don't need it.
-    animationData?: Record<string, unknown> | null
+    animationData?: Record<string, unknown> | null;
     // PNG shown until the Lottie loads (and as the permanent
     // rendering when prefers-reduced-motion is set).
-    fallbackSrc: string
-    alt?: string
-    size?: number
-    loop?: boolean
-    autoplay?: boolean
+    fallbackSrc: string;
+    alt?: string;
+    size?: number;
+    loop?: boolean;
+    autoplay?: boolean;
   }>(),
   {
     animationData: null,
@@ -39,31 +39,31 @@ const props = withDefaults(
     size: 80,
     loop: true,
     autoplay: true,
-  },
-)
+  }
+);
 
-const container = ref<HTMLDivElement | null>(null)
-const loaded = ref(false)
-let instance: AnimationItem | null = null
+const container = ref<HTMLDivElement | null>(null);
+const loaded = ref(false);
+let instance: AnimationItem | null = null;
 
 function destroyInstance() {
   if (instance) {
-    instance.destroy()
-    instance = null
+    instance.destroy();
+    instance = null;
   }
-  loaded.value = false
+  loaded.value = false;
 }
 
 function loadInstance() {
-  destroyInstance()
-  if (!container.value || !props.animationData) return
+  destroyInstance();
+  if (!container.value || !props.animationData) return;
 
   // Honor prefers-reduced-motion: render only the static fallback.
   if (
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
   ) {
-    return
+    return;
   }
 
   instance = lottie.loadAnimation({
@@ -72,30 +72,27 @@ function loadInstance() {
     loop: props.loop,
     autoplay: props.autoplay,
     animationData: props.animationData,
-  })
+  });
   // `DOMLoaded` fires once the Lottie SVG is in the DOM. We wait for
   // it before fading the fallback out so the swap is invisible.
   instance.addEventListener('DOMLoaded', () => {
-    loaded.value = true
-  })
+    loaded.value = true;
+  });
 }
 
-onMounted(loadInstance)
-onBeforeUnmount(destroyInstance)
+onMounted(loadInstance);
+onBeforeUnmount(destroyInstance);
 
 // Re-load when the animationData reference changes — e.g. a parent
 // dynamic-imported a new file.
 watch(
   () => props.animationData,
-  () => loadInstance(),
-)
+  () => loadInstance()
+);
 </script>
 
 <template>
-  <div
-    class="lottie-avatar"
-    :style="{ width: `${props.size}px`, height: `${props.size}px` }"
-  >
+  <div class="lottie-avatar" :style="{ width: `${props.size}px`, height: `${props.size}px` }">
     <img
       v-show="!loaded || !props.animationData"
       :src="props.fallbackSrc"

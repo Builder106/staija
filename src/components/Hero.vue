@@ -1,44 +1,53 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { Motion } from 'motion-v'
+import { Motion } from 'motion-v';
+import { onMounted, ref } from 'vue';
 // Hero Lottie data — JSON import keeps the data colocated, but the
 // `lottie-web` runtime (~50 KB gzipped) is lazy-loaded inside
 // onMounted below so it lands in its own chunk and doesn't block the
 // home route's first paint. The hero-animation__canvas container has
 // a fixed 260 px height (see <style scoped>) so reserving it during
 // the lazy load doesn't shift layout.
-import heroAnimation from '../assets/hero.json'
+import heroAnimation from '../assets/hero.json';
 
 const props = defineProps<{
-  title: string
-  subtitle?: string
-  ctaText?: string
-  ctaHref?: string
-  secondaryCtaText?: string
-  secondaryCtaHref?: string
-  backgroundImageUrl?: string
-}>()
+  title: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  backgroundImageUrl?: string;
+}>();
 
-const lottieContainer = ref<HTMLDivElement | null>(null)
+const lottieContainer = ref<HTMLDivElement | null>(null);
 
 onMounted(async () => {
-  if (!lottieContainer.value) return
-  const { default: lottie } = await import('lottie-web')
+  if (!lottieContainer.value) return;
+  const { default: lottie } = await import('lottie-web');
   // Re-check the ref — the component may have unmounted while we
   // awaited the lottie chunk (fast route changes on the home page).
-  if (!lottieContainer.value) return
+  if (!lottieContainer.value) return;
   lottie.loadAnimation({
     container: lottieContainer.value,
     renderer: 'svg',
     loop: false,
     autoplay: true,
     animationData: heroAnimation as unknown as Record<string, unknown>,
-  })
-})
+  });
+});
 </script>
 
 <template>
-  <section class="hero" :style="props.backgroundImageUrl ? { backgroundImage: `linear-gradient(rgba(10,14,23,0.55), rgba(10,14,23,0.55)), url(${props.backgroundImageUrl})` } : {}">
+  <section
+    class="hero"
+    :style="
+      props.backgroundImageUrl
+        ? {
+            backgroundImage: `linear-gradient(rgba(10,14,23,0.55), rgba(10,14,23,0.55)), url(${props.backgroundImageUrl})`,
+          }
+        : {}
+    "
+  >
     <div class="eureka-lattice" aria-hidden="true"></div>
     <div class="container">
       <div class="hero-inner" aria-labelledby="hero-heading">
@@ -57,7 +66,9 @@ onMounted(async () => {
           :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.5, delay: 0.3, ease: [0.34, 1.56, 0.64, 1] }"
         >
-          <h1 id="hero-heading" class="hero-title">{{ props.title || "Nurturing Africa's next generation of scientist‑leaders" }}</h1>
+          <h1 id="hero-heading" class="hero-title">
+            {{ props.title || "Nurturing Africa's next generation of scientist‑leaders" }}
+          </h1>
         </Motion>
 
         <Motion
@@ -82,7 +93,9 @@ onMounted(async () => {
             :whileHover="{ scale: 1.02, borderRadius: '4px' }"
             :whileTap="{ scale: 0.98 }"
           >
-            <RouterLink class="btn btn-primary" :to="ctaHref || '/apply'">{{ ctaText || 'Apply' }}</RouterLink>
+            <RouterLink class="btn btn-primary" :to="ctaHref || '/apply'">{{
+              ctaText || 'Apply'
+            }}</RouterLink>
           </Motion>
 
           <Motion
@@ -92,7 +105,9 @@ onMounted(async () => {
             :whileHover="{ scale: 1.02, borderRadius: '4px' }"
             :whileTap="{ scale: 0.98 }"
           >
-            <RouterLink class="btn btn-secondary" :to="secondaryCtaHref || '/donate'">{{ secondaryCtaText || 'Donate' }}</RouterLink>
+            <RouterLink class="btn btn-secondary" :to="secondaryCtaHref || '/donate'">{{
+              secondaryCtaText || 'Donate'
+            }}</RouterLink>
           </Motion>
         </Motion>
       </div>
@@ -125,9 +140,21 @@ onMounted(async () => {
   left: 50%;
   width: 150vw;
   height: 150vw;
-  background-image: 
-    repeating-linear-gradient(45deg, var(--primary-200) 0, var(--primary-200) 1px, transparent 1px, transparent 40px),
-    repeating-linear-gradient(-45deg, var(--primary-200) 0, var(--primary-200) 1px, transparent 1px, transparent 40px);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--primary-200) 0,
+      var(--primary-200) 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--primary-200) 0,
+      var(--primary-200) 1px,
+      transparent 1px,
+      transparent 40px
+    );
   z-index: -1;
   pointer-events: none;
   animation: lattice-pulse 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
@@ -135,9 +162,21 @@ onMounted(async () => {
 }
 
 @keyframes lattice-pulse {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(45deg); clip-path: circle(0% at center); }
-  50% { opacity: 0.15; transform: translate(-50%, -50%) scale(1.05) rotate(0deg); clip-path: circle(50% at center); }
-  100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1) rotate(0deg); clip-path: circle(50% at center); }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(45deg);
+    clip-path: circle(0% at center);
+  }
+  50% {
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(1.05) rotate(0deg);
+    clip-path: circle(50% at center);
+  }
+  100% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    clip-path: circle(50% at center);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -214,7 +253,9 @@ onMounted(async () => {
   border-color: var(--primary-800);
 }
 
-.btn-primary:hover { background: var(--primary-800); }
+.btn-primary:hover {
+  background: var(--primary-800);
+}
 
 .btn-secondary {
   background: white;
@@ -222,7 +263,9 @@ onMounted(async () => {
   border-color: var(--primary-200);
 }
 
-.btn-secondary:hover { background: var(--primary-50); }
+.btn-secondary:hover {
+  background: var(--primary-50);
+}
 
 .btn:focus-visible {
   outline: 3px solid var(--secondary-400);
@@ -230,12 +273,20 @@ onMounted(async () => {
 }
 
 @media (min-width: 1024px) {
-  .hero { min-height: 95vh; }
-  .hero-title { font-size: clamp(3rem, 5.5vw, 4.25rem); }
-  .hero-subtitle { font-size: clamp(1.125rem, 1.8vw, 1.5rem); }
+  .hero {
+    min-height: 95vh;
+  }
+  .hero-title {
+    font-size: clamp(3rem, 5.5vw, 4.25rem);
+  }
+  .hero-subtitle {
+    font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+  }
 }
 
 @media (max-width: 639px) {
-  .hero { min-height: 80vh; }
+  .hero {
+    min-height: 80vh;
+  }
 }
 </style>

@@ -1,43 +1,46 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import { CourseService } from '../../services/learn'
-import type { CmsModule, CmsLesson, CmsAssignmentSpec } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { onMounted, ref } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { CourseService } from '../../services/learn';
+import type { CmsAssignmentSpec, CmsLesson, CmsModule } from '../../services/types';
 
-const route = useRoute()
+const route = useRoute();
 
-const loading = ref(true)
-const module = ref<CmsModule | null>(null)
-const lessons = ref<CmsLesson[]>([])
-const assignments = ref<CmsAssignmentSpec[]>([])
+const loading = ref(true);
+const module = ref<CmsModule | null>(null);
+const lessons = ref<CmsLesson[]>([]);
+const assignments = ref<CmsAssignmentSpec[]>([]);
 
 async function load() {
-  loading.value = true
-  const slug = route.params.slug as string
-  const m = await CourseService.getModuleBySlug(slug)
-  module.value = m
+  loading.value = true;
+  const slug = route.params.slug as string;
+  const m = await CourseService.getModuleBySlug(slug);
+  module.value = m;
   if (m) {
-    lessons.value = await CourseService.getLessonsForModule(m)
-    assignments.value = await CourseService.getAssignmentsForModule(m)
+    lessons.value = await CourseService.getLessonsForModule(m);
+    assignments.value = await CourseService.getAssignmentsForModule(m);
   }
-  loading.value = false
+  loading.value = false;
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
   <div class="flex flex-col bg-paper min-h-screen">
     <Section class="!pt-12 !pb-8 wash-violet-6 border-b hairline-ink">
       <Container>
-        <RouterLink to="/learn" class="text-xs text-ink/60 hover:text-ink mb-4 inline-flex items-center gap-1">
+        <RouterLink
+          to="/learn"
+          class="text-xs text-ink/60 hover:text-ink mb-4 inline-flex items-center gap-1"
+        >
           <Icon icon="lucide:arrow-left" width="12" /> Back to course
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-3 block">Module</Eyebrow>
@@ -88,7 +91,9 @@ onMounted(load)
                   <Icon icon="lucide:file-edit" width="18" class="text-ink/50" />
                   <div class="flex-1">
                     <div class="text-sm font-medium text-ink">{{ a.title }}</div>
-                    <div class="text-xs text-ink/50 capitalize">{{ a.submissionType.replace('_', ' / ') }}</div>
+                    <div class="text-xs text-ink/50 capitalize">
+                      {{ a.submissionType.replace('_', ' / ') }}
+                    </div>
                   </div>
                   <Icon icon="lucide:chevron-right" width="16" class="text-ink/30" />
                 </RouterLink>

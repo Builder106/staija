@@ -1,76 +1,72 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { Icon } from '@iconify/vue'
-import UiCard from '../ui/UiCard.vue'
-import UiButton from '../ui/UiButton.vue'
-import {
-  QuizService,
-  submitQuiz,
-  type QuizSubmitResult,
-} from '../../services/learn'
-import type { CmsQuiz, QuizAttempt } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { QuizService, submitQuiz, type QuizSubmitResult } from '../../services/learn';
+import type { CmsQuiz, QuizAttempt } from '../../services/types';
+import UiButton from '../ui/UiButton.vue';
+import UiCard from '../ui/UiCard.vue';
 
 const props = defineProps<{
-  quizId: string
-  lessonSlug: string
-  enrollmentId: string
-  moduleSlug?: string
-}>()
+  quizId: string;
+  lessonSlug: string;
+  enrollmentId: string;
+  moduleSlug?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'passed', score: number): void
-}>()
+  (e: 'passed', score: number): void;
+}>();
 
-const loading = ref(true)
-const submitting = ref(false)
-const error = ref<string | null>(null)
-const quiz = ref<CmsQuiz | null>(null)
-const attempts = ref<QuizAttempt[]>([])
-const userAnswers = ref<Record<string, string>>({})
-const result = ref<QuizSubmitResult | null>(null)
+const loading = ref(true);
+const submitting = ref(false);
+const error = ref<string | null>(null);
+const quiz = ref<CmsQuiz | null>(null);
+const attempts = ref<QuizAttempt[]>([]);
+const userAnswers = ref<Record<string, string>>({});
+const result = ref<QuizSubmitResult | null>(null);
 
 const bestAttempt = computed(() => {
-  if (attempts.value.length === 0) return null
-  return [...attempts.value].sort((a, b) => b.score - a.score)[0]
-})
+  if (attempts.value.length === 0) return null;
+  return [...attempts.value].sort((a, b) => b.score - a.score)[0];
+});
 
 const hasPassed = computed(() => {
-  return (result.value?.passed) || attempts.value.some((a) => a.passed)
-})
+  return result.value?.passed || attempts.value.some(a => a.passed);
+});
 
 const isCompleteAnswers = computed(() => {
-  if (!quiz.value?.questions) return false
-  return quiz.value.questions.every((q) => !!userAnswers.value[q.id])
-})
+  if (!quiz.value?.questions) return false;
+  return quiz.value.questions.every(q => !!userAnswers.value[q.id]);
+});
 
 async function load() {
-  loading.value = true
-  error.value = null
+  loading.value = true;
+  error.value = null;
   try {
     const [fetchedQuiz, fetchedAttempts] = await Promise.all([
-      QuizService.getQuizById(props.quizId).then(async (q) => {
-        if (q) return q
-        return QuizService.getQuizBySlug(props.quizId)
+      QuizService.getQuizById(props.quizId).then(async q => {
+        if (q) return q;
+        return QuizService.getQuizBySlug(props.quizId);
       }),
       QuizService.getAttemptsForStudent(props.enrollmentId, props.lessonSlug),
-    ])
-    quiz.value = fetchedQuiz
-    attempts.value = fetchedAttempts
-    if (fetchedAttempts.some((a) => a.passed)) {
-      const highest = [...fetchedAttempts].sort((a, b) => b.score - a.score)[0]
-      emit('passed', highest.score)
+    ]);
+    quiz.value = fetchedQuiz;
+    attempts.value = fetchedAttempts;
+    if (fetchedAttempts.some(a => a.passed)) {
+      const highest = [...fetchedAttempts].sort((a, b) => b.score - a.score)[0];
+      emit('passed', highest.score);
     }
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load quiz.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load quiz.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function handleSubmit() {
-  if (!isCompleteAnswers.value || submitting.value) return
-  submitting.value = true
-  error.value = null
+  if (!isCompleteAnswers.value || submitting.value) return;
+  submitting.value = true;
+  error.value = null;
   try {
     const res = await submitQuiz({
       enrollmentId: props.enrollmentId,
@@ -78,27 +74,27 @@ async function handleSubmit() {
       lessonSlug: props.lessonSlug,
       moduleSlug: props.moduleSlug,
       answers: userAnswers.value,
-    })
-    result.value = res
+    });
+    result.value = res;
     if (res.passed) {
-      emit('passed', res.score)
+      emit('passed', res.score);
     }
     // Refresh attempt history
-    attempts.value = await QuizService.getAttemptsForStudent(props.enrollmentId, props.lessonSlug)
+    attempts.value = await QuizService.getAttemptsForStudent(props.enrollmentId, props.lessonSlug);
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Quiz submission failed.'
+    error.value = (err as { message?: string }).message ?? 'Quiz submission failed.';
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
 function resetQuiz() {
-  result.value = null
-  userAnswers.value = {}
-  error.value = null
+  result.value = null;
+  userAnswers.value = {};
+  error.value = null;
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -108,7 +104,10 @@ onMounted(load)
       <span>Loading assessment...</span>
     </div>
 
-    <div v-else-if="error" class="p-4 bg-red-50 text-red-800 rounded-lg text-sm flex items-center gap-2">
+    <div
+      v-else-if="error"
+      class="p-4 bg-red-50 text-red-800 rounded-lg text-sm flex items-center gap-2"
+    >
       <Icon icon="lucide:alert-triangle" width="18" />
       <span>{{ error }}</span>
     </div>
@@ -119,9 +118,13 @@ onMounted(load)
 
     <template v-else>
       <!-- Quiz Header & Meta -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ink/10">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ink/10"
+      >
         <div>
-          <span class="text-xs font-bold text-accent uppercase tracking-wider block mb-1">Knowledge Check</span>
+          <span class="text-xs font-bold text-accent uppercase tracking-wider block mb-1"
+            >Knowledge Check</span
+          >
           <h3 class="text-xl font-bold text-ink">{{ quiz.title }}</h3>
           <p v-if="quiz.summary" class="text-sm text-ink/70 mt-1">{{ quiz.summary }}</p>
         </div>
@@ -136,7 +139,8 @@ onMounted(load)
             Required score: {{ quiz.passThresholdPercent ?? 70 }}%
           </span>
           <span v-if="bestAttempt" class="text-xs text-ink/50">
-            Best score: {{ bestAttempt.score }}% ({{ attempts.length }} {{ attempts.length === 1 ? 'attempt' : 'attempts' }})
+            Best score: {{ bestAttempt.score }}% ({{ attempts.length }}
+            {{ attempts.length === 1 ? 'attempt' : 'attempts' }})
           </span>
         </div>
       </div>
@@ -145,7 +149,11 @@ onMounted(load)
       <div
         v-if="result"
         class="p-5 rounded-xl flex flex-col gap-3"
-        :class="result.passed ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'"
+        :class="
+          result.passed
+            ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+            : 'bg-rose-50 border border-rose-200 text-rose-900'
+        "
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -157,8 +165,12 @@ onMounted(load)
           <span class="text-lg font-black">{{ result.score }}%</span>
         </div>
         <p class="text-sm">
-          You answered <strong>{{ result.correctCount }} of {{ result.totalQuestions }}</strong> questions correctly.
-          <span v-if="!result.passed"> Minimum score needed to pass is {{ result.passThresholdPercent }}%. You may retry.</span>
+          You answered
+          <strong>{{ result.correctCount }} of {{ result.totalQuestions }}</strong> questions
+          correctly.
+          <span v-if="!result.passed">
+            Minimum score needed to pass is {{ result.passThresholdPercent }}%. You may retry.</span
+          >
         </p>
         <div v-if="!result.passed" class="pt-2">
           <UiButton variant="secondary" size="sm" @click="resetQuiz">
@@ -193,7 +205,7 @@ onMounted(load)
                   : '',
                 result && userAnswers[q.id] === opt.id && !result.questionFeedback[q.id]?.correct
                   ? '!border-rose-400 !bg-rose-50/50 !text-rose-900'
-                  : ''
+                  : '',
               ]"
             >
               <input
@@ -214,7 +226,9 @@ onMounted(load)
                   class="text-emerald-600"
                 />
                 <Icon
-                  v-else-if="userAnswers[q.id] === opt.id && !result.questionFeedback[q.id]?.correct"
+                  v-else-if="
+                    userAnswers[q.id] === opt.id && !result.questionFeedback[q.id]?.correct
+                  "
                   icon="lucide:x-circle"
                   width="16"
                   class="text-rose-600"

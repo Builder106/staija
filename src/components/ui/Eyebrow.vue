@@ -1,13 +1,16 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  /** Use Ojuju (African-designed accent, wght=500) instead of the default
-   * Plex Mono "lab notebook" tell. Scoped to Dynamerge/StepUp program
-   * pages only — see docs/TYPOGRAPHY-SYSTEM.md. Generic pages (Home,
-   * About, Blog) should never pass this. */
-  accent?: boolean
-}>(), {
-  accent: false,
-})
+withDefaults(
+  defineProps<{
+    /** Use Ojuju (African-designed accent, wght=500) instead of the default
+     * Plex Mono "lab notebook" tell. Scoped to Dynamerge/StepUp program
+     * pages only — see docs/TYPOGRAPHY-SYSTEM.md. Generic pages (Home,
+     * About, Blog) should never pass this. */
+    accent?: boolean;
+  }>(),
+  {
+    accent: false,
+  }
+);
 </script>
 
 <template>
@@ -19,7 +22,11 @@ withDefaults(defineProps<{
   -->
   <span
     class="uppercase tracking-[0.14em]"
-    :class="accent ? 'font-accent-african-secondary text-lg font-extrabold' : 'font-mono text-[11px] font-medium'"
+    :class="
+      accent
+        ? 'font-accent-african-secondary text-lg font-extrabold'
+        : 'font-mono text-[11px] font-medium'
+    "
   >
     <slot />
   </span>

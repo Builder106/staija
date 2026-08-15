@@ -18,40 +18,40 @@
  * feeds; admins finally have a way to actually open the transcript +
  * ID + showcase without going to the Firebase Console.
  */
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import { httpsCallable } from 'firebase/functions'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import UiSelect from '../../components/ui/UiSelect.vue'
-import { DatabaseService, AuthService, type Application } from '../../services/firebase'
-import { StorageService } from '../../services/storageService'
-import { functions } from '../../config/firebase'
-import { resolveAvatarSrc } from '../../services/avatar'
-import { useAdminBase } from '../../composables/useAdminBase'
+import { Icon } from '@iconify/vue';
+import { httpsCallable } from 'firebase/functions';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import UiSelect from '../../components/ui/UiSelect.vue';
+import { useAdminBase } from '../../composables/useAdminBase';
+import { functions } from '../../config/firebase';
+import { resolveAvatarSrc } from '../../services/avatar';
+import { AuthService, DatabaseService, type Application } from '../../services/firebase';
+import { StorageService } from '../../services/storageService';
 
-const router = useRouter()
-const route = useRoute()
-const { adminBase } = useAdminBase()
+const router = useRouter();
+const route = useRoute();
+const { adminBase } = useAdminBase();
 
-const application = ref<Application | null>(null)
-const applicantPhotoURL = ref<string | null>(null)
-const applicantAvatarSlot = ref<number | null>(null)
-const loading = ref(true)
-const error = ref('')
-const saving = ref(false)
-const saveError = ref<string | null>(null)
+const application = ref<Application | null>(null);
+const applicantPhotoURL = ref<string | null>(null);
+const applicantAvatarSlot = ref<number | null>(null);
+const loading = ref(true);
+const error = ref('');
+const saving = ref(false);
+const saveError = ref<string | null>(null);
 
 const reviewForm = ref({
   status: 'submitted' as 'draft' | 'submitted' | 'under_review' | 'accepted' | 'rejected',
   feedback: '',
-})
+});
 
 // Email-failure retry state. `lastEmailFailure` on the application doc
 // is set by onApplicationStatusChange when Mailgun rejects the
@@ -60,9 +60,9 @@ const reviewForm = ref({
 // Firebase Console; clicking Retry re-derives the email from the
 // current status so a typo fixed since the failure picks up
 // automatically.
-const retrying = ref(false)
-const retryMessage = ref('')
-const retryTone = ref<'success' | 'error'>('success')
+const retrying = ref(false);
+const retryMessage = ref('');
+const retryTone = ref<'success' | 'error'>('success');
 
 /** Resolved Storage download URLs, keyed by logical document kind
  *  (`transcript`, `id`, `showcase`, `recommendationLetter`, or
@@ -70,50 +70,50 @@ const retryTone = ref<'success' | 'error'>('success')
  *  loads — a missing key means the resolve failed (orphaned path,
  *  permissions, etc.) and the row renders a muted "Couldn't fetch"
  *  state instead of a broken link. */
-const documentURLs = ref<Record<string, string>>({})
+const documentURLs = ref<Record<string, string>>({});
 
 const programLabel = computed(() => {
-  if (!application.value) return ''
-  return application.value.program === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge'
-})
+  if (!application.value) return '';
+  return application.value.program === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge';
+});
 
 const avatarSrc = computed(() => {
-  if (!application.value) return ''
+  if (!application.value) return '';
   return resolveAvatarSrc({
     photoURL: applicantPhotoURL.value,
     avatarSlot: applicantAvatarSlot.value,
     seed: application.value.userId,
-  })
-})
+  });
+});
 
 interface StatusMeta {
-  label: string
-  pill: string
+  label: string;
+  pill: string;
 }
 const STATUS_META: Record<Application['status'], StatusMeta> = {
-  draft:        { label: 'Draft',        pill: 'bg-ink/5 text-ink/60 border-ink/15' },
-  submitted:    { label: 'Submitted',    pill: 'bg-brand-violet/10 text-brand-violet border-brand-violet/30' },
+  draft: { label: 'Draft', pill: 'bg-ink/5 text-ink/60 border-ink/15' },
+  submitted: {
+    label: 'Submitted',
+    pill: 'bg-brand-violet/10 text-brand-violet border-brand-violet/30',
+  },
   under_review: { label: 'Under review', pill: 'bg-amber-50 text-amber-700 border-amber-200' },
-  accepted:     { label: 'Accepted',     pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  rejected:     { label: 'Decision sent',pill: 'bg-rose-50 text-rose-700 border-rose-200' },
-}
+  accepted: { label: 'Accepted', pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  rejected: { label: 'Decision sent', pill: 'bg-rose-50 text-rose-700 border-rose-200' },
+};
 const currentStatusMeta = computed<StatusMeta>(() => {
-  if (!application.value) return STATUS_META.submitted
-  return STATUS_META[application.value.status]
-})
+  if (!application.value) return STATUS_META.submitted;
+  return STATUS_META[application.value.status];
+});
 
 /** Whether the reviewer has changed any field since load. Drives the
  *  Save button's disabled state — saving the same status + feedback is
  *  a no-op that still bumps `reviewedAt`, which is misleading audit
  *  metadata. */
 const isDirty = computed(() => {
-  const a = application.value
-  if (!a) return false
-  return (
-    reviewForm.value.status !== a.status ||
-    reviewForm.value.feedback !== (a.feedback ?? '')
-  )
-})
+  const a = application.value;
+  if (!a) return false;
+  return reviewForm.value.status !== a.status || reviewForm.value.feedback !== (a.feedback ?? '');
+});
 
 /** Days the application has been waiting since the applicant
  *  submitted it. Drives the "X days in queue" chip in the hero — at
@@ -121,152 +121,157 @@ const isDirty = computed(() => {
  *  (which app has been sitting longest?), and the legacy surface
  *  buried it under a paragraph of "Submitted: October 12, 2026". */
 const daysInQueue = computed<number | null>(() => {
-  const submitted = toDate(application.value?.submittedAt)
-  if (!submitted) return null
-  const ms = Date.now() - submitted.getTime()
-  if (ms < 0) return null
-  return Math.floor(ms / (24 * 60 * 60 * 1000))
-})
+  const submitted = toDate(application.value?.submittedAt);
+  if (!submitted) return null;
+  const ms = Date.now() - submitted.getTime();
+  if (ms < 0) return null;
+  return Math.floor(ms / (24 * 60 * 60 * 1000));
+});
 
 const queueChip = computed<{ label: string; tone: string } | null>(() => {
-  const days = daysInQueue.value
-  if (days === null || application.value?.status !== 'submitted') return null
-  const label = days === 0 ? 'New today' : days === 1 ? '1 day in queue' : `${days} days in queue`
+  const days = daysInQueue.value;
+  if (days === null || application.value?.status !== 'submitted') return null;
+  const label = days === 0 ? 'New today' : days === 1 ? '1 day in queue' : `${days} days in queue`;
   // Tone climbs with age so a 30-day-old "submitted" jumps out red.
   const tone =
     days >= 14
       ? 'bg-rose-50 text-rose-700 border-rose-200'
       : days >= 7
         ? 'bg-amber-50 text-amber-700 border-amber-200'
-        : 'bg-ink/5 text-ink/60 border-ink/15'
-  return { label, tone }
-})
+        : 'bg-ink/5 text-ink/60 border-ink/15';
+  return { label, tone };
+});
 
 /** Word count helper for the long-form fields. Splits on whitespace
  *  rather than tokenising properly — the value is a skim signal, not
  *  a precise count, so the cheap version is good enough. */
 function wordCount(text: string | undefined | null): number {
-  if (!text) return 0
-  return text.trim().split(/\s+/).filter(Boolean).length
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-const motivationWords = computed(() => wordCount(application.value?.motivation))
-const experienceWords = computed(() => wordCount(application.value?.experience))
+const motivationWords = computed(() => wordCount(application.value?.motivation));
+const experienceWords = computed(() => wordCount(application.value?.experience));
 
 /** Reference to the feedback textarea so quick-actions can land focus
  *  there after setting a status — the staff flow is "decide → write a
  *  one-line reason → save", so dropping the cursor in the textarea
  *  removes one click from the path. */
-const feedbackInput = ref<HTMLTextAreaElement | null>(null)
+const feedbackInput = ref<HTMLTextAreaElement | null>(null);
 
 /** Bump the status to a new value AND focus the feedback field. Used
  *  by the quick-action buttons (Accept / Mark under review / Decline)
  *  so the most common transitions are one-click affairs — the verbose
  *  dropdown stays for edge cases like reverting to "Submitted". */
 function quickSetStatus(status: typeof reviewForm.value.status) {
-  reviewForm.value.status = status
+  reviewForm.value.status = status;
   // Defer focus to next tick so the textarea has rendered if it was
   // hidden mid-state-change (it isn't today, but cheap insurance).
-  setTimeout(() => feedbackInput.value?.focus(), 0)
+  setTimeout(() => feedbackInput.value?.focus(), 0);
 }
 
 const personalRows = computed(() => {
-  const p = application.value?.personalInfo
-  if (!p) return []
+  const p = application.value?.personalInfo;
+  if (!p) return [];
   return [
-    { label: 'Email',         value: p.email },
-    { label: 'Phone',         value: p.phone || '—' },
+    { label: 'Email', value: p.email },
+    { label: 'Phone', value: p.phone || '—' },
     { label: 'Date of birth', value: p.dateOfBirth ? formatDate(new Date(p.dateOfBirth)) : '—' },
-    { label: 'Nationality',   value: p.nationality || '—' },
-    { label: 'Institution',   value: p.currentInstitution || '—' },
-    { label: 'Level',         value: p.currentLevel || '—' },
-  ]
-})
+    { label: 'Nationality', value: p.nationality || '—' },
+    { label: 'Institution', value: p.currentInstitution || '—' },
+    { label: 'Level', value: p.currentLevel || '—' },
+  ];
+});
 
 const academicRows = computed(() => {
-  const a = application.value?.academicInfo
-  if (!a) return []
+  const a = application.value?.academicInfo;
+  if (!a) return [];
   return [
-    { label: 'GPA',             value: a.gpa || '—' },
-    { label: 'Major',           value: a.major || '—' },
+    { label: 'GPA', value: a.gpa || '—' },
+    { label: 'Major', value: a.major || '—' },
     { label: 'Graduation year', value: a.graduationYear || '—' },
-  ]
-})
+  ];
+});
 
 interface DocumentRow {
   /** Stable key used to look up the resolved URL in `documentURLs`. */
-  key: string
+  key: string;
   /** Reader-friendly label shown in the row ("Transcript" etc). */
-  label: string
+  label: string;
   /** Original Storage path — only surfaced as a tooltip / fallback. */
-  path: string
+  path: string;
 }
 const documentRows = computed<DocumentRow[]>(() => {
-  const docs = application.value?.documents
-  if (!docs) return []
-  const rows: DocumentRow[] = []
-  if (docs.transcript) rows.push({ key: 'transcript', label: 'Transcript / grade report', path: docs.transcript })
-  if (docs.id)         rows.push({ key: 'id',         label: 'Government / school ID',    path: docs.id })
-  if (docs.showcase)   rows.push({ key: 'showcase',   label: 'Showcase upload',           path: docs.showcase })
-  if (docs.cv)         rows.push({ key: 'cv',         label: 'CV',                         path: docs.cv })
+  const docs = application.value?.documents;
+  if (!docs) return [];
+  const rows: DocumentRow[] = [];
+  if (docs.transcript)
+    rows.push({ key: 'transcript', label: 'Transcript / grade report', path: docs.transcript });
+  if (docs.id) rows.push({ key: 'id', label: 'Government / school ID', path: docs.id });
+  if (docs.showcase) rows.push({ key: 'showcase', label: 'Showcase upload', path: docs.showcase });
+  if (docs.cv) rows.push({ key: 'cv', label: 'CV', path: docs.cv });
   if (docs.recommendationLetter) {
-    rows.push({ key: 'recommendationLetter', label: 'Recommendation letter', path: docs.recommendationLetter })
+    rows.push({
+      key: 'recommendationLetter',
+      label: 'Recommendation letter',
+      path: docs.recommendationLetter,
+    });
   }
   if (docs.audio) {
     for (const [field, path] of Object.entries(docs.audio)) {
-      rows.push({ key: `audio:${field}`, label: `Audio answer | ${field}`, path })
+      rows.push({ key: `audio:${field}`, label: `Audio answer | ${field}`, path });
     }
   }
-  return rows
-})
+  return rows;
+});
 
 function failureKindLabel(kind: 'submitted' | 'accepted' | 'rejected' | string): string {
-  if (kind === 'submitted') return 'Submission-confirmation'
-  if (kind === 'accepted') return 'Acceptance'
-  if (kind === 'rejected') return 'Status-update'
-  return 'Applicant'
+  if (kind === 'submitted') return 'Submission-confirmation';
+  if (kind === 'accepted') return 'Acceptance';
+  if (kind === 'rejected') return 'Status-update';
+  return 'Applicant';
 }
 
 const failureWhen = computed(() => {
-  const d = toDate(application.value?.lastEmailFailure?.attemptedAt)
-  return d ? d.toLocaleString() : ''
-})
+  const d = toDate(application.value?.lastEmailFailure?.attemptedAt);
+  return d ? d.toLocaleString() : '';
+});
 
 async function retryEmail() {
-  if (!application.value?.id || retrying.value) return
-  retrying.value = true
-  retryMessage.value = ''
+  if (!application.value?.id || retrying.value) return;
+  retrying.value = true;
+  retryMessage.value = '';
   try {
-    const fn = httpsCallable<
-      { applicationId: string },
-      { ok: boolean; kind: string; to: string }
-    >(functions, 'retryApplicationEmail')
-    const res = await fn({ applicationId: application.value.id })
-    retryMessage.value = `Email re-sent to ${res.data.to}.`
-    retryTone.value = 'success'
+    const fn = httpsCallable<{ applicationId: string }, { ok: boolean; kind: string; to: string }>(
+      functions,
+      'retryApplicationEmail'
+    );
+    const res = await fn({ applicationId: application.value.id });
+    retryMessage.value = `Email re-sent to ${res.data.to}.`;
+    retryTone.value = 'success';
     // Reload so the banner clears — lastEmailFailure is deleted on a
     // successful retry by the Cloud Function.
-    await loadApplication()
+    await loadApplication();
   } catch (err) {
-    retryMessage.value = err instanceof Error ? err.message : 'Retry failed.'
-    retryTone.value = 'error'
+    retryMessage.value = err instanceof Error ? err.message : 'Retry failed.';
+    retryTone.value = 'error';
   } finally {
-    retrying.value = false
+    retrying.value = false;
   }
 }
 
 function formatDate(date: Date | undefined | null): string {
-  if (!date) return 'Not submitted'
-  const d = date instanceof Date ? date : new Date(date)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  if (!date) return 'Not submitted';
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function formatDateTime(date: Date | undefined | null): string {
-  if (!date) return '—'
-  const d = date instanceof Date ? date : new Date(date)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+  if (!date) return '—';
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 /** Coerce Firestore Timestamp / ISO / Date into a Date. Status data
@@ -274,31 +279,31 @@ function formatDateTime(date: Date | undefined | null): string {
  *  written by a Cloud Function (Timestamp) or read from cache (Date),
  *  so we normalise once at the edge. */
 function toDate(value: unknown): Date | null {
-  if (!value) return null
-  if (value instanceof Date) return value
+  if (!value) return null;
+  if (value instanceof Date) return value;
   if (typeof value === 'object' && value !== null && 'toDate' in value) {
-    const fn = (value as { toDate: () => Date }).toDate
-    if (typeof fn === 'function') return fn.call(value)
+    const fn = (value as { toDate: () => Date }).toDate;
+    if (typeof fn === 'function') return fn.call(value);
   }
   if (typeof value === 'string' || typeof value === 'number') {
-    const d = new Date(value)
-    return Number.isNaN(d.getTime()) ? null : d
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
   }
-  return null
+  return null;
 }
 
 async function loadApplication() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
-    const app = await DatabaseService.getApplication(route.params.id as string)
+    const app = await DatabaseService.getApplication(route.params.id as string);
     if (!app) {
-      error.value = "We couldn't find that application."
-      return
+      error.value = "We couldn't find that application.";
+      return;
     }
-    application.value = app
-    reviewForm.value.status = app.status
-    reviewForm.value.feedback = app.feedback || ''
+    application.value = app;
+    reviewForm.value.status = app.status;
+    reviewForm.value.feedback = app.feedback || '';
 
     // Fan out two side jobs — the applicant's profile photo for the
     // header and the Storage URLs for any uploaded documents — so
@@ -306,68 +311,68 @@ async function loadApplication() {
     // block the review; the avatar falls back to the deterministic
     // seeded thumbnail and the document rows render a muted error
     // state with the raw path so a reviewer can still hunt them down.
-    void loadApplicantAvatar(app.userId)
-    void loadDocumentURLs()
+    void loadApplicantAvatar(app.userId);
+    void loadDocumentURLs();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load this application.'
+    error.value = err instanceof Error ? err.message : 'Failed to load this application.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function loadApplicantAvatar(uid: string) {
   try {
-    const profile = await DatabaseService.getUserProfile(uid)
-    if (!profile) return
-    applicantPhotoURL.value = profile.photoURL ?? null
-    applicantAvatarSlot.value = (profile as { avatarSlot?: number | null }).avatarSlot ?? null
+    const profile = await DatabaseService.getUserProfile(uid);
+    if (!profile) return;
+    applicantPhotoURL.value = profile.photoURL ?? null;
+    applicantAvatarSlot.value = (profile as { avatarSlot?: number | null }).avatarSlot ?? null;
   } catch {
     // Avatar is decorative — silently fall back to the seeded thumb.
   }
 }
 
 async function loadDocumentURLs() {
-  const rows = documentRows.value
-  if (rows.length === 0) return
+  const rows = documentRows.value;
+  if (rows.length === 0) return;
   await Promise.all(
-    rows.map(async (row) => {
+    rows.map(async row => {
       try {
-        const url = await StorageService.getFileURL(row.path)
-        documentURLs.value = { ...documentURLs.value, [row.key]: url }
+        const url = await StorageService.getFileURL(row.path);
+        documentURLs.value = { ...documentURLs.value, [row.key]: url };
       } catch {
         // Leave the key unset — template renders a "couldn't fetch"
         // affordance for that row.
       }
-    }),
-  )
+    })
+  );
 }
 
 async function saveReview() {
-  const app = application.value
-  if (!app?.id || saving.value) return
-  saving.value = true
-  saveError.value = null
+  const app = application.value;
+  if (!app?.id || saving.value) return;
+  saving.value = true;
+  saveError.value = null;
   try {
-    const currentUser = AuthService.getCurrentUser()
+    const currentUser = AuthService.getCurrentUser();
     await DatabaseService.updateApplication(app.id, {
       status: reviewForm.value.status,
       feedback: reviewForm.value.feedback,
       reviewedAt: new Date(),
       reviewedBy: currentUser?.email || 'Unknown',
-    })
-    router.push(`${adminBase.value}/applications`)
+    });
+    router.push(`${adminBase.value}/applications`);
   } catch (err) {
-    saveError.value = err instanceof Error ? err.message : 'Save failed. Try again.'
+    saveError.value = err instanceof Error ? err.message : 'Save failed. Try again.';
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 function goBack() {
-  router.back()
+  router.back();
 }
 
-onMounted(loadApplication)
+onMounted(loadApplication);
 </script>
 
 <template>
@@ -409,9 +414,7 @@ onMounted(loadApplication)
             <Icon icon="lucide:arrow-left" width="16" /> All applications
           </RouterLink>
 
-          <Eyebrow class="text-brand-violet mb-3 block">
-            {{ programLabel }} application
-          </Eyebrow>
+          <Eyebrow class="text-brand-violet mb-3 block"> {{ programLabel }} application </Eyebrow>
 
           <div class="flex flex-col md:flex-row md:items-center gap-5">
             <img
@@ -446,7 +449,12 @@ onMounted(loadApplication)
                   {{ application.personalInfo.email }}
                 </a>
                 <span class="text-sm text-ink/55">
-                  Submitted {{ formatDate(toDate(application.submittedAt) ?? toDate(application.createdAt) ?? undefined) }}
+                  Submitted
+                  {{
+                    formatDate(
+                      toDate(application.submittedAt) ?? toDate(application.createdAt) ?? undefined
+                    )
+                  }}
                 </span>
                 <span class="text-xs text-ink/40 font-mono">
                   {{ application.id }}
@@ -462,10 +470,7 @@ onMounted(loadApplication)
            button calls the same Cloud Function the legacy view used,
            and the application doc reload after success clears the
            banner so the reviewer doesn't have to refresh by hand. -->
-      <Section
-        v-if="application.lastEmailFailure"
-        class="!pt-6 !pb-0"
-      >
+      <Section v-if="application.lastEmailFailure" class="!pt-6 !pb-0">
         <Container class="max-w-6xl">
           <div
             role="status"
@@ -477,8 +482,11 @@ onMounted(loadApplication)
                 <div class="text-sm font-semibold">Couldn't email the applicant.</div>
                 <div class="text-sm text-rose-800">
                   {{ failureKindLabel(application.lastEmailFailure.kind) }} email to
-                  <code class="px-1 py-0.5 rounded bg-rose-100 font-mono text-xs">{{ application.lastEmailFailure.to }}</code>
-                  failed<span v-if="failureWhen"> {{ failureWhen }}</span>.
+                  <code class="px-1 py-0.5 rounded bg-rose-100 font-mono text-xs">{{
+                    application.lastEmailFailure.to
+                  }}</code>
+                  failed<span v-if="failureWhen"> {{ failureWhen }}</span
+                  >.
                 </div>
                 <div class="text-xs font-mono text-rose-700/80 break-words">
                   {{ application.lastEmailFailure.error }}
@@ -503,9 +511,11 @@ onMounted(loadApplication)
             v-if="retryMessage"
             role="status"
             class="mt-3 text-sm rounded-xl px-3 py-2 border"
-            :class="retryTone === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-              : 'bg-rose-50 border-rose-200 text-rose-900'"
+            :class="
+              retryTone === 'success'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                : 'bg-rose-50 border-rose-200 text-rose-900'
+            "
           >
             {{ retryMessage }}
           </div>
@@ -527,7 +537,9 @@ onMounted(loadApplication)
                 </div>
                 <dl class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm m-0">
                   <div v-for="row in personalRows" :key="row.label" class="flex flex-col">
-                    <dt class="text-xs uppercase tracking-wider text-ink/50 font-semibold">{{ row.label }}</dt>
+                    <dt class="text-xs uppercase tracking-wider text-ink/50 font-semibold">
+                      {{ row.label }}
+                    </dt>
                     <dd class="text-ink m-0 break-words">{{ row.value }}</dd>
                   </div>
                 </dl>
@@ -541,7 +553,9 @@ onMounted(loadApplication)
                 </div>
                 <dl class="grid sm:grid-cols-3 gap-x-6 gap-y-3 text-sm m-0">
                   <div v-for="row in academicRows" :key="row.label" class="flex flex-col">
-                    <dt class="text-xs uppercase tracking-wider text-ink/50 font-semibold">{{ row.label }}</dt>
+                    <dt class="text-xs uppercase tracking-wider text-ink/50 font-semibold">
+                      {{ row.label }}
+                    </dt>
                     <dd class="text-ink m-0 break-words">{{ row.value }}</dd>
                   </div>
                 </dl>
@@ -549,7 +563,9 @@ onMounted(loadApplication)
                   v-if="application.academicInfo?.relevantCourses?.length"
                   class="mt-5 pt-5 border-t hairline-ink"
                 >
-                  <div class="text-xs uppercase tracking-wider text-ink/50 font-semibold mb-2">Relevant courses</div>
+                  <div class="text-xs uppercase tracking-wider text-ink/50 font-semibold mb-2">
+                    Relevant courses
+                  </div>
                   <div class="flex flex-wrap gap-2">
                     <span
                       v-for="c in application.academicInfo.relevantCourses"
@@ -563,13 +579,12 @@ onMounted(loadApplication)
               </UiCard>
 
               <!-- Research interests -->
-              <UiCard
-                v-if="application.researchInterests?.length"
-                class="p-6 md:p-8 bg-surface"
-              >
+              <UiCard v-if="application.researchInterests?.length" class="p-6 md:p-8 bg-surface">
                 <div class="flex items-center gap-3 mb-5">
                   <Icon icon="lucide:flask-conical" width="20" class="text-brand-violet" />
-                  <h2 class="font-display text-xl font-semibold m-0 text-ink">Research interests</h2>
+                  <h2 class="font-display text-xl font-semibold m-0 text-ink">
+                    Research interests
+                  </h2>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   <span
@@ -593,7 +608,9 @@ onMounted(loadApplication)
                     {{ motivationWords }} words
                   </span>
                 </div>
-                <p class="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap m-0">{{ application.motivation }}</p>
+                <p class="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap m-0">
+                  {{ application.motivation }}
+                </p>
               </UiCard>
 
               <!-- Experience -->
@@ -607,7 +624,9 @@ onMounted(loadApplication)
                     {{ experienceWords }} words
                   </span>
                 </div>
-                <p class="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap m-0">{{ application.experience }}</p>
+                <p class="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap m-0">
+                  {{ application.experience }}
+                </p>
               </UiCard>
 
               <!-- Documents — only renders when the finalize callable
@@ -629,7 +648,9 @@ onMounted(loadApplication)
                   >
                     <div class="flex items-center gap-3 min-w-0">
                       <Icon
-                        :icon="row.key.startsWith('audio:') ? 'lucide:audio-lines' : 'lucide:file-text'"
+                        :icon="
+                          row.key.startsWith('audio:') ? 'lucide:audio-lines' : 'lucide:file-text'
+                        "
                         width="18"
                         class="text-brand-violet shrink-0"
                       />
@@ -657,7 +678,9 @@ onMounted(loadApplication)
                    surfaced under Documents above; this card focuses on
                    the link/note context the applicant volunteered. -->
               <UiCard
-                v-if="application.showcase && (application.showcase.url || application.showcase.note)"
+                v-if="
+                  application.showcase && (application.showcase.url || application.showcase.note)
+                "
                 class="p-6 md:p-8 bg-surface"
               >
                 <div class="flex items-center justify-between gap-3 mb-5">
@@ -665,11 +688,15 @@ onMounted(loadApplication)
                     <Icon icon="lucide:star" width="20" class="text-brand-violet" />
                     <h2 class="font-display text-xl font-semibold m-0 text-ink">Showcase</h2>
                   </div>
-                  <span class="text-xs uppercase tracking-wider text-ink/50 font-semibold">Optional</span>
+                  <span class="text-xs uppercase tracking-wider text-ink/50 font-semibold"
+                    >Optional</span
+                  >
                 </div>
                 <div class="flex flex-col gap-3 text-sm">
                   <div v-if="application.showcase.url" class="flex flex-col gap-1">
-                    <span class="text-xs uppercase tracking-wider text-ink/50 font-semibold">Link</span>
+                    <span class="text-xs uppercase tracking-wider text-ink/50 font-semibold"
+                      >Link</span
+                    >
                     <a
                       :href="application.showcase.url"
                       target="_blank"
@@ -680,17 +707,16 @@ onMounted(loadApplication)
                     </a>
                   </div>
                   <div v-if="application.showcase.note" class="flex flex-col gap-1">
-                    <span class="text-xs uppercase tracking-wider text-ink/50 font-semibold">Note</span>
+                    <span class="text-xs uppercase tracking-wider text-ink/50 font-semibold"
+                      >Note</span
+                    >
                     <p class="m-0 text-ink/85 leading-relaxed">{{ application.showcase.note }}</p>
                   </div>
                 </div>
               </UiCard>
 
               <!-- References -->
-              <UiCard
-                v-if="application.references?.length"
-                class="p-6 md:p-8 bg-surface"
-              >
+              <UiCard v-if="application.references?.length" class="p-6 md:p-8 bg-surface">
                 <div class="flex items-center gap-3 mb-5">
                   <Icon icon="lucide:mail" width="20" class="text-brand-violet" />
                   <h2 class="font-display text-xl font-semibold m-0 text-ink">References</h2>
@@ -728,11 +754,16 @@ onMounted(loadApplication)
               >
                 <div class="flex items-center gap-3 mb-3">
                   <Icon icon="lucide:history" width="20" class="text-amber-700" />
-                  <h2 class="font-display text-lg font-semibold m-0 text-ink">Previously reviewed</h2>
+                  <h2 class="font-display text-lg font-semibold m-0 text-ink">
+                    Previously reviewed
+                  </h2>
                 </div>
-                <p class="text-sm text-ink/85 whitespace-pre-wrap m-0">{{ application.feedback || '(no feedback recorded)' }}</p>
+                <p class="text-sm text-ink/85 whitespace-pre-wrap m-0">
+                  {{ application.feedback || '(no feedback recorded)' }}
+                </p>
                 <div class="text-xs text-ink/55 mt-3">
-                  by {{ application.reviewedBy || 'unknown' }} on {{ formatDateTime(toDate(application.reviewedAt) ?? undefined) }}
+                  by {{ application.reviewedBy || 'unknown' }} on
+                  {{ formatDateTime(toDate(application.reviewedAt) ?? undefined) }}
                 </div>
               </UiCard>
             </div>
@@ -760,9 +791,11 @@ onMounted(loadApplication)
                     <button
                       type="button"
                       class="inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold border transition-colors focus-ring-brand"
-                      :class="reviewForm.status === 'accepted'
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'"
+                      :class="
+                        reviewForm.status === 'accepted'
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                      "
                       @click="quickSetStatus('accepted')"
                     >
                       <Icon icon="lucide:check" width="14" />
@@ -771,9 +804,11 @@ onMounted(loadApplication)
                     <button
                       type="button"
                       class="inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold border transition-colors focus-ring-brand"
-                      :class="reviewForm.status === 'under_review'
-                        ? 'bg-amber-600 text-white border-amber-600'
-                        : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'"
+                      :class="
+                        reviewForm.status === 'under_review'
+                          ? 'bg-amber-600 text-white border-amber-600'
+                          : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                      "
                       @click="quickSetStatus('under_review')"
                     >
                       <Icon icon="lucide:eye" width="14" />
@@ -782,9 +817,11 @@ onMounted(loadApplication)
                     <button
                       type="button"
                       class="inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold border transition-colors focus-ring-brand"
-                      :class="reviewForm.status === 'rejected'
-                        ? 'bg-rose-700 text-white border-rose-700'
-                        : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'"
+                      :class="
+                        reviewForm.status === 'rejected'
+                          ? 'bg-rose-700 text-white border-rose-700'
+                          : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                      "
                       @click="quickSetStatus('rejected')"
                     >
                       <Icon icon="lucide:x" width="14" />
@@ -804,10 +841,10 @@ onMounted(loadApplication)
                     :id="`status-${application.id}`"
                     v-model="reviewForm.status"
                     :options="[
-                      { value: 'submitted',    label: 'Submitted' },
+                      { value: 'submitted', label: 'Submitted' },
                       { value: 'under_review', label: 'Under review' },
-                      { value: 'accepted',     label: 'Accepted' },
-                      { value: 'rejected',     label: 'Decision sent' },
+                      { value: 'accepted', label: 'Accepted' },
+                      { value: 'rejected', label: 'Decision sent' },
                     ]"
                   />
                 </div>
@@ -841,11 +878,7 @@ onMounted(loadApplication)
                 </div>
 
                 <div class="flex flex-col gap-2 pt-2 border-t hairline-ink">
-                  <UiButton
-                    variant="gradient"
-                    :disabled="saving || !isDirty"
-                    @click="saveReview"
-                  >
+                  <UiButton variant="gradient" :disabled="saving || !isDirty" @click="saveReview">
                     <span v-if="saving" class="flex items-center gap-2">
                       <Icon icon="lucide:loader-2" width="16" class="animate-spin" />
                       Saving…

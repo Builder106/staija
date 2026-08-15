@@ -1,166 +1,158 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import { httpsCallable } from 'firebase/functions'
+import { Icon } from '@iconify/vue';
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   sendEmailVerification,
   updatePassword,
-} from 'firebase/auth'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue'
-import AvatarPicker from '../../components/avatars/AvatarPicker.vue'
-import LottieAvatar from '../../components/avatars/LottieAvatar.vue'
-import { avatarSeedFor, resolveAvatarSrc } from '../../services/avatar'
-import {
-  hasLottieForSlot,
-  loadLottieForSlot,
-} from '../../services/avatar/lotties'
-import { useAuth } from '../../composables/useAuth'
-import { functions } from '../../config/firebase'
-import { AuthService } from '../../services/auth'
-import { DatabaseService } from '../../services/database'
-import { StorageService } from '../../services/storageService'
-import type { EmailPreferences } from '../../services/types'
+} from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
+import { computed, ref, watch } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue';
+import AvatarPicker from '../../components/avatars/AvatarPicker.vue';
+import LottieAvatar from '../../components/avatars/LottieAvatar.vue';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { useAuth } from '../../composables/useAuth';
+import { functions } from '../../config/firebase';
+import { AuthService } from '../../services/auth';
+import { avatarSeedFor, resolveAvatarSrc } from '../../services/avatar';
+import { hasLottieForSlot, loadLottieForSlot } from '../../services/avatar/lotties';
+import { DatabaseService } from '../../services/database';
+import { StorageService } from '../../services/storageService';
+import type { EmailPreferences } from '../../services/types';
 
-const router = useRouter()
-const { user, userProfile, displayName, signOut, refreshProfile } = useAuth()
+const router = useRouter();
+const { user, userProfile, displayName, signOut, refreshProfile } = useAuth();
 
 // --- Profile editor ---------------------------------------------------
 
-const BIO_MAX = 280
+const BIO_MAX = 280;
 
 interface ProfileForm {
-  displayName: string
-  bio: string
-  photoURL: string
-  avatarSlot: number | null
+  displayName: string;
+  bio: string;
+  photoURL: string;
+  avatarSlot: number | null;
 }
 
-const form = ref<ProfileForm>({ displayName: '', bio: '', photoURL: '', avatarSlot: null })
-const original = ref<ProfileForm>({ displayName: '', bio: '', photoURL: '', avatarSlot: null })
+const form = ref<ProfileForm>({ displayName: '', bio: '', photoURL: '', avatarSlot: null });
+const original = ref<ProfileForm>({ displayName: '', bio: '', photoURL: '', avatarSlot: null });
 
 watch(
   userProfile,
-  (p) => {
-    form.value.displayName = p?.displayName ?? ''
-    form.value.bio = p?.bio ?? ''
-    form.value.photoURL = p?.photoURL ?? ''
-    form.value.avatarSlot = p?.avatarSlot ?? null
-    original.value = { ...form.value }
+  p => {
+    form.value.displayName = p?.displayName ?? '';
+    form.value.bio = p?.bio ?? '';
+    form.value.photoURL = p?.photoURL ?? '';
+    form.value.avatarSlot = p?.avatarSlot ?? null;
+    original.value = { ...form.value };
   },
-  { immediate: true },
-)
+  { immediate: true }
+);
 
 const dirty = computed(
   () =>
     form.value.displayName !== original.value.displayName ||
     form.value.bio !== original.value.bio ||
     form.value.photoURL !== original.value.photoURL ||
-    form.value.avatarSlot !== original.value.avatarSlot,
-)
-const bioOver = computed(() => form.value.bio.length > BIO_MAX)
-const canSave = computed(() => dirty.value && !bioOver.value && !saving.value && !uploading.value)
+    form.value.avatarSlot !== original.value.avatarSlot
+);
+const bioOver = computed(() => form.value.bio.length > BIO_MAX);
+const canSave = computed(() => dirty.value && !bioOver.value && !saving.value && !uploading.value);
 
-const saving = ref(false)
-const uploading = ref(false)
-const saveError = ref<string | null>(null)
-const saveSuccess = ref(false)
+const saving = ref(false);
+const uploading = ref(false);
+const saveError = ref<string | null>(null);
+const saveSuccess = ref(false);
 
 async function handleAvatar(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file || !user.value) return
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file || !user.value) return;
   if (!file.type.startsWith('image/')) {
-    saveError.value = 'Avatar must be an image.'
-    return
+    saveError.value = 'Avatar must be an image.';
+    return;
   }
   if (file.size > 2 * 1024 * 1024) {
-    saveError.value = 'Avatar must be under 2 MB.'
-    return
+    saveError.value = 'Avatar must be under 2 MB.';
+    return;
   }
-  uploading.value = true
-  saveError.value = null
+  uploading.value = true;
+  saveError.value = null;
   try {
-    const path = `avatars/${user.value.uid}/${Date.now()}_${file.name}`
-    const url = await StorageService.uploadFile(file, path)
-    form.value.photoURL = url
-    await AuthService.updateProfile({ photoURL: url })
+    const path = `avatars/${user.value.uid}/${Date.now()}_${file.name}`;
+    const url = await StorageService.uploadFile(file, path);
+    form.value.photoURL = url;
+    await AuthService.updateProfile({ photoURL: url });
   } catch (err) {
-    saveError.value = (err as { message?: string }).message ?? 'Upload failed.'
+    saveError.value = (err as { message?: string }).message ?? 'Upload failed.';
   } finally {
-    uploading.value = false
-    input.value = ''
+    uploading.value = false;
+    input.value = '';
   }
 }
 
 // --- Avatar picker ---------------------------------------------------
 
-const pickerOpen = ref(false)
+const pickerOpen = ref(false);
 
 function openPicker() {
-  pickerOpen.value = true
+  pickerOpen.value = true;
 }
 
 function applyPickedSlot(slot: number | null) {
   // Picking a slot is a deliberate choice. Drop the uploaded photo so
   // the picked portrait is the one that renders. The user can re-upload
   // any time; the slot persists underneath.
-  form.value.avatarSlot = slot
-  if (slot !== null) form.value.photoURL = ''
+  form.value.avatarSlot = slot;
+  if (slot !== null) form.value.photoURL = '';
 }
 
 async function handleSave() {
-  if (!canSave.value || !user.value) return
-  saving.value = true
-  saveError.value = null
-  saveSuccess.value = false
+  if (!canSave.value || !user.value) return;
+  saving.value = true;
+  saveError.value = null;
+  saveSuccess.value = false;
   try {
-    const updates: Record<string, string | number | null> = {}
+    const updates: Record<string, string | number | null> = {};
     if (form.value.displayName !== original.value.displayName)
-      updates.displayName = form.value.displayName.trim()
-    if (form.value.bio !== original.value.bio) updates.bio = form.value.bio.trim()
-    if (form.value.photoURL !== original.value.photoURL) updates.photoURL = form.value.photoURL
+      updates.displayName = form.value.displayName.trim();
+    if (form.value.bio !== original.value.bio) updates.bio = form.value.bio.trim();
+    if (form.value.photoURL !== original.value.photoURL) updates.photoURL = form.value.photoURL;
     if (form.value.avatarSlot !== original.value.avatarSlot)
-      updates.avatarSlot = form.value.avatarSlot
+      updates.avatarSlot = form.value.avatarSlot;
 
-    await DatabaseService.updateUserProfile(user.value.uid, updates)
+    await DatabaseService.updateUserProfile(user.value.uid, updates);
 
     if ('displayName' in updates || 'photoURL' in updates) {
       await AuthService.updateProfile({
         displayName:
-          typeof updates.displayName === 'string'
-            ? updates.displayName
-            : form.value.displayName,
-        photoURL:
-          typeof updates.photoURL === 'string'
-            ? updates.photoURL
-            : form.value.photoURL,
-      })
+          typeof updates.displayName === 'string' ? updates.displayName : form.value.displayName,
+        photoURL: typeof updates.photoURL === 'string' ? updates.photoURL : form.value.photoURL,
+      });
     }
 
-    await refreshProfile()
-    original.value = { ...form.value }
-    saveSuccess.value = true
-    setTimeout(() => (saveSuccess.value = false), 3000)
+    await refreshProfile();
+    original.value = { ...form.value };
+    saveSuccess.value = true;
+    setTimeout(() => (saveSuccess.value = false), 3000);
   } catch (err) {
-    saveError.value = (err as { message?: string }).message ?? 'Could not save changes.'
+    saveError.value = (err as { message?: string }).message ?? 'Could not save changes.';
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 function handleReset() {
-  form.value = { ...original.value }
-  saveError.value = null
+  form.value = { ...original.value };
+  saveError.value = null;
 }
 
 // --- Mentor profile editor -------------------------------------------
@@ -173,150 +165,158 @@ function handleReset() {
 // so saving "what I'm an expert in" doesn't accidentally commit a
 // half-finished displayName edit and vice versa.
 
-const MENTOR_BIO_MAX = 1000
-const MENTOR_AVAILABILITY_MAX = 500
+const MENTOR_BIO_MAX = 1000;
+const MENTOR_AVAILABILITY_MAX = 500;
 
 interface MentorForm {
-  mentorBio: string
-  mentorAvailability: string
-  mentorPublicProfile: boolean
+  mentorBio: string;
+  mentorAvailability: string;
+  mentorPublicProfile: boolean;
 }
 
-const mentorForm = ref<MentorForm>({ mentorBio: '', mentorAvailability: '', mentorPublicProfile: false })
-const mentorOriginal = ref<MentorForm>({ mentorBio: '', mentorAvailability: '', mentorPublicProfile: false })
+const mentorForm = ref<MentorForm>({
+  mentorBio: '',
+  mentorAvailability: '',
+  mentorPublicProfile: false,
+});
+const mentorOriginal = ref<MentorForm>({
+  mentorBio: '',
+  mentorAvailability: '',
+  mentorPublicProfile: false,
+});
 
 watch(
   userProfile,
-  (p) => {
-    mentorForm.value.mentorBio = p?.mentorBio ?? ''
-    mentorForm.value.mentorAvailability = p?.mentorAvailability ?? ''
-    mentorForm.value.mentorPublicProfile = p?.mentorPublicProfile === true
-    mentorOriginal.value = { ...mentorForm.value }
+  p => {
+    mentorForm.value.mentorBio = p?.mentorBio ?? '';
+    mentorForm.value.mentorAvailability = p?.mentorAvailability ?? '';
+    mentorForm.value.mentorPublicProfile = p?.mentorPublicProfile === true;
+    mentorOriginal.value = { ...mentorForm.value };
   },
-  { immediate: true },
-)
+  { immediate: true }
+);
 
 const mentorDirty = computed(
   () =>
     mentorForm.value.mentorBio !== mentorOriginal.value.mentorBio ||
     mentorForm.value.mentorAvailability !== mentorOriginal.value.mentorAvailability ||
-    mentorForm.value.mentorPublicProfile !== mentorOriginal.value.mentorPublicProfile,
-)
-const mentorBioOver = computed(() => mentorForm.value.mentorBio.length > MENTOR_BIO_MAX)
+    mentorForm.value.mentorPublicProfile !== mentorOriginal.value.mentorPublicProfile
+);
+const mentorBioOver = computed(() => mentorForm.value.mentorBio.length > MENTOR_BIO_MAX);
 const mentorAvailabilityOver = computed(
-  () => mentorForm.value.mentorAvailability.length > MENTOR_AVAILABILITY_MAX,
-)
-const mentorSaving = ref(false)
-const mentorSaveError = ref<string | null>(null)
-const mentorSaveSuccess = ref(false)
+  () => mentorForm.value.mentorAvailability.length > MENTOR_AVAILABILITY_MAX
+);
+const mentorSaving = ref(false);
+const mentorSaveError = ref<string | null>(null);
+const mentorSaveSuccess = ref(false);
 const canSaveMentor = computed(
-  () => mentorDirty.value && !mentorBioOver.value && !mentorAvailabilityOver.value && !mentorSaving.value,
-)
+  () =>
+    mentorDirty.value &&
+    !mentorBioOver.value &&
+    !mentorAvailabilityOver.value &&
+    !mentorSaving.value
+);
 
 async function handleSaveMentor() {
-  if (!canSaveMentor.value || !user.value) return
-  mentorSaving.value = true
-  mentorSaveError.value = null
-  mentorSaveSuccess.value = false
+  if (!canSaveMentor.value || !user.value) return;
+  mentorSaving.value = true;
+  mentorSaveError.value = null;
+  mentorSaveSuccess.value = false;
   try {
-    const updates: Record<string, string | boolean> = {}
+    const updates: Record<string, string | boolean> = {};
     if (mentorForm.value.mentorBio !== mentorOriginal.value.mentorBio) {
-      updates.mentorBio = mentorForm.value.mentorBio.trim()
+      updates.mentorBio = mentorForm.value.mentorBio.trim();
     }
     if (mentorForm.value.mentorAvailability !== mentorOriginal.value.mentorAvailability) {
-      updates.mentorAvailability = mentorForm.value.mentorAvailability.trim()
+      updates.mentorAvailability = mentorForm.value.mentorAvailability.trim();
     }
     if (mentorForm.value.mentorPublicProfile !== mentorOriginal.value.mentorPublicProfile) {
-      updates.mentorPublicProfile = mentorForm.value.mentorPublicProfile
+      updates.mentorPublicProfile = mentorForm.value.mentorPublicProfile;
     }
-    await DatabaseService.updateUserProfile(user.value.uid, updates)
-    await refreshProfile()
-    mentorOriginal.value = { ...mentorForm.value }
-    mentorSaveSuccess.value = true
-    setTimeout(() => (mentorSaveSuccess.value = false), 3000)
+    await DatabaseService.updateUserProfile(user.value.uid, updates);
+    await refreshProfile();
+    mentorOriginal.value = { ...mentorForm.value };
+    mentorSaveSuccess.value = true;
+    setTimeout(() => (mentorSaveSuccess.value = false), 3000);
   } catch (err) {
-    mentorSaveError.value = (err as { message?: string }).message ?? 'Could not save changes.'
+    mentorSaveError.value = (err as { message?: string }).message ?? 'Could not save changes.';
   } finally {
-    mentorSaving.value = false
+    mentorSaving.value = false;
   }
 }
 
 function handleResetMentor() {
-  mentorForm.value = { ...mentorOriginal.value }
-  mentorSaveError.value = null
+  mentorForm.value = { ...mentorOriginal.value };
+  mentorSaveError.value = null;
 }
 
 function getInitials(name: string | null | undefined) {
-  if (!name) return '?'
+  if (!name) return '?';
   return name
     .split(/\s+/)
-    .map((n) => n[0])
+    .map(n => n[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 // Avatar shown in the profile editor. Uses the resolver in the
 // avatar service so the precedence (uploaded > picked slot > seeded
 // default) stays in one place.
 const avatarSeed = computed(() =>
-  user.value
-    ? avatarSeedFor({ uid: user.value.uid, email: user.value.email })
-    : 'staija-default',
-)
+  user.value ? avatarSeedFor({ uid: user.value.uid, email: user.value.email }) : 'staija-default'
+);
 
 const resolvedAvatarSrc = computed(() => {
-  if (!user.value) return null
+  if (!user.value) return null;
   return resolveAvatarSrc({
     photoURL: form.value.photoURL || null,
     avatarSlot: form.value.avatarSlot,
     seed: avatarSeed.value,
-  })
-})
+  });
+});
 
 // True when the resolved avatar is the user's uploaded photo (vs.
 // generated). Affects which display container the markup uses.
-const showingUploadedPhoto = computed(() => Boolean(form.value.photoURL))
+const showingUploadedPhoto = computed(() => Boolean(form.value.photoURL));
 
 // The actual slot whose portrait is currently displayed. Used to
 // decide whether to swap in the Lottie variant. `null` when no
 // generated avatar applies (uploaded photo or pre-load).
-const UNIVERSAL_DEFAULT_SLOT = 6
+const UNIVERSAL_DEFAULT_SLOT = 6;
 const displayedSlot = computed<number | null>(() => {
-  if (!user.value || form.value.photoURL) return null
-  return typeof form.value.avatarSlot === 'number'
-    ? form.value.avatarSlot
-    : UNIVERSAL_DEFAULT_SLOT
-})
+  if (!user.value || form.value.photoURL) return null;
+  return typeof form.value.avatarSlot === 'number' ? form.value.avatarSlot : UNIVERSAL_DEFAULT_SLOT;
+});
 
-const lottieAvailable = computed(() =>
-  displayedSlot.value !== null && hasLottieForSlot(displayedSlot.value),
-)
+const lottieAvailable = computed(
+  () => displayedSlot.value !== null && hasLottieForSlot(displayedSlot.value)
+);
 
 // Lazily-loaded Lottie JSON for the displayed slot. Reloaded when
 // the slot changes (picker apply, photo upload/clear).
-const lottieAnimation = ref<Record<string, unknown> | null>(null)
+const lottieAnimation = ref<Record<string, unknown> | null>(null);
 watch(
   displayedSlot,
-  async (slot) => {
+  async slot => {
     if (slot === null || !hasLottieForSlot(slot)) {
-      lottieAnimation.value = null
-      return
+      lottieAnimation.value = null;
+      return;
     }
-    lottieAnimation.value = await loadLottieForSlot(slot)
+    lottieAnimation.value = await loadLottieForSlot(slot);
   },
-  { immediate: true },
-)
+  { immediate: true }
+);
 
 function formatDate(date: unknown): string {
-  if (!date) return '—'
+  if (!date) return '—';
   const candidate =
     typeof (date as { toDate?: () => Date })?.toDate === 'function'
       ? (date as { toDate: () => Date }).toDate()
-      : (date as Date | string)
-  const d = new Date(candidate as Date | string)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      : (date as Date | string);
+  const d = new Date(candidate as Date | string);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 // --- Notifications ----------------------------------------------------
@@ -341,228 +341,228 @@ const notifKeys: { key: keyof EmailPreferences; label: string; description: stri
     label: 'Product updates',
     description: 'Occasional notes about new STAIJA features or programs.',
   },
-]
+];
 
-const notifPrefs = ref<EmailPreferences>({})
-const notifOriginal = ref<EmailPreferences>({})
+const notifPrefs = ref<EmailPreferences>({});
+const notifOriginal = ref<EmailPreferences>({});
 watch(
   userProfile,
-  (p) => {
-    notifPrefs.value = { ...(p?.emailPreferences ?? {}) }
-    notifOriginal.value = { ...notifPrefs.value }
+  p => {
+    notifPrefs.value = { ...(p?.emailPreferences ?? {}) };
+    notifOriginal.value = { ...notifPrefs.value };
   },
-  { immediate: true },
-)
+  { immediate: true }
+);
 
 const notifDirty = computed(() =>
-  notifKeys.some((k) => isEnabled(notifPrefs.value, k.key) !== isEnabled(notifOriginal.value, k.key)),
-)
-const notifSaving = ref(false)
-const notifMessage = ref<string | null>(null)
+  notifKeys.some(k => isEnabled(notifPrefs.value, k.key) !== isEnabled(notifOriginal.value, k.key))
+);
+const notifSaving = ref(false);
+const notifMessage = ref<string | null>(null);
 
 function isEnabled(prefs: EmailPreferences, key: keyof EmailPreferences): boolean {
   // Default to true: missing field means "opted in" so we don't silently
   // mute users who predate the toggles.
-  return prefs[key] !== false
+  return prefs[key] !== false;
 }
 
 function toggleNotif(key: keyof EmailPreferences) {
-  notifPrefs.value = { ...notifPrefs.value, [key]: !isEnabled(notifPrefs.value, key) }
+  notifPrefs.value = { ...notifPrefs.value, [key]: !isEnabled(notifPrefs.value, key) };
 }
 
 async function saveNotifs() {
-  if (!user.value || !notifDirty.value) return
-  notifSaving.value = true
-  notifMessage.value = null
+  if (!user.value || !notifDirty.value) return;
+  notifSaving.value = true;
+  notifMessage.value = null;
   try {
     await DatabaseService.updateUserProfile(user.value.uid, {
       emailPreferences: { ...notifPrefs.value },
-    })
-    notifOriginal.value = { ...notifPrefs.value }
-    await refreshProfile()
-    notifMessage.value = 'Saved.'
-    setTimeout(() => (notifMessage.value = null), 3000)
+    });
+    notifOriginal.value = { ...notifPrefs.value };
+    await refreshProfile();
+    notifMessage.value = 'Saved.';
+    setTimeout(() => (notifMessage.value = null), 3000);
   } catch (err) {
-    notifMessage.value = (err as { message?: string }).message ?? 'Could not save preferences.'
+    notifMessage.value = (err as { message?: string }).message ?? 'Could not save preferences.';
   } finally {
-    notifSaving.value = false
+    notifSaving.value = false;
   }
 }
 
 // --- Security ---------------------------------------------------------
 
 const hasPasswordProvider = computed(
-  () => user.value?.providerData?.some((p) => p.providerId === 'password') ?? false,
-)
-const sendingVerification = ref(false)
-const verificationMessage = ref<string | null>(null)
+  () => user.value?.providerData?.some(p => p.providerId === 'password') ?? false
+);
+const sendingVerification = ref(false);
+const verificationMessage = ref<string | null>(null);
 
 async function resendVerification() {
-  if (!user.value || sendingVerification.value) return
-  sendingVerification.value = true
-  verificationMessage.value = null
+  if (!user.value || sendingVerification.value) return;
+  sendingVerification.value = true;
+  verificationMessage.value = null;
   try {
-    await sendEmailVerification(user.value)
-    verificationMessage.value = `Verification email sent to ${user.value.email}.`
+    await sendEmailVerification(user.value);
+    verificationMessage.value = `Verification email sent to ${user.value.email}.`;
   } catch (err) {
-    verificationMessage.value = (err as { message?: string }).message ?? 'Could not send.'
+    verificationMessage.value = (err as { message?: string }).message ?? 'Could not send.';
   } finally {
-    sendingVerification.value = false
+    sendingVerification.value = false;
   }
 }
 
-const showPwForm = ref(false)
-const pwCurrent = ref('')
-const pwNew = ref('')
-const pwNewConfirm = ref('')
-const pwSaving = ref(false)
-const pwError = ref<string | null>(null)
-const pwSuccess = ref(false)
+const showPwForm = ref(false);
+const pwCurrent = ref('');
+const pwNew = ref('');
+const pwNewConfirm = ref('');
+const pwSaving = ref(false);
+const pwError = ref<string | null>(null);
+const pwSuccess = ref(false);
 
 const pwValid = computed(
-  () =>
-    pwCurrent.value.length > 0 &&
-    pwNew.value.length >= 8 &&
-    pwNew.value === pwNewConfirm.value,
-)
+  () => pwCurrent.value.length > 0 && pwNew.value.length >= 8 && pwNew.value === pwNewConfirm.value
+);
 
 async function changePassword() {
-  if (!pwValid.value || !user.value || !user.value.email || pwSaving.value) return
-  pwSaving.value = true
-  pwError.value = null
-  pwSuccess.value = false
+  if (!pwValid.value || !user.value || !user.value.email || pwSaving.value) return;
+  pwSaving.value = true;
+  pwError.value = null;
+  pwSuccess.value = false;
   try {
-    const cred = EmailAuthProvider.credential(user.value.email, pwCurrent.value)
-    await reauthenticateWithCredential(user.value, cred)
-    await updatePassword(user.value, pwNew.value)
-    pwCurrent.value = ''
-    pwNew.value = ''
-    pwNewConfirm.value = ''
-    showPwForm.value = false
-    pwSuccess.value = true
-    setTimeout(() => (pwSuccess.value = false), 4000)
+    const cred = EmailAuthProvider.credential(user.value.email, pwCurrent.value);
+    await reauthenticateWithCredential(user.value, cred);
+    await updatePassword(user.value, pwNew.value);
+    pwCurrent.value = '';
+    pwNew.value = '';
+    pwNewConfirm.value = '';
+    showPwForm.value = false;
+    pwSuccess.value = true;
+    setTimeout(() => (pwSuccess.value = false), 4000);
   } catch (err) {
-    const code = (err as { code?: string }).code
+    const code = (err as { code?: string }).code;
     if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-      pwError.value = 'Current password is incorrect.'
+      pwError.value = 'Current password is incorrect.';
     } else if (code === 'auth/weak-password') {
-      pwError.value = 'New password is too weak. Use at least 8 characters.'
+      pwError.value = 'New password is too weak. Use at least 8 characters.';
     } else {
-      pwError.value = (err as { message?: string }).message ?? 'Could not change password.'
+      pwError.value = (err as { message?: string }).message ?? 'Could not change password.';
     }
   } finally {
-    pwSaving.value = false
+    pwSaving.value = false;
   }
 }
 
-const signingOutEverywhere = ref(false)
-const signOutMessage = ref<string | null>(null)
+const signingOutEverywhere = ref(false);
+const signOutMessage = ref<string | null>(null);
 
 async function signOutEverywhere() {
-  if (signingOutEverywhere.value) return
-  signingOutEverywhere.value = true
-  signOutMessage.value = null
+  if (signingOutEverywhere.value) return;
+  signingOutEverywhere.value = true;
+  signOutMessage.value = null;
   try {
     const callable = httpsCallable<Record<string, never>, { ok: boolean }>(
       functions,
-      'signOutEverywhere',
-    )
-    await callable({})
-    await signOut()
-    router.replace({ path: '/login', query: { signedOutEverywhere: '1' } })
+      'signOutEverywhere'
+    );
+    await callable({});
+    await signOut();
+    router.replace({ path: '/login', query: { signedOutEverywhere: '1' } });
   } catch (err) {
     signOutMessage.value =
-      (err as { message?: string }).message ?? 'Could not sign out other sessions.'
-    signingOutEverywhere.value = false
+      (err as { message?: string }).message ?? 'Could not sign out other sessions.';
+    signingOutEverywhere.value = false;
   }
 }
 
 // --- Privacy ----------------------------------------------------------
 
-const directoryHidden = ref(false)
+const directoryHidden = ref(false);
 watch(
   userProfile,
-  (p) => {
-    directoryHidden.value = p?.directoryHidden === true
+  p => {
+    directoryHidden.value = p?.directoryHidden === true;
   },
-  { immediate: true },
-)
+  { immediate: true }
+);
 const showDirectoryToggle = computed(() =>
-  ['alumni', 'admin'].includes(userProfile.value?.role ?? ''),
-)
-const directorySaving = ref(false)
+  ['alumni', 'admin'].includes(userProfile.value?.role ?? '')
+);
+const directorySaving = ref(false);
 
 async function toggleDirectory() {
-  if (!user.value || directorySaving.value) return
-  directorySaving.value = true
-  const next = !directoryHidden.value
+  if (!user.value || directorySaving.value) return;
+  directorySaving.value = true;
+  const next = !directoryHidden.value;
   try {
-    await DatabaseService.updateUserProfile(user.value.uid, { directoryHidden: next })
-    directoryHidden.value = next
-    await refreshProfile()
+    await DatabaseService.updateUserProfile(user.value.uid, { directoryHidden: next });
+    directoryHidden.value = next;
+    await refreshProfile();
   } catch (err) {
-    console.error('toggle directory', err)
+    console.error('toggle directory', err);
   } finally {
-    directorySaving.value = false
+    directorySaving.value = false;
   }
 }
 
-const exporting = ref(false)
-const exportError = ref<string | null>(null)
+const exporting = ref(false);
+const exportError = ref<string | null>(null);
 
 async function exportData() {
-  if (exporting.value) return
-  exporting.value = true
-  exportError.value = null
+  if (exporting.value) return;
+  exporting.value = true;
+  exportError.value = null;
   try {
     const callable = httpsCallable<Record<string, never>, Record<string, unknown>>(
       functions,
-      'exportUserData',
-    )
-    const result = await callable({})
-    const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `staija-export-${new Date().toISOString().slice(0, 10)}.json`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
+      'exportUserData'
+    );
+    const result = await callable({});
+    const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `staija-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   } catch (err) {
-    exportError.value = (err as { message?: string }).message ?? 'Could not export data.'
+    exportError.value = (err as { message?: string }).message ?? 'Could not export data.';
   } finally {
-    exporting.value = false
+    exporting.value = false;
   }
 }
 
 // --- Account deletion -------------------------------------------------
 
-const SELF_DELETABLE = new Set(['applicant', 'student', 'alumni', 'mentor'])
+const SELF_DELETABLE = new Set(['applicant', 'student', 'alumni', 'mentor']);
 const canSelfDelete = computed(() =>
-  userProfile.value?.role ? SELF_DELETABLE.has(userProfile.value.role) : true,
-)
+  userProfile.value?.role ? SELF_DELETABLE.has(userProfile.value.role) : true
+);
 
-const showConfirm = ref(false)
-const confirmText = ref('')
-const deleting = ref(false)
-const deleteError = ref<string | null>(null)
-const confirmReady = computed(() => confirmText.value.trim() === 'DELETE')
+const showConfirm = ref(false);
+const confirmText = ref('');
+const deleting = ref(false);
+const deleteError = ref<string | null>(null);
+const confirmReady = computed(() => confirmText.value.trim() === 'DELETE');
 
 async function handleDelete() {
-  if (!confirmReady.value || deleting.value) return
-  deleting.value = true
-  deleteError.value = null
+  if (!confirmReady.value || deleting.value) return;
+  deleting.value = true;
+  deleteError.value = null;
   try {
-    const callable = httpsCallable<Record<string, never>, { ok: boolean }>(functions, 'deleteAccount')
-    await callable({})
-    await signOut()
-    router.replace({ path: '/', query: { deleted: '1' } })
+    const callable = httpsCallable<Record<string, never>, { ok: boolean }>(
+      functions,
+      'deleteAccount'
+    );
+    await callable({});
+    await signOut();
+    router.replace({ path: '/', query: { deleted: '1' } });
   } catch (err) {
     deleteError.value =
-      (err as { message?: string }).message ?? 'Could not delete your account. Try again.'
+      (err as { message?: string }).message ?? 'Could not delete your account. Try again.';
   } finally {
-    deleting.value = false
+    deleting.value = false;
   }
 }
 </script>
@@ -575,7 +575,9 @@ async function handleDelete() {
         <Heading :level="1" class="mb-3">
           Your <span class="text-brand-violet">account</span>.
         </Heading>
-        <Body class="text-ink/70">Manage your STAIJA profile, account info, and personal data.</Body>
+        <Body class="text-ink/70"
+          >Manage your STAIJA profile, account info, and personal data.</Body
+        >
       </Container>
     </Section>
 
@@ -656,7 +658,9 @@ async function handleDelete() {
                     Choose from gallery
                   </button>
                 </div>
-                <p class="text-xs text-ink/50">PNG or JPG, max 2 MB. Or pick a portrait from the gallery.</p>
+                <p class="text-xs text-ink/50">
+                  PNG or JPG, max 2 MB. Or pick a portrait from the gallery.
+                </p>
               </div>
             </div>
 
@@ -669,7 +673,9 @@ async function handleDelete() {
             />
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Display name</label>
+              <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Display name</label
+              >
               <input
                 v-model="form.displayName"
                 type="text"
@@ -682,7 +688,10 @@ async function handleDelete() {
             <div class="flex flex-col gap-2">
               <div class="flex items-end justify-between">
                 <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Bio</label>
-                <span class="text-xs" :class="bioOver ? 'text-red-600 font-semibold' : 'text-ink/40'">
+                <span
+                  class="text-xs"
+                  :class="bioOver ? 'text-red-600 font-semibold' : 'text-ink/40'"
+                >
                   {{ form.bio.length }} / {{ BIO_MAX }}
                 </span>
               </div>
@@ -704,7 +713,9 @@ async function handleDelete() {
                 <Icon v-if="saving" icon="lucide:loader-2" width="14" class="animate-spin" />
                 {{ saving ? 'Saving…' : 'Save changes' }}
               </UiButton>
-              <UiButton variant="secondary" :disabled="!dirty || saving" @click="handleReset">Reset</UiButton>
+              <UiButton variant="secondary" :disabled="!dirty || saving" @click="handleReset"
+                >Reset</UiButton
+              >
             </div>
           </div>
         </UiCard>
@@ -723,7 +734,10 @@ async function handleDelete() {
           </Body>
           <div class="flex flex-col gap-5">
             <div class="flex flex-col gap-2">
-              <label for="mentorBio" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">
+              <label
+                for="mentorBio"
+                class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+              >
                 Area of expertise
               </label>
               <textarea
@@ -735,7 +749,9 @@ async function handleDelete() {
                 class="border hairline-ink rounded-xl px-4 py-3 text-sm bg-paper focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet transition-all resize-y"
               />
               <div class="flex justify-between text-xs">
-                <span class="text-ink/50">Helps students know if you're the right fit for their interests.</span>
+                <span class="text-ink/50"
+                  >Helps students know if you're the right fit for their interests.</span
+                >
                 <span :class="mentorBioOver ? 'text-red-600 font-semibold' : 'text-ink/40'">
                   {{ mentorForm.mentorBio.length }} / {{ MENTOR_BIO_MAX }}
                 </span>
@@ -743,7 +759,10 @@ async function handleDelete() {
             </div>
 
             <div class="flex flex-col gap-2">
-              <label for="mentorAvailability" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">
+              <label
+                for="mentorAvailability"
+                class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+              >
                 Availability
               </label>
               <textarea
@@ -756,7 +775,9 @@ async function handleDelete() {
               />
               <div class="flex justify-between text-xs">
                 <span class="text-ink/50">When + how often you can show up for sessions.</span>
-                <span :class="mentorAvailabilityOver ? 'text-red-600 font-semibold' : 'text-ink/40'">
+                <span
+                  :class="mentorAvailabilityOver ? 'text-red-600 font-semibold' : 'text-ink/40'"
+                >
                   {{ mentorForm.mentorAvailability.length }} / {{ MENTOR_AVAILABILITY_MAX }}
                 </span>
               </div>
@@ -768,14 +789,20 @@ async function handleDelete() {
                  getPublicMentors callable. Email + emailPreferences
                  are never returned by that endpoint regardless of
                  this toggle. -->
-            <label class="flex items-start justify-between gap-4 cursor-pointer pt-4 border-t hairline-ink">
+            <label
+              class="flex items-start justify-between gap-4 cursor-pointer pt-4 border-t hairline-ink"
+            >
               <div class="flex-1">
-                <div class="text-sm font-medium text-ink mb-1">Show me on the public mentor showcase</div>
+                <div class="text-sm font-medium text-ink mb-1">
+                  Show me on the public mentor showcase
+                </div>
                 <div class="text-xs text-ink/60">
                   When on, your name, photo, bio, and availability appear on
-                  <RouterLink to="/stay-connected" class="text-brand-violet hover:underline">/stay-connected</RouterLink>
-                  — the page we point prospective applicants and curious visitors at.
-                  Your email and notification preferences stay private either way.
+                  <RouterLink to="/stay-connected" class="text-brand-violet hover:underline"
+                    >/stay-connected</RouterLink
+                  >
+                  — the page we point prospective applicants and curious visitors at. Your email and
+                  notification preferences stay private either way.
                 </div>
               </div>
               <button
@@ -803,7 +830,11 @@ async function handleDelete() {
                 <Icon v-if="mentorSaving" icon="lucide:loader-2" width="14" class="animate-spin" />
                 {{ mentorSaving ? 'Saving…' : 'Save changes' }}
               </UiButton>
-              <UiButton variant="secondary" :disabled="!mentorDirty || mentorSaving" @click="handleResetMentor">
+              <UiButton
+                variant="secondary"
+                :disabled="!mentorDirty || mentorSaving"
+                @click="handleResetMentor"
+              >
                 Reset
               </UiButton>
             </div>
@@ -814,7 +845,9 @@ async function handleDelete() {
         <UiCard class="p-6 md:p-10 bg-surface">
           <Eyebrow class="text-ink/60 mb-3 block">Account</Eyebrow>
           <Heading :level="2" class="mb-2 text-xl">Account info</Heading>
-          <Body class="text-ink/60 text-sm mb-6">Read-only. Email and role are managed by an admin.</Body>
+          <Body class="text-ink/60 text-sm mb-6"
+            >Read-only. Email and role are managed by an admin.</Body
+          >
           <dl class="flex flex-col gap-3 text-sm">
             <div class="flex justify-between gap-4">
               <dt class="text-ink/60">Email</dt>
@@ -897,12 +930,18 @@ async function handleDelete() {
                 <div class="text-sm font-medium text-ink mb-1">Email verification</div>
                 <div class="text-xs text-ink/60">
                   <template v-if="user?.emailVerified">
-                    <Icon icon="lucide:badge-check" width="12" class="inline -mt-0.5 text-emerald-600" />
+                    <Icon
+                      icon="lucide:badge-check"
+                      width="12"
+                      class="inline -mt-0.5 text-emerald-600"
+                    />
                     Your email is verified.
                   </template>
                   <template v-else>Your email isn't verified yet.</template>
                 </div>
-                <p v-if="verificationMessage" class="text-xs text-emerald-700 mt-2">{{ verificationMessage }}</p>
+                <p v-if="verificationMessage" class="text-xs text-emerald-700 mt-2">
+                  {{ verificationMessage }}
+                </p>
               </div>
               <UiButton
                 v-if="!user?.emailVerified"
@@ -910,7 +949,12 @@ async function handleDelete() {
                 :disabled="sendingVerification"
                 @click="resendVerification"
               >
-                <Icon v-if="sendingVerification" icon="lucide:loader-2" width="14" class="animate-spin" />
+                <Icon
+                  v-if="sendingVerification"
+                  icon="lucide:loader-2"
+                  width="14"
+                  class="animate-spin"
+                />
                 {{ sendingVerification ? 'Sending…' : 'Send verification' }}
               </UiButton>
             </div>
@@ -925,7 +969,10 @@ async function handleDelete() {
                 <UiButton
                   v-if="!showPwForm"
                   variant="secondary"
-                  @click="showPwForm = true; pwError = null"
+                  @click="
+                    showPwForm = true;
+                    pwError = null;
+                  "
                 >
                   Change password
                 </UiButton>
@@ -955,14 +1002,24 @@ async function handleDelete() {
                 />
                 <p v-if="pwError" class="text-sm text-red-700">{{ pwError }}</p>
                 <div class="flex gap-2 pt-1">
-                  <UiButton variant="primary" :disabled="!pwValid || pwSaving" @click="changePassword">
+                  <UiButton
+                    variant="primary"
+                    :disabled="!pwValid || pwSaving"
+                    @click="changePassword"
+                  >
                     <Icon v-if="pwSaving" icon="lucide:loader-2" width="14" class="animate-spin" />
                     {{ pwSaving ? 'Saving…' : 'Update password' }}
                   </UiButton>
                   <UiButton
                     variant="secondary"
                     :disabled="pwSaving"
-                    @click="showPwForm = false; pwCurrent = ''; pwNew = ''; pwNewConfirm = ''; pwError = null"
+                    @click="
+                      showPwForm = false;
+                      pwCurrent = '';
+                      pwNew = '';
+                      pwNewConfirm = '';
+                      pwError = null;
+                    "
                   >
                     Cancel
                   </UiButton>
@@ -983,8 +1040,17 @@ async function handleDelete() {
                 </div>
                 <p v-if="signOutMessage" class="text-xs text-red-700 mt-2">{{ signOutMessage }}</p>
               </div>
-              <UiButton variant="secondary" :disabled="signingOutEverywhere" @click="signOutEverywhere">
-                <Icon v-if="signingOutEverywhere" icon="lucide:loader-2" width="14" class="animate-spin" />
+              <UiButton
+                variant="secondary"
+                :disabled="signingOutEverywhere"
+                @click="signOutEverywhere"
+              >
+                <Icon
+                  v-if="signingOutEverywhere"
+                  icon="lucide:loader-2"
+                  width="14"
+                  class="animate-spin"
+                />
                 {{ signingOutEverywhere ? 'Signing out…' : 'Sign out everywhere' }}
               </UiButton>
             </div>
@@ -995,7 +1061,9 @@ async function handleDelete() {
         <UiCard class="p-6 md:p-10 bg-surface">
           <Eyebrow class="text-brand-violet mb-3 block">Privacy</Eyebrow>
           <Heading :level="2" class="mb-2 text-xl">Visibility & data</Heading>
-          <Body class="text-ink/60 text-sm mb-6">Control what's visible and download a copy of your data.</Body>
+          <Body class="text-ink/60 text-sm mb-6"
+            >Control what's visible and download a copy of your data.</Body
+          >
 
           <div class="flex flex-col gap-6">
             <!-- Directory visibility (alumni) -->
@@ -1006,8 +1074,8 @@ async function handleDelete() {
               <div class="flex-1">
                 <div class="text-sm font-medium text-ink mb-1">Show me in the alumni directory</div>
                 <div class="text-xs text-ink/60">
-                  When off, your profile is hidden from other alumni searching the directory.
-                  You can still send and receive connection requests directly.
+                  When off, your profile is hidden from other alumni searching the directory. You
+                  can still send and receive connection requests directly.
                 </div>
               </div>
               <button
@@ -1032,8 +1100,8 @@ async function handleDelete() {
                 <div class="text-sm font-medium text-ink mb-1">Export your data</div>
                 <div class="text-xs text-ink/60">
                   Download a JSON file containing every record we hold about you — profile,
-                  applications, donations, notifications, audit log, and signed download URLs
-                  for any files you've uploaded.
+                  applications, donations, notifications, audit log, and signed download URLs for
+                  any files you've uploaded.
                 </div>
                 <p v-if="exportError" class="text-xs text-red-700 mt-2">{{ exportError }}</p>
               </div>
@@ -1051,19 +1119,20 @@ async function handleDelete() {
           <Eyebrow class="text-red-700 mb-3 block">Danger zone</Eyebrow>
           <Heading :level="2" class="mb-3 text-xl">Delete your account</Heading>
           <Body class="text-ink/70 mb-2">
-            Permanently removes your profile, applications, uploaded files (transcripts, IDs),
-            and any connections you've made.
+            Permanently removes your profile, applications, uploaded files (transcripts, IDs), and
+            any connections you've made.
           </Body>
           <Body class="text-ink/60 text-sm mb-6">
-            We retain donation receipts (with your name removed) for tax and accounting,
-            audit logs for compliance, and any mentor feedback you wrote about students
-            as program records.
+            We retain donation receipts (with your name removed) for tax and accounting, audit logs
+            for compliance, and any mentor feedback you wrote about students as program records.
           </Body>
 
           <template v-if="!canSelfDelete">
             <Body class="text-ink/70 text-sm">
               Staff and admin accounts must be deleted by another admin. Email
-              <a href="mailto:contact@staija.org" class="text-brand-violet underline">contact@staija.org</a>
+              <a href="mailto:contact@staija.org" class="text-brand-violet underline"
+                >contact@staija.org</a
+              >
               and we'll handle it.
             </Body>
           </template>
@@ -1106,7 +1175,11 @@ async function handleDelete() {
                 <UiButton
                   variant="secondary"
                   :disabled="deleting"
-                  @click="showConfirm = false; confirmText = ''; deleteError = null"
+                  @click="
+                    showConfirm = false;
+                    confirmText = '';
+                    deleteError = null;
+                  "
                 >
                   Cancel
                 </UiButton>

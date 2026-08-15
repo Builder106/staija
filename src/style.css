@@ -4,14 +4,13 @@
    for this to take effect. */
 @layer legacy, theme, base, components, utilities;
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Self-hosted web fonts + metric-matched fallbacks. Moved out of this
    file (which Tailwind processes) into a standalone CSS that ships the
    raw @font-face declarations Google would have served, but pointing
    to /public/fonts/ on our own origin instead of fonts.gstatic.com. */
-@import "./styles/fonts.css";
-
+@import './styles/fonts.css';
 
 /* Enable a `dark:` variant that activates when [data-theme="dark"] is
    set on <html>. We prefer a data attribute over a class so:
@@ -22,7 +21,7 @@
 @variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-   /* Light-mode defaults. Dark-mode values are overridden in the
+  /* Light-mode defaults. Dark-mode values are overridden in the
      [data-theme="dark"] block below — token-flip means existing
      `bg-paper`, `text-ink`, `border-ink/10`, etc. utilities pick up
      dark variants without per-call-site changes.
@@ -33,28 +32,28 @@
      previous warm cream (#FAF7F2) read as editorial/parchment and
      fought the cool gradient logo; slate keeps the surface restrained
      while letting the brand mark feel at home on the page. */
-   --color-paper: #F1F5F9;
-   --color-ink: #0E1217;
-   --color-brand-violet: #8B55FF;
-   --color-brand-sky: #5EDBE7;
-   /* New token. `surface` is the "elevated card" color that used to be
+  --color-paper: #f1f5f9;
+  --color-ink: #0e1217;
+  --color-brand-violet: #8b55ff;
+  --color-brand-sky: #5edbe7;
+  /* New token. `surface` is the "elevated card" color that used to be
      literal `bg-white` everywhere. In dark mode it becomes a
      slightly-lighter-than-paper gray so cards read as raised. Replace
      `bg-white` with `bg-surface` on neutral cards (NOT on gradient
      overlays or buttons that should stay literal white). */
-   --color-surface: #FFFFFF;
+  --color-surface: #ffffff;
 
-   /* Static (non-themed) variants of paper/ink. These do NOT flip in
+  /* Static (non-themed) variants of paper/ink. These do NOT flip in
      dark mode. Use for surfaces that are *intentionally* dark or
      light regardless of the user's theme — e.g. the always-dark
      ProgramDetailView hero, SiteFooter, and LocaleSwitcher popover.
      Without these, those surfaces invert in dark mode and read as
      pale/washed-out. The naming convention: `*-static` means "this
      color is locked to its light-mode value forever". */
-   --color-ink-static: #0E1217;
-   --color-paper-static: #F1F5F9;
+  --color-ink-static: #0e1217;
+  --color-paper-static: #f1f5f9;
 
-   /* Display headline face. IBM Plex Sans was chosen for its research /
+  /* Display headline face. IBM Plex Sans was chosen for its research /
      scientific posture — quiet authority instead of editorial drama
      (Playfair Display, the previous choice, was reading as fashion-mag).
      Plex Sans pairs cleanly with Plex Mono for accents (eyebrows, data
@@ -67,10 +66,10 @@
      the marketing surfaces. The original `system-ui` / bare `sans-serif`
      entries stay at the end as the worst-case fallback for OSes that
      don't ship Arial. */
-   --font-display: 'IBM Plex Sans', 'IBM Plex Sans Fallback', system-ui, sans-serif;
-   --font-sans: 'Inter', 'Inter Fallback', sans-serif;
-   --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, monospace;
-   /* African-designed accent faces — see docs/TYPOGRAPHY-SYSTEM.md.
+  --font-display: 'IBM Plex Sans', 'IBM Plex Sans Fallback', system-ui, sans-serif;
+  --font-sans: 'Inter', 'Inter Fallback', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, monospace;
+  /* African-designed accent faces — see docs/TYPOGRAPHY-SYSTEM.md.
       Both scoped narrowly (currently: Dynamerge hero only), never body
       text or nav.
 
@@ -85,16 +84,16 @@
       kept for short non-header labels (eyebrows, stat callouts) where
       its smaller static instance (wght=500) reads as a considered
       accent rather than a headline. */
-   --font-accent-african: 'Madimi One', 'Madimi One Fallback', var(--font-display);
-   --font-accent-african-secondary: 'Ojuju', 'Ojuju Fallback', var(--font-mono);
-   /* Tertiary: Agu Display (OFL), by Nigerian designer Seun Badejo —
+  --font-accent-african: 'Madimi One', 'Madimi One Fallback', var(--font-display);
+  --font-accent-african-secondary: 'Ojuju', 'Ojuju Fallback', var(--font-mono);
+  /* Tertiary: Agu Display (OFL), by Nigerian designer Seun Badejo —
       a serif display face. Instanced at a single static weight (its
       MORF axis default), reserved strictly for standalone
       wordmark-scale words (never a flexible label role the way Ojuju
       is). Replaced Matemasie in this slot after a live side-by-side
       font comparison. See docs/TYPOGRAPHY-SYSTEM.md. */
-   --font-accent-african-tertiary: 'Agu Display', 'Agu Display Fallback', var(--font-display);
-   /* African-designed monospace face — a fonttools-built variant, not a
+  --font-accent-african-tertiary: 'Agu Display', 'Agu Display Fallback', var(--font-display);
+  /* African-designed monospace face — a fonttools-built variant, not a
       typeface anyone shipped as-is. No credible African-designed
       monospace exists on Google Fonts today. Built by re-metricing Tac
       One (Afrotype, OFL) onto a fixed-width grid and hand-fixing the
@@ -103,10 +102,10 @@
       changes alone. See docs/TYPOGRAPHY-SYSTEM.md for the full
       derivation and OFL compliance notes. Renamed per OFL §3 — this is
       a Modified Version and may not carry Tac One's name. */
-   --font-mono-african: 'STAIJA Tac Mono', 'STAIJA Tac Mono Fallback', var(--font-mono);
+  --font-mono-african: 'STAIJA Tac Mono', 'STAIJA Tac Mono Fallback', var(--font-mono);
 
-   --radius-xl: 12px;
-   --radius-2xl: 16px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
 }
 
 @source "./**/*.{vue,ts,js,html}";
@@ -128,33 +127,33 @@
    scheme: in dark mode it becomes a light-on-dark surface (paper text
    on ink bg) which is the same VISUAL relationship — bright text on
    dark — just at different absolute values. */
-[data-theme="dark"] {
-   --color-paper: #0B0E12;
-   /* Ink chosen for WCAG AA headroom on low-opacity utilities. At
+[data-theme='dark'] {
+  --color-paper: #0b0e12;
+  /* Ink chosen for WCAG AA headroom on low-opacity utilities. At
      #F0F4F8: text-ink on paper hits ~16:1 (AAA), text-ink/70 ~9.5:1
      (AAA), text-ink/60 ~7.0:1 (AAA), text-ink/50 ~5.0:1 (AA pass for
      normal text with margin). #E5EAF0 had text-ink/50 at ~4.4:1 —
      AA borderline. The bump is barely visible at full opacity but
      buys a real readability margin where the design uses faded text. */
-   --color-ink: #F0F4F8;
-   --color-surface: #1A1F26;
-   --scrollbar-track: #0B0E12;
+  --color-ink: #f0f4f8;
+  --color-surface: #1a1f26;
+  --scrollbar-track: #0b0e12;
 }
 
 /* Themed utility overrides — for the few utilities that hardcode
    ink-derived rgba() literals instead of consuming the token. These
    need explicit dark variants so they don't punch through the new
    surfaces. */
-[data-theme="dark"] .hairline-ink {
-   /* 0.10 alpha read as "barely there" on dense list surfaces (the
+[data-theme='dark'] .hairline-ink {
+  /* 0.10 alpha read as "barely there" on dense list surfaces (the
      /admin/content tree, with adjacent rows separated only by this
      border). Bumped to 0.18 — still subtle on standalone cards, but
      gives row dividers enough presence to read as structure. */
-   border-color: rgba(240, 244, 248, 0.18);
+  border-color: rgba(240, 244, 248, 0.18);
 }
 
-[data-theme="dark"] .wash-ink-6 {
-   background-color: rgba(240, 244, 248, 0.06);
+[data-theme='dark'] .wash-ink-6 {
+  background-color: rgba(240, 244, 248, 0.06);
 }
 
 /* --cursor-clickable is the one cursor built from a flat brand color
@@ -169,137 +168,170 @@
    sits at higher contrast against the darker paper than violet does,
    the same reasoning that already governs which brand hue gets used
    where elsewhere on this page. */
-[data-theme="dark"] {
-   --cursor-clickable: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2723%27%20viewBox%3D%27-14%20-14%20476%20540%27%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27%230B0E12%27%20stroke%3D%27%230B0E12%27%20stroke-width%3D%2726%27%20stroke-linejoin%3D%27round%27/%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27%235EDBE7%27/%3E%20%3C/svg%3E") 8 1;
+[data-theme='dark'] {
+  --cursor-clickable: url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2723%27%20viewBox%3D%27-14%20-14%20476%20540%27%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27%230B0E12%27%20stroke%3D%27%230B0E12%27%20stroke-width%3D%2726%27%20stroke-linejoin%3D%27round%27/%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27%235EDBE7%27/%3E%20%3C/svg%3E')
+    8 1;
 }
 
-[data-theme="dark"] .gradient-blob {
-   /* Soft white glow loses contrast on a dark surface — inverse it to a
+[data-theme='dark'] .gradient-blob {
+  /* Soft white glow loses contrast on a dark surface — inverse it to a
      subtle dark glow that still reads as artwork-backing. */
-   background-image: radial-gradient(closest-side, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
+  background-image: radial-gradient(closest-side, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
 }
 
-[data-theme="dark"] .brand-surface ::selection {
-   background-color: rgba(139, 85, 255, 0.35);
+[data-theme='dark'] .brand-surface ::selection {
+  background-color: rgba(139, 85, 255, 0.35);
 }
 
 @layer utilities {
-   .bg-gradient-brand {
-      background-image: linear-gradient(90deg, var(--color-brand-violet) 0%, var(--color-brand-sky) 100%);
-   }
+  .bg-gradient-brand {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-brand-violet) 0%,
+      var(--color-brand-sky) 100%
+    );
+  }
 
-   /* Hero gradient — angled violet→sky with a deeper violet anchor on the
+  /* Hero gradient — angled violet→sky with a deeper violet anchor on the
      left so the surface has dimension. Used full-bleed on landing-page
      heroes that are meant to read as "brand-mark territory" rather than
      editorial paper. */
-   .bg-gradient-hero {
-      background-image:
-         radial-gradient(60% 80% at 80% 30%, rgba(94, 219, 231, 0.55) 0%, transparent 60%),
-         linear-gradient(135deg, #6B3FE0 0%, var(--color-brand-violet) 45%, var(--color-brand-sky) 100%);
-   }
+  .bg-gradient-hero {
+    background-image:
+      radial-gradient(60% 80% at 80% 30%, rgba(94, 219, 231, 0.55) 0%, transparent 60%),
+      linear-gradient(
+        135deg,
+        #6b3fe0 0%,
+        var(--color-brand-violet) 45%,
+        var(--color-brand-sky) 100%
+      );
+  }
 
-   /* Soft radial accent for placement behind hero artwork (Lottie, image,
+  /* Soft radial accent for placement behind hero artwork (Lottie, image,
      etc.) — looks like a glow. Layer absolutely. */
-   .gradient-blob {
-      background-image: radial-gradient(closest-side, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 70%);
-      filter: blur(8px);
-   }
+  .gradient-blob {
+    background-image: radial-gradient(
+      closest-side,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    filter: blur(8px);
+  }
 
-   /* 2-px gradient stripe for section transitions and footer top edge. */
-   .hairline-gradient {
-      background-image: linear-gradient(90deg, var(--color-brand-violet) 0%, var(--color-brand-sky) 100%);
-   }
+  /* 2-px gradient stripe for section transitions and footer top edge. */
+  .hairline-gradient {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-brand-violet) 0%,
+      var(--color-brand-sky) 100%
+    );
+  }
 
-   .border-gradient-brand {
-      border-image: linear-gradient(90deg, var(--color-brand-violet) 0%, var(--color-brand-sky) 100%) 1;
-   }
+  .border-gradient-brand {
+    border-image: linear-gradient(90deg, var(--color-brand-violet) 0%, var(--color-brand-sky) 100%)
+      1;
+  }
 
-   .text-gradient-brand {
-      background-image: linear-gradient(90deg, var(--color-brand-violet) 0%, var(--color-brand-sky) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: transparent;
-   }
+  .text-gradient-brand {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-brand-violet) 0%,
+      var(--color-brand-sky) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
 
-   .wash-violet-6 {
-      background-color: rgba(139, 85, 255, 0.06);
-   }
+  .wash-violet-6 {
+    background-color: rgba(139, 85, 255, 0.06);
+  }
 
-   .wash-ink-6 {
-      background-color: rgba(14, 18, 23, 0.06);
-   }
+  .wash-ink-6 {
+    background-color: rgba(14, 18, 23, 0.06);
+  }
 
-   .hairline-ink {
-      border-color: rgba(14, 18, 23, 0.08);
-   }
+  .hairline-ink {
+    border-color: rgba(14, 18, 23, 0.08);
+  }
 
-   .focus-ring-brand:focus-visible {
-      outline: 2px solid rgba(139, 85, 255, 0.6);
-      outline-offset: 2px;
-      border-radius: 2px;
-   }
+  .focus-ring-brand:focus-visible {
+    outline: 2px solid rgba(139, 85, 255, 0.6);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 
-   /* On gradient/dark surfaces, focus rings need to switch to a light
+  /* On gradient/dark surfaces, focus rings need to switch to a light
      color so they remain visible. */
-   .focus-ring-inverse:focus-visible {
-      outline: 2px solid rgba(255, 255, 255, 0.85);
-      outline-offset: 2px;
-      border-radius: 2px;
-   }
+  .focus-ring-inverse:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 
-   /* Brand cursor system — self-contained SVG data URIs, all on the
+  /* Brand cursor system — self-contained SVG data URIs, all on the
      violet→sky gradient. See docs/CURSOR-SYSTEM.md for where each one
      is used and why; add new ones here rather than inlining a cursor
      declaration at a call site. */
-   /* Gradient dot — the country marquee. */
-   .cursor-dot {
-      cursor: var(--cursor-dot), pointer;
-   }
+  /* Gradient dot — the country marquee. */
+  .cursor-dot {
+    cursor: var(--cursor-dot), pointer;
+  }
 
-   /* The universal clickable cursor, for non-native click targets that
+  /* The universal clickable cursor, for non-native click targets that
      can't inherit .brand-surface a/button's rule (they're not an <a>
      or <button> element) — e.g. the FAQ accordion row, which toggles
      on @click but is a <div>. Same --cursor-clickable value as every
      real link/button; see @layer base for why that's a shared custom
      property rather than two separately-maintained copies. */
-   .cursor-clickable {
-      cursor: var(--cursor-clickable), pointer;
-   }
+  .cursor-clickable {
+    cursor: var(--cursor-clickable), pointer;
+  }
 
-   /* Map pin — for anything that is literally location/institution data. */
-   .cursor-pin {
-      cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2722%27%20height%3D%2726%27%20viewBox%3D%270%200%2022%2026%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Cpath%20d%3D%27M11%201C5.5%201%201%205.4%201%2010.8%201%2017.6%2011%2025%2011%2025s10-7.4%2010-14.2C21%205.4%2016.5%201%2011%201z%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271.2%27%2F%3E%20%3Ccircle%20cx%3D%2711%27%20cy%3D%2710.5%27%20r%3D%273.3%27%20fill%3D%27white%27%2F%3E%20%3C%2Fsvg%3E") 11 23, pointer;
-   }
+  /* Map pin — for anything that is literally location/institution data. */
+  .cursor-pin {
+    cursor:
+      url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2722%27%20height%3D%2726%27%20viewBox%3D%270%200%2022%2026%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Cpath%20d%3D%27M11%201C5.5%201%201%205.4%201%2010.8%201%2017.6%2011%2025%2011%2025s10-7.4%2010-14.2C21%205.4%2016.5%201%2011%201z%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271.2%27%2F%3E%20%3Ccircle%20cx%3D%2711%27%20cy%3D%2710.5%27%20r%3D%273.3%27%20fill%3D%27white%27%2F%3E%20%3C%2Fsvg%3E')
+        11 23,
+      pointer;
+  }
 
-   /* Pennant flag — the most literal callback to a strip of national flags. */
-   .cursor-pennant {
-      cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2724%27%20viewBox%3D%270%200%2020%2024%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Cline%20x1%3D%273%27%20y1%3D%272%27%20x2%3D%273%27%20y2%3D%2723%27%20stroke%3D%27white%27%20stroke-width%3D%271.6%27%20stroke-linecap%3D%27round%27%2F%3E%20%3Cpath%20d%3D%27M3%202%20L18%206%20L3%2011%20Z%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271%27%2F%3E%20%3C%2Fsvg%3E") 3 22, pointer;
-   }
+  /* Pennant flag — the most literal callback to a strip of national flags. */
+  .cursor-pennant {
+    cursor:
+      url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2724%27%20viewBox%3D%270%200%2020%2024%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Cline%20x1%3D%273%27%20y1%3D%272%27%20x2%3D%273%27%20y2%3D%2723%27%20stroke%3D%27white%27%20stroke-width%3D%271.6%27%20stroke-linecap%3D%27round%27%2F%3E%20%3Cpath%20d%3D%27M3%202%20L18%206%20L3%2011%20Z%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271%27%2F%3E%20%3C%2Fsvg%3E')
+        3 22,
+      pointer;
+  }
 
-   /* Comet — implies scroll direction for drag/scroll-to-explore galleries. */
-   .cursor-comet {
-      cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2726%27%20height%3D%2718%27%20viewBox%3D%270%200%2026%2018%27%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%271%27%20x2%3D%271%27%20y2%3D%270%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%20stop-opacity%3D%270%27%2F%3E%20%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%20%3C%2Fdefs%3E%20%3Cpath%20d%3D%27M1%2017%20Q13%209%2017%205%27%20stroke%3D%27url%28%23g%29%27%20stroke-width%3D%273.5%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%2F%3E%20%3Ccircle%20cx%3D%2717%27%20cy%3D%275%27%20r%3D%273.2%27%20fill%3D%27%235EDBE7%27%20stroke%3D%27white%27%20stroke-width%3D%271%27%2F%3E%20%3C%2Fsvg%3E") 17 5, pointer;
-   }
+  /* Comet — implies scroll direction for drag/scroll-to-explore galleries. */
+  .cursor-comet {
+    cursor:
+      url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2726%27%20height%3D%2718%27%20viewBox%3D%270%200%2026%2018%27%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%271%27%20x2%3D%271%27%20y2%3D%270%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%20stop-opacity%3D%270%27%2F%3E%20%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%20%3C%2Fdefs%3E%20%3Cpath%20d%3D%27M1%2017%20Q13%209%2017%205%27%20stroke%3D%27url%28%23g%29%27%20stroke-width%3D%273.5%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%2F%3E%20%3Ccircle%20cx%3D%2717%27%20cy%3D%275%27%20r%3D%273.2%27%20fill%3D%27%235EDBE7%27%20stroke%3D%27white%27%20stroke-width%3D%271%27%2F%3E%20%3C%2Fsvg%3E')
+        17 5,
+      pointer;
+  }
 
-   /* Click/press feedback — compressed dot inside a thin ring, reads as
+  /* Click/press feedback — compressed dot inside a thin ring, reads as
      "impact registered." Toggled on the .brand-surface root by
      is-clicking (pointerdown/up in DefaultLayout.vue), not a plain
      :active selector — :active on the root wouldn't reliably fire while
      the pointer is held over a descendant element it doesn't also
      match. Static single frame, not a pulsing ripple — see the
      no-live-indicators rule. */
-   /* .brand-surface.is-clicking shares this rule rather than duplicating
+  /* .brand-surface.is-clicking shares this rule rather than duplicating
      the SVG value — it's the same cursor, just applied to the layout
      root (see DefaultLayout.vue) instead of a class-scoped element. Two
      classes on .brand-surface beats the single .cursor-dot class it's
      layered over, regardless of source order. */
-   .cursor-click,
-   .brand-surface.is-clicking {
-      cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2722%27%20height%3D%2722%27%20viewBox%3D%270%200%2022%2022%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Ccircle%20cx%3D%2711%27%20cy%3D%2711%27%20r%3D%279%27%20fill%3D%27none%27%20stroke%3D%27white%27%20stroke-width%3D%271.2%27%20stroke-opacity%3D%270.55%27%2F%3E%20%3Ccircle%20cx%3D%2711%27%20cy%3D%2711%27%20r%3D%275%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271.5%27%2F%3E%20%3C%2Fsvg%3E") 11 11, pointer;
-   }
-
-
+  .cursor-click,
+  .brand-surface.is-clicking {
+    cursor:
+      url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2722%27%20height%3D%2722%27%20viewBox%3D%270%200%2022%2022%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Ccircle%20cx%3D%2711%27%20cy%3D%2711%27%20r%3D%279%27%20fill%3D%27none%27%20stroke%3D%27white%27%20stroke-width%3D%271.2%27%20stroke-opacity%3D%270.55%27%2F%3E%20%3Ccircle%20cx%3D%2711%27%20cy%3D%2711%27%20r%3D%275%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271.5%27%2F%3E%20%3C%2Fsvg%3E')
+        11 11,
+      pointer;
+  }
 }
 
 /* Brand-surface scope — applied on the layout root for redesigned pages so
@@ -313,30 +345,30 @@
    making CTA text invisible when its parent surface forced a color
    (e.g. the new gradient hero with `text-white`). */
 @layer base {
-   .brand-surface {
-      background-color: var(--color-paper);
-      color: var(--color-ink);
-      font-family: var(--font-sans);
-      -webkit-font-smoothing: antialiased;
-   }
+  .brand-surface {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
 
-   .brand-surface ::selection {
-      background-color: rgba(139, 85, 255, 0.2);
-   }
+  .brand-surface ::selection {
+    background-color: rgba(139, 85, 255, 0.2);
+  }
 
-   /* Inputs and textareas inside the brand surface track the current
+  /* Inputs and textareas inside the brand surface track the current
      ink token for both their text and placeholder. Without this,
      placeholders fall back to the browser default (a hardcoded gray
      tuned for white backgrounds) and read as near-invisible against
      dark mode's `bg-surface`. The 45% value matches the visual
      weight `text-ink/45` would give — placeholder always reads as a
      hint, never as data. */
-   .brand-surface input::placeholder,
-   .brand-surface textarea::placeholder {
-      color: color-mix(in srgb, var(--color-ink) 45%, transparent);
-   }
+  .brand-surface input::placeholder,
+  .brand-surface textarea::placeholder {
+    color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
 
-   /* Apply the display face as the heading default. `color: inherit`
+  /* Apply the display face as the heading default. `color: inherit`
      defeats the legacy.css global `h1...h6 { color: var(--neutral-900) }`
      rule that hardcodes a dark color regardless of theme — without this
      override, headings on .brand-surface go invisible in dark mode
@@ -344,32 +376,32 @@
      which is `.brand-surface { color: var(--color-ink) }` for paper
      surfaces and locally-set utilities (e.g. `text-paper` on the dark
      footer) elsewhere. Both flip correctly in dark mode. */
-   .brand-surface h1,
-   .brand-surface h2,
-   .brand-surface h3,
-   .brand-surface h4,
-   .brand-surface h5,
-   .brand-surface h6,
-   .brand-surface .font-display {
-      font-family: var(--font-display);
-      color: inherit;
-      margin: 0;
-   }
+  .brand-surface h1,
+  .brand-surface h2,
+  .brand-surface h3,
+  .brand-surface h4,
+  .brand-surface h5,
+  .brand-surface h6,
+  .brand-surface .font-display {
+    font-family: var(--font-display);
+    color: inherit;
+    margin: 0;
+  }
 
-   .brand-surface p {
-      margin: 0;
-      color: inherit;
-   }
+  .brand-surface p {
+    margin: 0;
+    color: inherit;
+  }
 
-   /* Same legacy-rule defeat as headings: legacy.css has
+  /* Same legacy-rule defeat as headings: legacy.css has
      `li { color: var(--neutral-700); }` which doesn't theme. Without
      this override, list items inside .brand-surface stay gray in
      dark mode and read as washed-out. */
-   .brand-surface li {
-      color: inherit;
-   }
+  .brand-surface li {
+    color: inherit;
+  }
 
-   /* Clickable default — every link/button gets this, full stop. There
+  /* Clickable default — every link/button gets this, full stop. There
      used to be per-context overrides here (cursor-ring on tabs,
      cursor-spark on CTA buttons, cursor-badge on the logo,
      cursor-crosshair on the FAQ rows) — removed after it read as
@@ -379,53 +411,53 @@
      above) now covers every <a>/<button> here, plus non-native click
      targets like the FAQ row via .cursor-clickable in @layer utilities.
      See docs/CURSOR-SYSTEM.md. */
-   .brand-surface a {
-      color: inherit;
-      text-decoration: none;
-      cursor: var(--cursor-clickable), pointer;
-   }
+  .brand-surface a {
+    color: inherit;
+    text-decoration: none;
+    cursor: var(--cursor-clickable), pointer;
+  }
 
-   .brand-surface a:hover {
-      text-decoration: none;
-      color: inherit;
-   }
+  .brand-surface a:hover {
+    text-decoration: none;
+    color: inherit;
+  }
 
-   .brand-surface button {
-      cursor: var(--cursor-clickable), pointer;
-   }
+  .brand-surface button {
+    cursor: var(--cursor-clickable), pointer;
+  }
 
-   .brand-surface button:disabled {
-      cursor: not-allowed;
-   }
+  .brand-surface button:disabled {
+    cursor: not-allowed;
+  }
 
-   .brand-surface *:focus {
-      outline: none;
-   }
+  .brand-surface *:focus {
+    outline: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-   .brand-surface *,
-   .brand-surface *::before,
-   .brand-surface *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-   }
+  .brand-surface *,
+  .brand-surface *::before,
+  .brand-surface *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @layer base {
-   html {
-      --scrollbar-track: transparent;
-      scrollbar-width: thin;
-      scrollbar-color: var(--color-brand-violet) var(--scrollbar-track);
-      /* The gradient-dot cursor's image+hotspot, as a custom property so
+  html {
+    --scrollbar-track: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-violet) var(--scrollbar-track);
+    /* The gradient-dot cursor's image+hotspot, as a custom property so
         it can be reused outside .cursor-dot itself — e.g. as a lighter
         stand-in cursor where a larger/off-center cursor (like the pin)
         would otherwise overlap its own hover animation. Keeps the SVG
         defined in exactly one place; see docs/CURSOR-SYSTEM.md. */
-      --cursor-dot: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2720%27%20viewBox%3D%270%200%2020%2020%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Ccircle%20cx%3D%2710%27%20cy%3D%2710%27%20r%3D%277%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271.5%27%2F%3E%20%3C%2Fsvg%3E") 10 10;
-      /* The single universal cursor for anything clickable — every
+    --cursor-dot: url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2720%27%20viewBox%3D%270%200%2020%2020%27%3E%20%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B55FF%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%235EDBE7%27%2F%3E%20%3C%2FlinearGradient%3E%3C%2Fdefs%3E%20%3Ccircle%20cx%3D%2710%27%20cy%3D%2710%27%20r%3D%277%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27white%27%20stroke-width%3D%271.5%27%2F%3E%20%3C%2Fsvg%3E')
+      10 10;
+    /* The single universal cursor for anything clickable — every
         <a>/<button> (via .brand-surface a/button below) plus non-native
         click targets like the FAQ row (via .cursor-clickable). One
         SVG, one custom property, so nothing can drift into a second,
@@ -456,24 +488,24 @@
         the pointing-hand convention users already know). Needs its own
         [data-theme="dark"] override — see the note near that override
         for why. */
-      --cursor-clickable: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2723%27%20viewBox%3D%27-14%20-14%20476%20540%27%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27white%27%20stroke%3D%27white%27%20stroke-width%3D%2726%27%20stroke-linejoin%3D%27round%27/%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27%238B55FF%27/%3E%20%3C/svg%3E") 8 1;
-   }
+    --cursor-clickable: url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2723%27%20viewBox%3D%27-14%20-14%20476%20540%27%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27white%27%20stroke%3D%27white%27%20stroke-width%3D%2726%27%20stroke-linejoin%3D%27round%27/%3E%20%3Cpath%20d%3D%27M128%2040c0-22.1%2017.9-40%2040-40s40%2017.9%2040%2040v148.2c8.5-7.6%2019.7-12.2%2032-12.2c20.6%200%2038.2%2013%2045%2031.2c8.8-9.3%2021.2-15.2%2035-15.2c25.3%200%2046%2019.5%2047.9%2044.3c8.5-7.7%2019.8-12.3%2032.1-12.3c26.5%200%2048%2021.5%2048%2048v112c0%2070.7-57.3%20128-128%20128h-85.3c-5%200-9.9-.3-14.7-1c-55.3-5.6-106.2-34-140-79L8%20336c-13.3-17.7-9.7-42.7%208-56s42.7-9.7%2056%208l56%2074.7z%27%20fill%3D%27%238B55FF%27/%3E%20%3C/svg%3E')
+      8 1;
+  }
 
-   ::-webkit-scrollbar {
-      width: 6px;
-   }
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
 
-   ::-webkit-scrollbar-track {
-      background: var(--scrollbar-track);
-   }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
 
-   ::-webkit-scrollbar-thumb {
-      background: var(--color-brand-violet);
-      border-radius: 9999px;
-   }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-brand-violet);
+    border-radius: 9999px;
+  }
 
-   ::-webkit-scrollbar-thumb:hover {
-      background: #7A44EE;
-   }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7a44ee;
+  }
 }
-

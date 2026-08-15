@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ large?: boolean }>()
+defineProps<{ large?: boolean }>();
 </script>
 
 <template>

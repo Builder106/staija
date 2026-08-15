@@ -1,5 +1,14 @@
 import React from "react";
-import { AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 
 export type BrowserSceneProps = {
   src: string;
@@ -41,19 +50,42 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
 
   const displayedH = (CHROME_W / imgWidth) * imgHeight;
   const maxScroll = Math.max(0, displayedH - VIEWPORT_H);
-  const panDistance = Math.min(maxScroll, PAN_PX_PER_FRAME * (durationInFrames - 40));
-  const pan = interpolate(frame, [15, durationInFrames - 25], [0, panDistance], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.inOut(Easing.cubic),
-  });
+  const panDistance = Math.min(
+    maxScroll,
+    PAN_PX_PER_FRAME * (durationInFrames - 40),
+  );
+  const pan = interpolate(
+    frame,
+    [15, durationInFrames - 25],
+    [0, panDistance],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.inOut(Easing.cubic),
+    },
+  );
 
-  const copyY = spring({ frame, fps, config: { damping: 100 }, from: 24, to: 0 });
-  const chromeY = spring({ frame: frame - 4, fps, config: { damping: 100 }, from: 40, to: 0 });
+  const copyY = spring({
+    frame,
+    fps,
+    config: { damping: 100 },
+    from: 24,
+    to: 0,
+  });
+  const chromeY = spring({
+    frame: frame - 4,
+    fps,
+    config: { damping: 100 },
+    from: 40,
+    to: 0,
+  });
 
   return (
     <AbsoluteFill style={{ backgroundColor: "var(--color-ink)" }}>
-      <div className="absolute inset-0 flex items-center" style={{ opacity: contentOp }}>
+      <div
+        className="absolute inset-0 flex items-center"
+        style={{ opacity: contentOp }}
+      >
         {/* Soft brand glow behind the chrome card */}
         <div
           className="absolute"
@@ -69,10 +101,19 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
         />
 
         {/* Left column: scene copy */}
-        <div style={{ width: 620, paddingLeft: 96, transform: `translateY(${copyY}px)` }}>
+        <div
+          style={{
+            width: 620,
+            paddingLeft: 96,
+            transform: `translateY(${copyY}px)`,
+          }}
+        >
           <p
             className="text-sm font-medium tracking-[0.3em] mb-6"
-            style={{ fontFamily: "var(--font-mono)", color: "var(--color-brand-sky)" }}
+            style={{
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-brand-sky)",
+            }}
           >
             {eyebrow}
           </p>
@@ -82,7 +123,13 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
           >
             {heading}
           </h2>
-          <p className="text-2xl mt-8 leading-relaxed" style={{ color: "rgba(241, 245, 249, 0.72)", fontFamily: "var(--font-sans)" }}>
+          <p
+            className="text-2xl mt-8 leading-relaxed"
+            style={{
+              color: "rgba(241, 245, 249, 0.72)",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
             {blurb}
           </p>
         </div>
@@ -103,12 +150,38 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
         >
           <div
             className="flex items-center gap-3"
-            style={{ height: 52, paddingLeft: 20, paddingRight: 20, borderBottom: "1px solid rgba(241, 245, 249, 0.1)" }}
+            style={{
+              height: 52,
+              paddingLeft: 20,
+              paddingRight: 20,
+              borderBottom: "1px solid rgba(241, 245, 249, 0.1)",
+            }}
           >
             <div className="flex gap-2">
-              <div style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#FF5F57" }} />
-              <div style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#FEBC2E" }} />
-              <div style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#28C840" }} />
+              <div
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 6,
+                  backgroundColor: "#FF5F57",
+                }}
+              />
+              <div
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 6,
+                  backgroundColor: "#FEBC2E",
+                }}
+              />
+              <div
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 6,
+                  backgroundColor: "#28C840",
+                }}
+              />
             </div>
             <div
               className="flex-1 text-center text-sm"
@@ -129,7 +202,11 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
           <div style={{ height: VIEWPORT_H, overflow: "hidden" }}>
             <Img
               src={staticFile(src)}
-              style={{ width: CHROME_W, display: "block", transform: `translateY(-${pan}px)` }}
+              style={{
+                width: CHROME_W,
+                display: "block",
+                transform: `translateY(-${pan}px)`,
+              }}
             />
           </div>
         </div>

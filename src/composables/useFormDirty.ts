@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue';
 
 /**
  * Track whether a reactive form ref has diverged from its last
@@ -11,21 +11,21 @@ import { ref, watch, type Ref } from 'vue'
  * back to true.
  */
 export function useFormDirty<T>(form: Ref<T>) {
-  const isDirty = ref(false)
-  let snapshot = JSON.stringify(form.value)
+  const isDirty = ref(false);
+  let snapshot = JSON.stringify(form.value);
 
   watch(
     form,
     () => {
-      isDirty.value = JSON.stringify(form.value) !== snapshot
+      isDirty.value = JSON.stringify(form.value) !== snapshot;
     },
-    { deep: true },
-  )
+    { deep: true }
+  );
 
   function markClean() {
-    snapshot = JSON.stringify(form.value)
-    isDirty.value = false
+    snapshot = JSON.stringify(form.value);
+    isDirty.value = false;
   }
 
-  return { isDirty, markClean }
+  return { isDirty, markClean };
 }

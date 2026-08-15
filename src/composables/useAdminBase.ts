@@ -15,13 +15,13 @@
  * staff) is caught by the router guard, not by every link helper.
  */
 
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 export function useAdminBase() {
-  const route = useRoute()
+  const route = useRoute();
   const adminBase = computed<'/admin' | '/staff'>(() =>
-    route.path.startsWith('/staff') ? '/staff' : '/admin',
-  )
-  return { adminBase }
+    route.path.startsWith('/staff') ? '/staff' : '/admin'
+  );
+  return { adminBase };
 }

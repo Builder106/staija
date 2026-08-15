@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { Motion } from 'motion-v'
-import { Icon } from '@iconify/vue'
-import Container from '../components/ui/Container.vue'
-import Section from '../components/ui/Section.vue'
-import Heading from '../components/ui/Heading.vue'
-import Body from '../components/ui/Body.vue'
-import Eyebrow from '../components/ui/Eyebrow.vue'
-import UiButton from '../components/ui/UiButton.vue'
-import UiCard from '../components/ui/UiCard.vue'
-import UiChip from '../components/ui/UiChip.vue'
-import HeroLottie from '../components/HeroLottie.vue'
-import CountUp from '../components/motion/CountUp.vue'
-import Hairline from '../components/motion/Hairline.vue'
-import { trackApplyClick } from '../services/analytics'
-import { getBlogPosts, getEvents, type BlogPost, type EventItem } from '../services/content'
+import { Icon } from '@iconify/vue';
+import { Motion } from 'motion-v';
+import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { RouterLink } from 'vue-router';
+import HeroLottie from '../components/HeroLottie.vue';
+import CountUp from '../components/motion/CountUp.vue';
+import Hairline from '../components/motion/Hairline.vue';
+import Body from '../components/ui/Body.vue';
+import Container from '../components/ui/Container.vue';
+import Eyebrow from '../components/ui/Eyebrow.vue';
+import Heading from '../components/ui/Heading.vue';
+import Section from '../components/ui/Section.vue';
+import UiButton from '../components/ui/UiButton.vue';
+import UiCard from '../components/ui/UiCard.vue';
+import UiChip from '../components/ui/UiChip.vue';
+import { trackApplyClick } from '../services/analytics';
+import { getBlogPosts, getEvents, type BlogPost, type EventItem } from '../services/content';
 
-const { t, locale } = useI18n()
+const { t, locale } = useI18n();
 
 // Split the lead word into 3 contiguous letter groups, stacked as 3
 // lines — reproduces the Pan-African flag's actual 3-horizontal-band
@@ -27,14 +27,14 @@ const { t, locale } = useI18n()
 // in-glyph version was dropped) and not a per-letter color cycle
 // (tried in between — read as noisy/random rather than "the flag").
 const headlineLeadLines = computed(() => {
-  const chars = Array.from(t('home.hero.headlineLead'))
-  const size = Math.ceil(chars.length / 3)
+  const chars = Array.from(t('home.hero.headlineLead'));
+  const size = Math.ceil(chars.length / 3);
   return [
     chars.slice(0, size).join(''),
     chars.slice(size, size * 2).join(''),
     chars.slice(size * 2).join(''),
-  ]
-})
+  ];
+});
 
 // Stats: numbers stay hardcoded (they're data, not language) but the
 // eyebrow + caption flow through i18n. Recomputed on locale change.
@@ -54,14 +54,14 @@ const stats = computed(() => [
     number: 2,
     caption: t('home.stats.programsCaption'),
   },
-])
+]);
 
 // Featured story + upcoming events read from Contentful via the content
 // service. Sections render only when real entries exist — no fallback to
 // fabricated "Chinedu Okafor" / "StepUp 2025 info session" stubs that
 // shipped fake credibility before the CMS was populated.
-const featuredStory = ref<BlogPost | null>(null)
-const upcomingEvents = ref<EventItem[]>([])
+const featuredStory = ref<BlogPost | null>(null);
+const upcomingEvents = ref<EventItem[]>([]);
 // CLS guard: the CMS-driven sections below are mounted asynchronously
 // (Contentful round-trip in `onMounted`). Without a placeholder, when
 // they pop into existence they push the footer down by ~700px and
@@ -71,24 +71,24 @@ const upcomingEvents = ref<EventItem[]>([])
 // `contentLoaded` flips, sections without data collapse to nothing —
 // still a shift, but it only happens on empty-CMS deploys, not in
 // production.
-const contentLoaded = ref(false)
+const contentLoaded = ref(false);
 
 // Pass the active locale to Intl so dates localize alongside the rest
 // of the page. Browsers unfamiliar with a given BCP47 code (e.g. 'yo')
 // fall back to the user's system default, which is acceptable for
 // short month/day strings.
 const featuredEyebrow = computed(() => {
-  if (!featuredStory.value) return ''
-  const d = new Date(featuredStory.value.publishedAt)
-  return d.toLocaleDateString(locale.value, { month: 'short', day: 'numeric', year: 'numeric' })
-})
+  if (!featuredStory.value) return '';
+  const d = new Date(featuredStory.value.publishedAt);
+  return d.toLocaleDateString(locale.value, { month: 'short', day: 'numeric', year: 'numeric' });
+});
 
 function eventDateParts(iso: string) {
-  const d = new Date(iso)
+  const d = new Date(iso);
   return {
     month: d.toLocaleString(locale.value, { month: 'short' }).toUpperCase(),
     day: d.getDate(),
-  }
+  };
 }
 
 onMounted(async () => {
@@ -96,15 +96,15 @@ onMounted(async () => {
     const [blog, events] = await Promise.all([
       getBlogPosts({ limit: 1 }),
       getEvents({ upcoming: true, limit: 3 }),
-    ])
-    featuredStory.value = blog.items[0] ?? null
-    upcomingEvents.value = events
+    ]);
+    featuredStory.value = blog.items[0] ?? null;
+    upcomingEvents.value = events;
   } catch {
     // Soft-fail: leave both null/empty so the sections stay hidden.
   } finally {
-    contentLoaded.value = true
+    contentLoaded.value = true;
   }
-})
+});
 </script>
 
 <template>
@@ -122,7 +122,9 @@ onMounted(async () => {
          or better yet, remove min-height entirely and let content dictate
          height. The flex items-center centers content regardless.
          The !pt/!pb utilities provide consistent padding. -->
-    <Section class="flex items-center min-h-[800px] sm:min-h-[850px] md:min-h-[900px] lg:min-h-[700px] !pt-8 !pb-16 sm:!pt-12 sm:!pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static">
+    <Section
+      class="flex items-center min-h-[800px] sm:min-h-[850px] md:min-h-[900px] lg:min-h-[700px] !pt-8 !pb-16 sm:!pt-12 sm:!pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static"
+    >
       <!-- Soft accent glow behind the Lottie. Hidden on small screens
            where the artwork stacks below the copy and the glow would
            wash out the headline. -->
@@ -145,7 +147,10 @@ onMounted(async () => {
             >
               <Icon icon="lucide:github" class="w-4 h-4" />
               {{ t('home.hero.githubPill') }}
-              <Icon icon="lucide:arrow-right" class="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors" />
+              <Icon
+                icon="lucide:arrow-right"
+                class="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors"
+              />
             </a>
             <Heading :level="1">
               <!-- i18n-t with a slot for the accent so translators can
@@ -164,16 +169,11 @@ onMounted(async () => {
                   <span class="font-accent-african-tertiary lead-hover-group" tabindex="0">
                     <span class="lead-swap">
                       <span class="lead-text">
-                        <span
-                          v-for="i in [0, 1]"
-                          :key="i"
-                          :class="`flag-line-${i}`"
-                        >{{ headlineLeadLines[i] }}</span>
+                        <span v-for="i in [0, 1]" :key="i" :class="`flag-line-${i}`">{{
+                          headlineLeadLines[i]
+                        }}</span>
                       </span>
-                      <span
-                        class="africa-pop-in"
-                        aria-hidden="true"
-                      />
+                      <span class="africa-pop-in" aria-hidden="true" />
                     </span>
                     <span class="flag-line-2">{{ headlineLeadLines[2] }}</span>
                   </span>
@@ -211,7 +211,11 @@ onMounted(async () => {
               >
                 {{ t('home.hero.ctaPrimary') }}
               </UiButton>
-              <UiButton variant="on-gradient-ghost" href="#programs" class="w-full sm:w-auto text-center justify-center">
+              <UiButton
+                variant="on-gradient-ghost"
+                href="#programs"
+                class="w-full sm:w-auto text-center justify-center"
+              >
                 {{ t('home.hero.ctaSecondary') }}
               </UiButton>
             </div>
@@ -267,7 +271,9 @@ onMounted(async () => {
             class="flex flex-col gap-2"
           >
             <Eyebrow class="text-brand-violet">{{ stat.eyebrow }}</Eyebrow>
-            <div class="font-display text-4xl md:text-5xl font-semibold tracking-tight text-brand-violet">
+            <div
+              class="font-display text-4xl md:text-5xl font-semibold tracking-tight text-brand-violet"
+            >
               <CountUp :value="stat.number" :locale="locale" />
             </div>
             <p class="text-sm text-ink/70">{{ stat.caption }}</p>
@@ -278,7 +284,10 @@ onMounted(async () => {
 
     <Hairline />
     <!-- Programs Split -->
-    <Section id="programs" class="bg-surface min-h-[480px] sm:min-h-[480px] md:min-h-[420px] lg:min-h-[380px]">
+    <Section
+      id="programs"
+      class="bg-surface min-h-[480px] sm:min-h-[480px] md:min-h-[420px] lg:min-h-[380px]"
+    >
       <Container>
         <div class="flex flex-col gap-12">
           <div class="max-w-2xl">
@@ -307,11 +316,21 @@ onMounted(async () => {
                     {{ t('home.programs.stepupBlurb') }}
                   </Body>
                   <div class="pt-6 border-t hairline-ink flex items-center justify-between">
-                    <span class="text-sm font-semibold text-ink/60">{{ t('home.programs.stepupAge') }}</span>
-                    <UiButton variant="tertiary" :to="'/programs/stepup-scholars'" class="text-brand-violet">
+                    <span class="text-sm font-semibold text-ink/60">{{
+                      t('home.programs.stepupAge')
+                    }}</span>
+                    <UiButton
+                      variant="tertiary"
+                      :to="'/programs/stepup-scholars'"
+                      class="text-brand-violet"
+                    >
                       <span class="flex items-center gap-1 group">
                         {{ t('home.programs.learnMore') }}
-                        <Icon icon="lucide:arrow-right" width="16" class="transition-transform group-hover:translate-x-1" />
+                        <Icon
+                          icon="lucide:arrow-right"
+                          width="16"
+                          class="transition-transform group-hover:translate-x-1"
+                        />
                       </span>
                     </UiButton>
                   </div>
@@ -336,11 +355,21 @@ onMounted(async () => {
                     {{ t('home.programs.dynamergeBlurb') }}
                   </Body>
                   <div class="pt-6 border-t hairline-ink flex items-center justify-between">
-                    <span class="text-sm font-semibold text-ink/60">{{ t('home.programs.dynamergeAge') }}</span>
-                    <UiButton variant="tertiary" :to="'/programs/dynamerge'" class="text-brand-violet">
+                    <span class="text-sm font-semibold text-ink/60">{{
+                      t('home.programs.dynamergeAge')
+                    }}</span>
+                    <UiButton
+                      variant="tertiary"
+                      :to="'/programs/dynamerge'"
+                      class="text-brand-violet"
+                    >
                       <span class="flex items-center gap-1 group">
                         {{ t('home.programs.learnMore') }}
-                        <Icon icon="lucide:arrow-right" width="16" class="transition-transform group-hover:translate-x-1" />
+                        <Icon
+                          icon="lucide:arrow-right"
+                          width="16"
+                          class="transition-transform group-hover:translate-x-1"
+                        />
                       </span>
                     </UiButton>
                   </div>
@@ -364,60 +393,76 @@ onMounted(async () => {
           class="grid lg:grid-cols-12 gap-8 lg:gap-16 items-center min-h-[450px] lg:min-h-[520px]"
         >
           <template v-if="featuredStory">
-          <Motion
-            class="lg:col-span-7 aspect-[4/3] rounded-2xl overflow-hidden relative bg-ink/5"
-            :initial="{ opacity: 0, scale: 0.98 }"
-            :while-in-view="{ opacity: 1, scale: 1 }"
-            :viewport="{ once: true }"
-            :transition="{ duration: 0.6 }"
-          >
-            <div class="absolute inset-0 wash-violet-6 mix-blend-multiply z-10 pointer-events-none" />
-            <!-- width/height pin the intrinsic aspect ratio so the browser
+            <Motion
+              class="lg:col-span-7 aspect-[4/3] rounded-2xl overflow-hidden relative bg-ink/5"
+              :initial="{ opacity: 0, scale: 0.98 }"
+              :while-in-view="{ opacity: 1, scale: 1 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.6 }"
+            >
+              <div
+                class="absolute inset-0 wash-violet-6 mix-blend-multiply z-10 pointer-events-none"
+              />
+              <!-- width/height pin the intrinsic aspect ratio so the browser
                  reserves the box before the bytes arrive. The parent Motion
                  already has aspect-[4/3], but a width-less <img> can still
                  race against decode in some browsers. eager loading because
                  this image is the second visible block below the fold — by
                  the time most users hit it, prefetching is cheap and lazy
                  risks a visible decode pop. -->
-            <img
-              v-if="featuredStory.hero"
-              :src="featuredStory.hero"
-              :alt="featuredStory.title"
-              width="800"
-              height="600"
-              class="w-full h-full object-cover"
-              decoding="async"
-            />
-          </Motion>
-          <Motion
-            class="lg:col-span-5 flex flex-col gap-6"
-            :initial="{ opacity: 0, x: 20 }"
-            :while-in-view="{ opacity: 1, x: 0 }"
-            :viewport="{ once: true }"
-            :transition="{ duration: 0.6, delay: 0.2 }"
-          >
-            <Eyebrow class="text-brand-violet">{{ t('home.featured.eyebrow') }} | {{ featuredEyebrow }}</Eyebrow>
-            <!-- Story title + dek come from CMS — they're translator-
+              <img
+                v-if="featuredStory.hero"
+                :src="featuredStory.hero"
+                :alt="featuredStory.title"
+                width="800"
+                height="600"
+                class="w-full h-full object-cover"
+                decoding="async"
+              />
+            </Motion>
+            <Motion
+              class="lg:col-span-5 flex flex-col gap-6"
+              :initial="{ opacity: 0, x: 20 }"
+              :while-in-view="{ opacity: 1, x: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.6, delay: 0.2 }"
+            >
+              <Eyebrow class="text-brand-violet"
+                >{{ t('home.featured.eyebrow') }} | {{ featuredEyebrow }}</Eyebrow
+              >
+              <!-- Story title + dek come from CMS — they're translator-
                  owned at the Contentful layer (locale variants per
                  entry), not via i18n keys here. -->
-            <Heading :level="2">{{ featuredStory.title }}</Heading>
-            <Body>{{ featuredStory.dek }}</Body>
-            <div class="mt-2 flex flex-col gap-4">
-              <div class="text-sm text-ink/70">{{ t('home.featured.byline', { author: featuredStory.author }) }}</div>
-              <UiButton variant="tertiary" :to="`/blog/${featuredStory.slug}`" class="self-start text-brand-violet">
-                <span class="flex items-center gap-1 group">
-                  {{ t('home.featured.readMore') }}
-                  <Icon icon="lucide:arrow-right" width="16" class="transition-transform group-hover:translate-x-1" />
-                </span>
-              </UiButton>
-            </div>
-          </Motion>
+              <Heading :level="2">{{ featuredStory.title }}</Heading>
+              <Body>{{ featuredStory.dek }}</Body>
+              <div class="mt-2 flex flex-col gap-4">
+                <div class="text-sm text-ink/70">
+                  {{ t('home.featured.byline', { author: featuredStory.author }) }}
+                </div>
+                <UiButton
+                  variant="tertiary"
+                  :to="`/blog/${featuredStory.slug}`"
+                  class="self-start text-brand-violet"
+                >
+                  <span class="flex items-center gap-1 group">
+                    {{ t('home.featured.readMore') }}
+                    <Icon
+                      icon="lucide:arrow-right"
+                      width="16"
+                      class="transition-transform group-hover:translate-x-1"
+                    />
+                  </span>
+                </UiButton>
+              </div>
+            </Motion>
           </template>
           <template v-else>
             <!-- Empty state placeholder — maintains the same min-height so
                  no layout shift when Contentful resolves with no data.
                  Hidden on lg+ where the aspect-[4/3] grid area is reserved. -->
-            <div class="lg:col-span-12 flex items-center justify-center min-h-[450px] lg:min-h-[520px]">
+            <div
+              class="lg:col-span-12 flex items-center justify-center min-h-[450px] lg:min-h-[520px]"
+            >
               <div class="text-center text-ink/50">
                 <Icon icon="lucide:book-open" class="w-12 h-12 mx-auto mb-4 opacity-30" />
                 <p class="text-sm">{{ t('home.featured.emptyState', 'No stories yet') }}</p>
@@ -439,54 +484,58 @@ onMounted(async () => {
            footer to shift. -->
       <Container class="min-h-[400px] lg:min-h-[440px]">
         <template v-if="upcomingEvents.length > 0">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div class="max-w-2xl">
-            <Eyebrow class="text-brand-violet mb-4 block">{{ t('home.events.eyebrow') }}</Eyebrow>
-            <Heading :level="2">{{ t('home.events.heading') }}</Heading>
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div class="max-w-2xl">
+              <Eyebrow class="text-brand-violet mb-4 block">{{ t('home.events.eyebrow') }}</Eyebrow>
+              <Heading :level="2">{{ t('home.events.heading') }}</Heading>
+            </div>
+            <UiButton variant="tertiary" :to="'/events'">
+              <span class="flex items-center gap-1 group pb-1">
+                {{ t('home.events.viewAll') }}
+                <Icon
+                  icon="lucide:arrow-right"
+                  width="16"
+                  class="transition-transform group-hover:translate-x-1"
+                />
+              </span>
+            </UiButton>
           </div>
-          <UiButton variant="tertiary" :to="'/events'">
-            <span class="flex items-center gap-1 group pb-1">
-              {{ t('home.events.viewAll') }}
-              <Icon icon="lucide:arrow-right" width="16" class="transition-transform group-hover:translate-x-1" />
-            </span>
-          </UiButton>
-        </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-          <Motion
-            v-for="(event, i) in upcomingEvents"
-            :key="event.slug"
-            :initial="{ opacity: 0, y: 15 }"
-            :while-in-view="{ opacity: 1, y: 0 }"
-            :viewport="{ once: true }"
-            :transition="{ duration: 0.4, delay: i * 0.1 }"
-          >
-            <RouterLink :to="`/events/${event.slug}`" class="block h-full">
-              <UiCard hoverable class="p-6 flex flex-col gap-6 h-full">
-                <div class="flex justify-between items-start">
-                  <div class="bg-ink/5 rounded-lg px-4 py-3 text-center min-w-[70px]">
-                    <div class="text-sm font-semibold text-ink/60 uppercase">
-                      {{ eventDateParts(event.datetime).month }}
+          <div class="grid lg:grid-cols-3 gap-6">
+            <Motion
+              v-for="(event, i) in upcomingEvents"
+              :key="event.slug"
+              :initial="{ opacity: 0, y: 15 }"
+              :while-in-view="{ opacity: 1, y: 0 }"
+              :viewport="{ once: true }"
+              :transition="{ duration: 0.4, delay: i * 0.1 }"
+            >
+              <RouterLink :to="`/events/${event.slug}`" class="block h-full">
+                <UiCard hoverable class="p-6 flex flex-col gap-6 h-full">
+                  <div class="flex justify-between items-start">
+                    <div class="bg-ink/5 rounded-lg px-4 py-3 text-center min-w-[70px]">
+                      <div class="text-sm font-semibold text-ink/60 uppercase">
+                        {{ eventDateParts(event.datetime).month }}
+                      </div>
+                      <div class="font-display font-semibold text-2xl text-ink">
+                        {{ eventDateParts(event.datetime).day }}
+                      </div>
                     </div>
-                    <div class="font-display font-semibold text-2xl text-ink">
-                      {{ eventDateParts(event.datetime).day }}
+                    <UiChip>{{ event.type }}</UiChip>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-sans font-semibold text-lg leading-snug mb-3">
+                      {{ event.title }}
+                    </h4>
+                    <div class="flex items-center gap-1.5 text-sm text-ink/60">
+                      <Icon icon="lucide:map-pin" width="16" />
+                      {{ event.location }}
                     </div>
                   </div>
-                  <UiChip>{{ event.type }}</UiChip>
-                </div>
-                <div class="flex-1">
-                  <h4 class="font-sans font-semibold text-lg leading-snug mb-3">
-                    {{ event.title }}
-                  </h4>
-                  <div class="flex items-center gap-1.5 text-sm text-ink/60">
-                    <Icon icon="lucide:map-pin" width="16" />
-                    {{ event.location }}
-                  </div>
-                </div>
-              </UiCard>
-            </RouterLink>
-          </Motion>
-        </div>
+                </UiCard>
+              </RouterLink>
+            </Motion>
+          </div>
         </template>
         <template v-else>
           <!-- Empty state placeholder — maintains the same min-height so
@@ -500,7 +549,6 @@ onMounted(async () => {
         </template>
       </Container>
     </Section>
-
   </div>
 </template>
 
@@ -529,9 +577,15 @@ onMounted(async () => {
    A desaturated variant (deep maroon/warm charcoal/muted forest) was
    tried and reverted — the actual flag's pure red/black/green is the
    point of this treatment. */
-.flag-line-0 { color: #CE1126; }
-.flag-line-1 { color: #000000; }
-.flag-line-2 { color: #007A3D; }
+.flag-line-0 {
+  color: #ce1126;
+}
+.flag-line-1 {
+  color: #000000;
+}
+.flag-line-2 {
+  color: #007a3d;
+}
 
 /* Idle cues for "Africa's" and "scientist-leaders", running whether or
    not the device can hover — touch visitors get no benefit from the
@@ -553,15 +607,30 @@ onMounted(async () => {
    The whole thing drops to a solid cyan fill under reduced-motion and
    forced-colors (see those blocks below). */
 @keyframes idle-hop {
-  0%, 48%, 100% { transform: translateY(0) rotate(0deg); }
-  16% { transform: translateY(-0.22em) rotate(-4deg); }
-  30% { transform: translateY(0) rotate(2.5deg); }
-  38% { transform: translateY(0) rotate(0deg); }
+  0%,
+  48%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  16% {
+    transform: translateY(-0.22em) rotate(-4deg);
+  }
+  30% {
+    transform: translateY(0) rotate(2.5deg);
+  }
+  38% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
 
 @keyframes idle-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-0.1em); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.1em);
+  }
 }
 
 /* Sweeps one full period of the (tiling) gradient. The fill tiles rather
@@ -570,8 +639,12 @@ onMounted(async () => {
    no background and therefore an invisible transparent fill. Endpoints
    land with the highlight off the text, so the loop restarts seamlessly. */
 @keyframes idle-sheen {
-  from { transform: translateX(50%); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(50%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .flag-line-0,
@@ -581,9 +654,15 @@ onMounted(async () => {
   transform-origin: bottom center;
   animation: idle-hop 2.8s ease-in-out infinite;
 }
-.flag-line-0 { animation-delay: 0ms; }
-.flag-line-1 { animation-delay: 150ms; }
-.flag-line-2 { animation-delay: 300ms; }
+.flag-line-0 {
+  animation-delay: 0ms;
+}
+.flag-line-1 {
+  animation-delay: 150ms;
+}
+.flag-line-2 {
+  animation-delay: 300ms;
+}
 
 .accent-text {
   /* Cyan fill delivered as a background-clipped gradient so the sheen has
@@ -688,7 +767,9 @@ onMounted(async () => {
 .lead-text {
   display: inline-flex;
   white-space: nowrap;
-  transition: transform 220ms ease-in, opacity 220ms ease-in;
+  transition:
+    transform 220ms ease-in,
+    opacity 220ms ease-in;
 }
 
 .africa-pop-in {
@@ -700,12 +781,12 @@ onMounted(async () => {
   transform: translate(-50%, 0) scale(0.4);
   background: linear-gradient(
     to bottom,
-    #CE1126 0%,
-    #CE1126 33.33%,
+    #ce1126 0%,
+    #ce1126 33.33%,
     #000000 33.33%,
     #000000 66.66%,
-    #007A3D 66.66%,
-    #007A3D 100%
+    #007a3d 66.66%,
+    #007a3d 100%
   );
   -webkit-mask-image: url('/images/africa-mask.svg');
   -webkit-mask-position: center;
@@ -717,7 +798,9 @@ onMounted(async () => {
   mask-repeat: no-repeat;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 250ms ease-out, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 250ms ease-out,
+    transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
   transition-delay: 0ms;
 }
 
@@ -730,7 +813,9 @@ onMounted(async () => {
 
 .accent-text {
   display: inline-flex;
-  transition: transform 240ms ease-out 150ms, opacity 240ms ease-out 150ms;
+  transition:
+    transform 240ms ease-out 150ms,
+    opacity 240ms ease-out 150ms;
 }
 
 .science-pop-in {
@@ -749,132 +834,142 @@ onMounted(async () => {
   height: 1.15em;
   opacity: 0;
   transform: scale(0.3);
-  transition: opacity 150ms ease-in, transform 190ms ease-in;
+  transition:
+    opacity 150ms ease-in,
+    transform 190ms ease-in;
 }
 
 /* Hover/focus animations are gated to devices with real hover (mouse/trackpad). */
 @media (hover: hover) and (pointer: fine) {
+  .lead-hover-group:hover .lead-text,
+  .lead-hover-group:focus-visible .lead-text {
+    transform: scale(1.15);
+    opacity: 0;
+  }
 
-.lead-hover-group:hover .lead-text,
-.lead-hover-group:focus-visible .lead-text {
-  transform: scale(1.15);
-  opacity: 0;
-}
-
-.lead-hover-group:hover .flag-line-0,
-.lead-hover-group:hover .flag-line-1,
-.lead-hover-group:hover .flag-line-2,
-.lead-hover-group:focus-visible .flag-line-0,
-.lead-hover-group:focus-visible .flag-line-1,
-.lead-hover-group:focus-visible .flag-line-2 {
-  /* Drop (not pause) the idle bob so the trailing "'s", which stays
+  .lead-hover-group:hover .flag-line-0,
+  .lead-hover-group:hover .flag-line-1,
+  .lead-hover-group:hover .flag-line-2,
+  .lead-hover-group:focus-visible .flag-line-0,
+  .lead-hover-group:focus-visible .flag-line-1,
+  .lead-hover-group:focus-visible .flag-line-2 {
+    /* Drop (not pause) the idle bob so the trailing "'s", which stays
      visible during the swap, snaps back to the baseline instead of
      freezing mid-bob. */
-  animation: none;
-}
+    animation: none;
+  }
 
-.lead-hover-group:hover .africa-pop-in,
-.lead-hover-group:focus-visible .africa-pop-in {
-  opacity: 1;
-  transform: translate(-50%, 0) scale(1);
-  transition-delay: 100ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lead-text {
-    transition: opacity 150ms ease-in;
-  }
-  .lead-hover-group:hover .lead-text,
-  .lead-hover-group:focus-visible .lead-text {
-    transform: none;
-  }
-  .africa-pop-in {
-    transition: opacity 150ms ease-out;
-    transition-delay: 0ms;
-  }
   .lead-hover-group:hover .africa-pop-in,
   .lead-hover-group:focus-visible .africa-pop-in {
-    transform: translate(-50%, 0) scale(1);
-    transition-delay: 0ms;
-  }
-}
-
-@media (forced-colors: active) {
-  .flag-line-0,
-  .flag-line-1,
-  .flag-line-2 {
-    color: CanvasText;
-    forced-color-adjust: none;
-  }
-  .africa-pop-in {
-    display: none;
-  }
-  .lead-hover-group:hover .lead-text,
-  .lead-hover-group:focus-visible .lead-text {
-    transform: none;
     opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    transition-delay: 100ms;
   }
-}
 
-.accent-hover-group:hover .accent-text,
-.accent-hover-group:focus-visible .accent-text {
-  transform: scale(1.15);
-  opacity: 0;
-  transition: transform 200ms ease-in, opacity 200ms ease-in;
-  animation: none;
-}
-
-.accent-hover-group:hover .science-icon,
-.accent-hover-group:focus-visible .science-icon {
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 250ms ease-out, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Enter-only stagger: arrives left to right. */
-.accent-hover-group:hover .science-icon:nth-child(1),
-.accent-hover-group:focus-visible .science-icon:nth-child(1) { transition-delay: 60ms; }
-.accent-hover-group:hover .science-icon:nth-child(2),
-.accent-hover-group:focus-visible .science-icon:nth-child(2) { transition-delay: 140ms; }
-.accent-hover-group:hover .science-icon:nth-child(3),
-.accent-hover-group:focus-visible .science-icon:nth-child(3) { transition-delay: 220ms; }
-
-@media (prefers-reduced-motion: reduce) {
-  .accent-text,
-  .accent-text::before {
-    transition: opacity 150ms ease-in;
-    animation: none;
+  @media (prefers-reduced-motion: reduce) {
+    .lead-text {
+      transition: opacity 150ms ease-in;
+    }
+    .lead-hover-group:hover .lead-text,
+    .lead-hover-group:focus-visible .lead-text {
+      transform: none;
+    }
+    .africa-pop-in {
+      transition: opacity 150ms ease-out;
+      transition-delay: 0ms;
+    }
+    .lead-hover-group:hover .africa-pop-in,
+    .lead-hover-group:focus-visible .africa-pop-in {
+      transform: translate(-50%, 0) scale(1);
+      transition-delay: 0ms;
+    }
   }
+
+  @media (forced-colors: active) {
+    .flag-line-0,
+    .flag-line-1,
+    .flag-line-2 {
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+    .africa-pop-in {
+      display: none;
+    }
+    .lead-hover-group:hover .lead-text,
+    .lead-hover-group:focus-visible .lead-text {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
   .accent-hover-group:hover .accent-text,
   .accent-hover-group:focus-visible .accent-text {
-    transform: none;
+    transform: scale(1.15);
+    opacity: 0;
+    transition:
+      transform 200ms ease-in,
+      opacity 200ms ease-in;
+    animation: none;
   }
-  .science-icon {
-    transition: opacity 150ms ease-out;
-    transition-delay: 0ms !important;
-  }
+
   .accent-hover-group:hover .science-icon,
   .accent-hover-group:focus-visible .science-icon {
-    transform: none;
-  }
-}
-
-@media (forced-colors: active) {
-  .science-icon {
-    display: none;
-  }
-  .accent-text,
-  .accent-text::before {
-    background-image: none;
-    -webkit-text-fill-color: currentColor;
-    animation: none;
-  }
-  .accent-hover-group:hover .accent-text,
-  .accent-hover-group:focus-visible .accent-text {
-    transform: none;
     opacity: 1;
+    transform: scale(1);
+    transition:
+      opacity 250ms ease-out,
+      transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-}
 
+  /* Enter-only stagger: arrives left to right. */
+  .accent-hover-group:hover .science-icon:nth-child(1),
+  .accent-hover-group:focus-visible .science-icon:nth-child(1) {
+    transition-delay: 60ms;
+  }
+  .accent-hover-group:hover .science-icon:nth-child(2),
+  .accent-hover-group:focus-visible .science-icon:nth-child(2) {
+    transition-delay: 140ms;
+  }
+  .accent-hover-group:hover .science-icon:nth-child(3),
+  .accent-hover-group:focus-visible .science-icon:nth-child(3) {
+    transition-delay: 220ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .accent-text,
+    .accent-text::before {
+      transition: opacity 150ms ease-in;
+      animation: none;
+    }
+    .accent-hover-group:hover .accent-text,
+    .accent-hover-group:focus-visible .accent-text {
+      transform: none;
+    }
+    .science-icon {
+      transition: opacity 150ms ease-out;
+      transition-delay: 0ms !important;
+    }
+    .accent-hover-group:hover .science-icon,
+    .accent-hover-group:focus-visible .science-icon {
+      transform: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .science-icon {
+      display: none;
+    }
+    .accent-text,
+    .accent-text::before {
+      background-image: none;
+      -webkit-text-fill-color: currentColor;
+      animation: none;
+    }
+    .accent-hover-group:hover .accent-text,
+    .accent-hover-group:focus-visible .accent-text {
+      transform: none;
+      opacity: 1;
+    }
+  }
 } /* @media (hover: hover) and (pointer: fine) */
 </style>

@@ -1,75 +1,75 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import UiChip from '../../components/ui/UiChip.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import { AuthService, MentorService, type AssignedStudent } from '../../services/firebase'
-import { SubmissionService } from '../../services/learn'
-import { useAuth } from '../../composables/useAuth'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import UiChip from '../../components/ui/UiChip.vue';
+import { useAuth } from '../../composables/useAuth';
+import { AuthService, MentorService, type AssignedStudent } from '../../services/firebase';
+import { SubmissionService } from '../../services/learn';
 
-const { displayName } = useAuth()
+const { displayName } = useAuth();
 
-const assignments = ref<AssignedStudent[]>([])
-const ungradedByStudent = ref<Record<string, number>>({})
-const loading = ref(true)
-const error = ref('')
+const assignments = ref<AssignedStudent[]>([]);
+const ungradedByStudent = ref<Record<string, number>>({});
+const loading = ref(true);
+const error = ref('');
 
-let queueUnsub: (() => void) | null = null
+let queueUnsub: (() => void) | null = null;
 
 const firstName = computed(() => {
-  const name = displayName.value ?? ''
-  return name.split(/[\s@]/)[0] || 'there'
-})
+  const name = displayName.value ?? '';
+  return name.split(/[\s@]/)[0] || 'there';
+});
 
 const totalUngraded = computed(() =>
-  Object.values(ungradedByStudent.value).reduce((a, b) => a + b, 0),
-)
+  Object.values(ungradedByStudent.value).reduce((a, b) => a + b, 0)
+);
 
 async function loadData() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
-    const currentUser = AuthService.getCurrentUser()
-    if (!currentUser) return
-    assignments.value = await MentorService.getAssignedStudents(currentUser.uid)
+    const currentUser = AuthService.getCurrentUser();
+    if (!currentUser) return;
+    assignments.value = await MentorService.getAssignedStudents(currentUser.uid);
 
     // Live-counting ungraded submissions for the badge. Snapshot updates
     // whenever a student submits or this mentor grades, so the badge is
     // current without needing to refresh.
-    queueUnsub = SubmissionService.subscribeMentorQueue(currentUser.uid, (subs) => {
-      const tally: Record<string, number> = {}
+    queueUnsub = SubmissionService.subscribeMentorQueue(currentUser.uid, subs => {
+      const tally: Record<string, number> = {};
       for (const s of subs) {
-        tally[s.studentId] = (tally[s.studentId] ?? 0) + 1
+        tally[s.studentId] = (tally[s.studentId] ?? 0) + 1;
       }
-      ungradedByStudent.value = tally
-    })
+      ungradedByStudent.value = tally;
+    });
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load your assigned students.'
+    error.value = err instanceof Error ? err.message : 'Failed to load your assigned students.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 onUnmounted(() => {
-  if (queueUnsub) queueUnsub()
-})
+  if (queueUnsub) queueUnsub();
+});
 
 function programLabel(p: AssignedStudent['program']) {
-  return p === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge'
+  return p === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge';
 }
 
 function studentLabel(a: AssignedStudent): string {
-  return a.student?.displayName || a.student?.email || 'Student'
+  return a.student?.displayName || a.student?.email || 'Student';
 }
 
-onMounted(loadData)
+onMounted(loadData);
 </script>
 
 <template>
@@ -127,9 +127,8 @@ onMounted(loadData)
       >
         <Heading :level="3" class="mb-3">No students yet.</Heading>
         <Body class="text-ink/70 mb-4">
-          You don't have any active assignments. Mentor pairings are set up by
-          STAIJA staff once a cohort is selected — you'll see your students
-          here when that happens.
+          You don't have any active assignments. Mentor pairings are set up by STAIJA staff once a
+          cohort is selected — you'll see your students here when that happens.
         </Body>
         <p class="text-sm text-ink/60 m-0">
           Think this is wrong? Email

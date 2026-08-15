@@ -13,23 +13,23 @@
  * we don't want to push someone toward Dynamerge if they failed
  * StepUp on the time-commitment row.
  */
-import { computed } from 'vue'
-import { Icon } from '@iconify/vue'
-import UiCard from '../ui/UiCard.vue'
-import UiButton from '../ui/UiButton.vue'
-import Heading from '../ui/Heading.vue'
-import Body from '../ui/Body.vue'
+import { Icon } from '@iconify/vue';
+import { computed } from 'vue';
+import Body from '../ui/Body.vue';
+import Heading from '../ui/Heading.vue';
+import UiButton from '../ui/UiButton.vue';
+import UiCard from '../ui/UiCard.vue';
 
 const props = defineProps<{
-  from: string
-  reason: string
-}>()
+  from: string;
+  reason: string;
+}>();
 
 interface Suggestion {
-  slug: 'stepup-scholars' | 'dynamerge'
-  name: string
-  pitch: string
-  audience: string
+  slug: 'stepup-scholars' | 'dynamerge';
+  name: string;
+  pitch: string;
+  audience: string;
 }
 
 const SUGGESTIONS: Record<string, Suggestion> = {
@@ -45,20 +45,24 @@ const SUGGESTIONS: Record<string, Suggestion> = {
     pitch: 'A 4-week virtual summer bootcamp open to ages 15–20 across the continent.',
     audience: 'Pan-African | ages 15–20 | fully virtual',
   },
-}
+};
 
 const suggestion = computed<Suggestion | null>(() => {
   // Closed cycle: always offer the sibling program.
   if (props.reason === 'closed') {
-    if (props.from === 'stepup-scholars' || props.from === 'stepup') return SUGGESTIONS['dynamerge']
-    if (props.from === 'dynamerge') return SUGGESTIONS['stepup-scholars']
+    if (props.from === 'stepup-scholars' || props.from === 'stepup')
+      return SUGGESTIONS['dynamerge'];
+    if (props.from === 'dynamerge') return SUGGESTIONS['stepup-scholars'];
   }
-  return null
-})
+  return null;
+});
 </script>
 
 <template>
-  <UiCard v-if="suggestion" class="p-6 md:p-8 bg-paper border border-brand-violet/20 flex flex-col gap-4">
+  <UiCard
+    v-if="suggestion"
+    class="p-6 md:p-8 bg-paper border border-brand-violet/20 flex flex-col gap-4"
+  >
     <div class="flex items-center gap-3">
       <Icon icon="lucide:arrow-right-left" width="20" class="text-brand-violet" />
       <Heading :level="3" class="!text-lg !m-0">Have a look at our other program.</Heading>

@@ -1,346 +1,476 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Avatar motion preview</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0f1115;
-      --panel: #181b22;
-      --panel-2: #1f242d;
-      --line: #2a313d;
-      --text: #e6e8ec;
-      --muted: #8b94a3;
-      --accent: #ebb65e;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text);
-      font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-    body { display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 24px; }
-    .stage {
-      display: grid; place-items: center;
-      background: radial-gradient(circle at 50% 35%, #1a1f29 0%, #0f1115 70%);
-      border: 1px solid var(--line); border-radius: 16px; min-height: 560px;
-      position: relative;
-    }
-    .stage svg { width: min(70vh, 560px); height: auto; display: block; cursor: pointer; }
-    .panel {
-      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-      padding: 16px; display: flex; flex-direction: column; gap: 14px; align-self: start;
-    }
-    .panel h2 { margin: 0; font-size: 13px; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
-    .row { display: grid; gap: 6px; }
-    .row label { display: flex; justify-content: space-between; gap: 8px;
-      font-size: 12px; color: var(--muted); }
-    .row label .val { color: var(--text); font-variant-numeric: tabular-nums; }
-    input[type="range"] { width: 100%; accent-color: var(--accent); }
-    .toggles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    button {
-      background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
-      border-radius: 8px; padding: 8px 10px; font: inherit; cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-    button:hover { background: #242a35; }
-    button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
-    .hint { color: var(--muted); font-size: 12px; }
-    .footer { margin-top: 8px; font-size: 11px; color: var(--muted); }
-    .footer code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
-    @media (max-width: 900px) { body { grid-template-columns: 1fr; } }
-  </style>
-</head>
-<body>
-  <div class="stage" id="stage">
-    <div id="loading" class="hint">Loading SVG…</div>
-  </div>
-
-  <aside class="panel">
-    <h2>Motion controls</h2>
-
-    <div class="toggles">
-      <button id="btn-pause"   aria-pressed="false">Pause</button>
-      <button id="btn-blink">Blink now</button>
-      <button id="btn-hold-blink" aria-pressed="false">Hold blink</button>
-      <button id="btn-hover"   aria-pressed="false">Hover state</button>
-      <button id="btn-reduced" aria-pressed="false">Reduced motion</button>
-    </div>
-
-    <div class="row">
-      <label>Breath duration <span class="val" id="v-breath-d">2.0s</span></label>
-      <input id="breath-d" type="range" min="1.5" max="6" step="0.1" value="2.0" />
-    </div>
-    <div class="row">
-      <label>Breath amplitude (px) <span class="val" id="v-breath-a">2</span></label>
-      <input id="breath-a" type="range" min="0" max="6" step="0.5" value="2" />
-    </div>
-    <div class="row">
-      <label>Hair sway (deg) <span class="val" id="v-hair">0.6</span></label>
-      <input id="hair" type="range" min="0" max="3" step="0.1" value="0.6" />
-    </div>
-    <div class="row">
-      <label>Puff phase offset (s) <span class="val" id="v-puff">0.8</span></label>
-      <input id="puff" type="range" min="0" max="2" step="0.1" value="0.8" />
-    </div>
-    <div class="row">
-      <label>Earring max angle (deg) <span class="val" id="v-ear">4</span></label>
-      <input id="ear" type="range" min="0" max="10" step="0.5" value="4" />
-    </div>
-    <div class="row">
-      <label>Blink interval (s) <span class="val" id="v-blink">3 – 7</span></label>
-      <input id="blink-min" type="range" min="1" max="6" step="0.5" value="3" />
-      <input id="blink-max" type="range" min="3" max="12" step="0.5" value="7" />
-    </div>
-
-    <p class="footer">
-      Hover the avatar to preview hover state. The SVG is loaded from
-      <code>/avatars/_preview/portrait.svg</code>. Changes to sliders rebuild
-      the timeline live.
-    </p>
-  </aside>
-
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script>
-    const stage = document.getElementById("stage");
-    const loading = document.getElementById("loading");
-
-    // Load the SVG inline so GSAP can target #ids directly.
-    fetch("/avatars/_preview/portrait.svg")
-      .then((r) => r.text())
-      .then((svgText) => {
-        loading.remove();
-        stage.insertAdjacentHTML("beforeend", svgText);
-        const svg = stage.querySelector("svg");
-        svg.removeAttribute("width");
-        svg.removeAttribute("height");
-        svg.style.background = "transparent";
-
-        // Wrap every direct child of <svg> in a single <g id="avatar-root">
-        // so whole-body motion (breath, hover) animates one element instead
-        // of each tagged part individually. Per-part transforms with each
-        // part's own bbox center cause sub-pixel drift between parts —
-        // visible as misregistration on painted-on details.
-        const avatarRoot = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        avatarRoot.id = "avatar-root";
-        while (svg.firstChild) avatarRoot.appendChild(svg.firstChild);
-        svg.appendChild(avatarRoot);
-
-        wireMotion(svg);
-      });
-
-    function wireMotion(svg) {
-      // ---- knobs ----
-      const knob = {
-        breathD: 2.0,
-        breathA: 2,
-        hair: 0.6,
-        puff: 0.8,
-        ear: 4,
-        blinkMin: 3,
-        blinkMax: 7,
-        paused: false,
-        reduced: false,
-        hover: false,
-      };
-
-      let mainTl = null;
-      let blinkCall = null;
-      let hoverTweens = [];
-
-      function clearAll() {
-        gsap.killTweensOf("#avatar-root, #hair-front, #hair-puff-left, #hair-puff-right, #earring-left, #earring-right, #eye-left, #eye-right, #eyebrow-left, #eyebrow-right, #lips");
-        if (blinkCall) blinkCall.kill();
-        hoverTweens.forEach((t) => t.kill());
-        hoverTweens = [];
+  <head>
+    <meta charset="utf-8" />
+    <title>Avatar motion preview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1115;
+        --panel: #181b22;
+        --panel-2: #1f242d;
+        --line: #2a313d;
+        --text: #e6e8ec;
+        --muted: #8b94a3;
+        --accent: #ebb65e;
       }
-
-      function setOrigins() {
-        gsap.set("#avatar-root", { transformOrigin: "50% 100%" });
-        gsap.set("#earring-left, #earring-right", { transformOrigin: "50% 0%" });
-        gsap.set("#hair-puff-left, #hair-puff-right", { transformOrigin: "50% 100%" });
-        gsap.set("#hair-front, #hair-silhouette", { transformOrigin: "50% 0%" });
-        gsap.set("#eye-left, #eye-right", { transformOrigin: "50% 50%" });
-        gsap.set("#eyebrow-left, #eyebrow-right", { transformOrigin: "50% 50%" });
-        gsap.set("#lips", { transformOrigin: "50% 50%" });
+      * {
+        box-sizing: border-box;
       }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.5 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+      }
+      body {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        padding: 24px;
+      }
+      .stage {
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 50% 35%, #1a1f29 0%, #0f1115 70%);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        min-height: 560px;
+        position: relative;
+      }
+      .stage svg {
+        width: min(70vh, 560px);
+        height: auto;
+        display: block;
+        cursor: pointer;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-self: start;
+      }
+      .panel h2 {
+        margin: 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .row {
+        display: grid;
+        gap: 6px;
+      }
+      .row label {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .row label .val {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+      input[type='range'] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+      .toggles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+      button {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font: inherit;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease;
+      }
+      button:hover {
+        background: #242a35;
+      }
+      button[aria-pressed='true'] {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .footer {
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .footer code {
+        background: var(--panel-2);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      @media (max-width: 900px) {
+        body {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <div id="loading" class="hint">Loading SVG…</div>
+    </div>
 
-      function build() {
-        clearAll();
-        setOrigins();
+    <aside class="panel">
+      <h2>Motion controls</h2>
 
-        if (knob.reduced) {
-          // Snap to neutral — no motion.
-          gsap.set("*", { y: 0, scale: 1, rotation: 0, scaleX: 1, scaleY: 1 });
-          return;
+      <div class="toggles">
+        <button id="btn-pause" aria-pressed="false">Pause</button>
+        <button id="btn-blink">Blink now</button>
+        <button id="btn-hold-blink" aria-pressed="false">Hold blink</button>
+        <button id="btn-hover" aria-pressed="false">Hover state</button>
+        <button id="btn-reduced" aria-pressed="false">Reduced motion</button>
+      </div>
+
+      <div class="row">
+        <label>Breath duration <span class="val" id="v-breath-d">2.0s</span></label>
+        <input id="breath-d" type="range" min="1.5" max="6" step="0.1" value="2.0" />
+      </div>
+      <div class="row">
+        <label>Breath amplitude (px) <span class="val" id="v-breath-a">2</span></label>
+        <input id="breath-a" type="range" min="0" max="6" step="0.5" value="2" />
+      </div>
+      <div class="row">
+        <label>Hair sway (deg) <span class="val" id="v-hair">0.6</span></label>
+        <input id="hair" type="range" min="0" max="3" step="0.1" value="0.6" />
+      </div>
+      <div class="row">
+        <label>Puff phase offset (s) <span class="val" id="v-puff">0.8</span></label>
+        <input id="puff" type="range" min="0" max="2" step="0.1" value="0.8" />
+      </div>
+      <div class="row">
+        <label>Earring max angle (deg) <span class="val" id="v-ear">4</span></label>
+        <input id="ear" type="range" min="0" max="10" step="0.5" value="4" />
+      </div>
+      <div class="row">
+        <label>Blink interval (s) <span class="val" id="v-blink">3 – 7</span></label>
+        <input id="blink-min" type="range" min="1" max="6" step="0.5" value="3" />
+        <input id="blink-max" type="range" min="3" max="12" step="0.5" value="7" />
+      </div>
+
+      <p class="footer">
+        Hover the avatar to preview hover state. The SVG is loaded from
+        <code>/avatars/_preview/portrait.svg</code>. Changes to sliders rebuild the timeline live.
+      </p>
+    </aside>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      const stage = document.getElementById('stage');
+      const loading = document.getElementById('loading');
+
+      // Load the SVG inline so GSAP can target #ids directly.
+      fetch('/avatars/_preview/portrait.svg')
+        .then(r => r.text())
+        .then(svgText => {
+          loading.remove();
+          stage.insertAdjacentHTML('beforeend', svgText);
+          const svg = stage.querySelector('svg');
+          svg.removeAttribute('width');
+          svg.removeAttribute('height');
+          svg.style.background = 'transparent';
+
+          // Wrap every direct child of <svg> in a single <g id="avatar-root">
+          // so whole-body motion (breath, hover) animates one element instead
+          // of each tagged part individually. Per-part transforms with each
+          // part's own bbox center cause sub-pixel drift between parts —
+          // visible as misregistration on painted-on details.
+          const avatarRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          avatarRoot.id = 'avatar-root';
+          while (svg.firstChild) avatarRoot.appendChild(svg.firstChild);
+          svg.appendChild(avatarRoot);
+
+          wireMotion(svg);
+        });
+
+      function wireMotion(svg) {
+        // ---- knobs ----
+        const knob = {
+          breathD: 2.0,
+          breathA: 2,
+          hair: 0.6,
+          puff: 0.8,
+          ear: 4,
+          blinkMin: 3,
+          blinkMax: 7,
+          paused: false,
+          reduced: false,
+          hover: false,
+        };
+
+        let mainTl = null;
+        let blinkCall = null;
+        let hoverTweens = [];
+
+        function clearAll() {
+          gsap.killTweensOf(
+            '#avatar-root, #hair-front, #hair-puff-left, #hair-puff-right, #earring-left, #earring-right, #eye-left, #eye-right, #eyebrow-left, #eyebrow-right, #lips'
+          );
+          if (blinkCall) blinkCall.kill();
+          hoverTweens.forEach(t => t.kill());
+          hoverTweens = [];
         }
 
-        // Breath — applied to the whole-avatar wrapper so every part stays
-        // in register. Per-part transforms with per-part bbox centers cause
-        // sub-pixel drift; one transform on a parent fixes it.
-        if (knob.breathA > 0) {
-          gsap.to("#avatar-root", {
-            y: -knob.breathA,
-            scale: 1 + knob.breathA * 0.0025,
-            duration: knob.breathD,
-            ease: "sine.inOut",
+        function setOrigins() {
+          gsap.set('#avatar-root', { transformOrigin: '50% 100%' });
+          gsap.set('#earring-left, #earring-right', { transformOrigin: '50% 0%' });
+          gsap.set('#hair-puff-left, #hair-puff-right', { transformOrigin: '50% 100%' });
+          gsap.set('#hair-front, #hair-silhouette', { transformOrigin: '50% 0%' });
+          gsap.set('#eye-left, #eye-right', { transformOrigin: '50% 50%' });
+          gsap.set('#eyebrow-left, #eyebrow-right', { transformOrigin: '50% 50%' });
+          gsap.set('#lips', { transformOrigin: '50% 50%' });
+        }
+
+        function build() {
+          clearAll();
+          setOrigins();
+
+          if (knob.reduced) {
+            // Snap to neutral — no motion.
+            gsap.set('*', { y: 0, scale: 1, rotation: 0, scaleX: 1, scaleY: 1 });
+            return;
+          }
+
+          // Breath — applied to the whole-avatar wrapper so every part stays
+          // in register. Per-part transforms with per-part bbox centers cause
+          // sub-pixel drift; one transform on a parent fixes it.
+          if (knob.breathA > 0) {
+            gsap.to('#avatar-root', {
+              y: -knob.breathA,
+              scale: 1 + knob.breathA * 0.0025,
+              duration: knob.breathD,
+              ease: 'sine.inOut',
+              yoyo: true,
+              repeat: -1,
+            });
+          }
+
+          // Hair sway — front + silhouette together so they don't separate.
+          // (transform-origin set per-element above; both use 50% 0%, which
+          // makes them rotate around their own tops — not identical pivots,
+          // but visually close enough for ≤3°.)
+          gsap.to('#hair-front, #hair-silhouette', {
+            rotation: knob.hair,
+            duration: 3.2,
+            ease: 'sine.inOut',
             yoyo: true,
             repeat: -1,
           });
+
+          // Puffs — out-of-phase squash
+          gsap.to('#hair-puff-left', {
+            scaleY: 0.985,
+            scaleX: 1.012,
+            duration: 2.6,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+          });
+          gsap.to('#hair-puff-right', {
+            scaleY: 0.985,
+            scaleX: 1.012,
+            duration: 2.9,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+            delay: knob.puff,
+          });
+
+          // Earrings — pendulums
+          gsap.to('#earring-left', {
+            rotation: knob.ear,
+            duration: 1.9,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+          });
+          gsap.to('#earring-right', {
+            rotation: -knob.ear,
+            duration: 2.1,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+            delay: 0.3,
+          });
+
+          // Blink loop — random cadence
+          const scheduleBlink = () => {
+            const wait = gsap.utils.random(knob.blinkMin, knob.blinkMax);
+            blinkCall = gsap.delayedCall(wait, () => {
+              gsap.to('#eye-left, #eye-right', {
+                scaleY: 0.05,
+                duration: 0.06,
+                ease: 'power2.in',
+                yoyo: true,
+                repeat: 1,
+                onComplete: scheduleBlink,
+              });
+            });
+          };
+          scheduleBlink();
+
+          if (knob.paused) gsap.globalTimeline.pause();
+          else gsap.globalTimeline.play();
+
+          if (knob.hover) applyHover(true);
         }
 
-        // Hair sway — front + silhouette together so they don't separate.
-        // (transform-origin set per-element above; both use 50% 0%, which
-        // makes them rotate around their own tops — not identical pivots,
-        // but visually close enough for ≤3°.)
-        gsap.to("#hair-front, #hair-silhouette", {
-          rotation: knob.hair,
-          duration: 3.2,
-          ease: "sine.inOut",
-          yoyo: true,
-          repeat: -1,
-        });
+        function applyHover(on) {
+          hoverTweens.forEach(t => t.kill());
+          hoverTweens = [];
+          if (on) {
+            hoverTweens.push(
+              gsap.to('#eyebrow-left, #eyebrow-right', {
+                y: -3,
+                duration: 0.25,
+                ease: 'power2.out',
+                overwrite: 'auto',
+              }),
+              gsap.to('#lips', {
+                scaleX: 1.04,
+                duration: 0.25,
+                ease: 'power2.out',
+                overwrite: 'auto',
+              })
+            );
+          } else {
+            hoverTweens.push(
+              gsap.to('#eyebrow-left, #eyebrow-right', {
+                y: 0,
+                duration: 0.3,
+                ease: 'power2.out',
+                overwrite: 'auto',
+              }),
+              gsap.to('#lips', { scaleX: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto' })
+            );
+          }
+        }
 
-        // Puffs — out-of-phase squash
-        gsap.to("#hair-puff-left", {
-          scaleY: 0.985, scaleX: 1.012,
-          duration: 2.6, ease: "sine.inOut", yoyo: true, repeat: -1,
-        });
-        gsap.to("#hair-puff-right", {
-          scaleY: 0.985, scaleX: 1.012,
-          duration: 2.9, ease: "sine.inOut", yoyo: true, repeat: -1,
-          delay: knob.puff,
-        });
-
-        // Earrings — pendulums
-        gsap.to("#earring-left",  { rotation:  knob.ear, duration: 1.9, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to("#earring-right", { rotation: -knob.ear, duration: 2.1, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 0.3 });
-
-        // Blink loop — random cadence
-        const scheduleBlink = () => {
-          const wait = gsap.utils.random(knob.blinkMin, knob.blinkMax);
-          blinkCall = gsap.delayedCall(wait, () => {
-            gsap.to("#eye-left, #eye-right", {
-              scaleY: 0.05,
-              duration: 0.06,
-              ease: "power2.in",
-              yoyo: true,
-              repeat: 1,
-              onComplete: scheduleBlink,
-            });
+        // ---- wire controls ----
+        const $ = id => document.getElementById(id);
+        const bind = (id, k, fmt = v => v) => {
+          const el = $(id);
+          const out = $('v-' + id.replace('breath-', 'breath-').replace('blink-', 'blink'));
+          el.addEventListener('input', () => {
+            const v = parseFloat(el.value);
+            knob[k] = v;
+            if (id === 'breath-d') $('v-breath-d').textContent = v.toFixed(1) + 's';
+            else if (id === 'breath-a') $('v-breath-a').textContent = v.toString();
+            else if (id === 'hair') $('v-hair').textContent = v.toFixed(1);
+            else if (id === 'puff') $('v-puff').textContent = v.toFixed(1);
+            else if (id === 'ear') $('v-ear').textContent = v.toString();
+            build();
           });
         };
-        scheduleBlink();
+        bind('breath-d', 'breathD');
+        bind('breath-a', 'breathA');
+        bind('hair', 'hair');
+        bind('puff', 'puff');
+        bind('ear', 'ear');
 
-        if (knob.paused) gsap.globalTimeline.pause();
-        else gsap.globalTimeline.play();
-
-        if (knob.hover) applyHover(true);
-      }
-
-      function applyHover(on) {
-        hoverTweens.forEach((t) => t.kill());
-        hoverTweens = [];
-        if (on) {
-          hoverTweens.push(
-            gsap.to("#eyebrow-left, #eyebrow-right", { y: -3, duration: 0.25, ease: "power2.out", overwrite: "auto" }),
-            gsap.to("#lips", { scaleX: 1.04, duration: 0.25, ease: "power2.out", overwrite: "auto" }),
-          );
-        } else {
-          hoverTweens.push(
-            gsap.to("#eyebrow-left, #eyebrow-right", { y: 0, duration: 0.3, ease: "power2.out", overwrite: "auto" }),
-            gsap.to("#lips", { scaleX: 1, duration: 0.3, ease: "power2.out", overwrite: "auto" }),
-          );
-        }
-      }
-
-      // ---- wire controls ----
-      const $ = (id) => document.getElementById(id);
-      const bind = (id, k, fmt = (v) => v) => {
-        const el = $(id);
-        const out = $("v-" + id.replace("breath-", "breath-").replace("blink-", "blink"));
-        el.addEventListener("input", () => {
-          const v = parseFloat(el.value);
-          knob[k] = v;
-          if (id === "breath-d") $("v-breath-d").textContent = v.toFixed(1) + "s";
-          else if (id === "breath-a") $("v-breath-a").textContent = v.toString();
-          else if (id === "hair") $("v-hair").textContent = v.toFixed(1);
-          else if (id === "puff") $("v-puff").textContent = v.toFixed(1);
-          else if (id === "ear") $("v-ear").textContent = v.toString();
+        const updateBlinkLabel = () => {
+          $('v-blink').textContent = knob.blinkMin.toFixed(1) + ' – ' + knob.blinkMax.toFixed(1);
+        };
+        $('blink-min').addEventListener('input', e => {
+          knob.blinkMin = parseFloat(e.target.value);
+          if (knob.blinkMax < knob.blinkMin) knob.blinkMax = knob.blinkMin;
+          updateBlinkLabel();
           build();
         });
-      };
-      bind("breath-d", "breathD");
-      bind("breath-a", "breathA");
-      bind("hair", "hair");
-      bind("puff", "puff");
-      bind("ear", "ear");
-
-      const updateBlinkLabel = () => {
-        $("v-blink").textContent = knob.blinkMin.toFixed(1) + " – " + knob.blinkMax.toFixed(1);
-      };
-      $("blink-min").addEventListener("input", (e) => {
-        knob.blinkMin = parseFloat(e.target.value);
-        if (knob.blinkMax < knob.blinkMin) knob.blinkMax = knob.blinkMin;
-        updateBlinkLabel();
-        build();
-      });
-      $("blink-max").addEventListener("input", (e) => {
-        knob.blinkMax = parseFloat(e.target.value);
-        if (knob.blinkMax < knob.blinkMin) knob.blinkMin = knob.blinkMax;
-        updateBlinkLabel();
-        build();
-      });
-
-      const togglePause = $("btn-pause");
-      togglePause.addEventListener("click", () => {
-        knob.paused = !knob.paused;
-        togglePause.setAttribute("aria-pressed", String(knob.paused));
-        togglePause.textContent = knob.paused ? "Play" : "Pause";
-        if (knob.paused) gsap.globalTimeline.pause();
-        else gsap.globalTimeline.play();
-      });
-
-      $("btn-blink").addEventListener("click", () => {
-        gsap.to("#eye-left, #eye-right", {
-          scaleY: 0.05, duration: 0.06, ease: "power2.in",
-          yoyo: true, repeat: 1, overwrite: "auto",
-        });
-      });
-
-      const toggleHoldBlink = $("btn-hold-blink");
-      let holdBlinkActive = false;
-      toggleHoldBlink.addEventListener("click", () => {
-        holdBlinkActive = !holdBlinkActive;
-        toggleHoldBlink.setAttribute("aria-pressed", String(holdBlinkActive));
-        if (holdBlinkActive) {
-          if (blinkCall) blinkCall.kill();
-          gsap.killTweensOf("#eye-left, #eye-right");
-          gsap.set("#eye-left, #eye-right", { scaleY: 0.05, transformOrigin: "50% 50%" });
-        } else {
-          gsap.set("#eye-left, #eye-right", { scaleY: 1 });
+        $('blink-max').addEventListener('input', e => {
+          knob.blinkMax = parseFloat(e.target.value);
+          if (knob.blinkMax < knob.blinkMin) knob.blinkMin = knob.blinkMax;
+          updateBlinkLabel();
           build();
-        }
-      });
+        });
 
-      const toggleHover = $("btn-hover");
-      toggleHover.addEventListener("click", () => {
-        knob.hover = !knob.hover;
-        toggleHover.setAttribute("aria-pressed", String(knob.hover));
-        applyHover(knob.hover);
-      });
-      svg.addEventListener("mouseenter", () => { if (!knob.hover) applyHover(true); });
-      svg.addEventListener("mouseleave", () => { if (!knob.hover) applyHover(false); });
+        const togglePause = $('btn-pause');
+        togglePause.addEventListener('click', () => {
+          knob.paused = !knob.paused;
+          togglePause.setAttribute('aria-pressed', String(knob.paused));
+          togglePause.textContent = knob.paused ? 'Play' : 'Pause';
+          if (knob.paused) gsap.globalTimeline.pause();
+          else gsap.globalTimeline.play();
+        });
 
-      const toggleReduced = $("btn-reduced");
-      toggleReduced.addEventListener("click", () => {
-        knob.reduced = !knob.reduced;
-        toggleReduced.setAttribute("aria-pressed", String(knob.reduced));
+        $('btn-blink').addEventListener('click', () => {
+          gsap.to('#eye-left, #eye-right', {
+            scaleY: 0.05,
+            duration: 0.06,
+            ease: 'power2.in',
+            yoyo: true,
+            repeat: 1,
+            overwrite: 'auto',
+          });
+        });
+
+        const toggleHoldBlink = $('btn-hold-blink');
+        let holdBlinkActive = false;
+        toggleHoldBlink.addEventListener('click', () => {
+          holdBlinkActive = !holdBlinkActive;
+          toggleHoldBlink.setAttribute('aria-pressed', String(holdBlinkActive));
+          if (holdBlinkActive) {
+            if (blinkCall) blinkCall.kill();
+            gsap.killTweensOf('#eye-left, #eye-right');
+            gsap.set('#eye-left, #eye-right', { scaleY: 0.05, transformOrigin: '50% 50%' });
+          } else {
+            gsap.set('#eye-left, #eye-right', { scaleY: 1 });
+            build();
+          }
+        });
+
+        const toggleHover = $('btn-hover');
+        toggleHover.addEventListener('click', () => {
+          knob.hover = !knob.hover;
+          toggleHover.setAttribute('aria-pressed', String(knob.hover));
+          applyHover(knob.hover);
+        });
+        svg.addEventListener('mouseenter', () => {
+          if (!knob.hover) applyHover(true);
+        });
+        svg.addEventListener('mouseleave', () => {
+          if (!knob.hover) applyHover(false);
+        });
+
+        const toggleReduced = $('btn-reduced');
+        toggleReduced.addEventListener('click', () => {
+          knob.reduced = !knob.reduced;
+          toggleReduced.setAttribute('aria-pressed', String(knob.reduced));
+          build();
+        });
+
         build();
-      });
-
-      build();
-    }
-  </script>
-</body>
+      }
+    </script>
+  </body>
 </html>

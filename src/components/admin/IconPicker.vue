@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { Icon } from '@iconify/vue'
+import { Icon } from '@iconify/vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps<{
-  modelValue: string
-  ariaLabel?: string
-}>()
+  modelValue: string;
+  ariaLabel?: string;
+}>();
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+  'update:modelValue': [value: string];
+}>();
 
-const open = ref(false)
-const search = ref('')
-const triggerRef = ref<HTMLButtonElement | null>(null)
-const popoverRef = ref<HTMLDivElement | null>(null)
-const searchRef = ref<HTMLInputElement | null>(null)
+const open = ref(false);
+const search = ref('');
+const triggerRef = ref<HTMLButtonElement | null>(null);
+const popoverRef = ref<HTMLDivElement | null>(null);
+const searchRef = ref<HTMLInputElement | null>(null);
 
 // Curated set of lucide icons relevant to STAIJA program contexts: people,
 // time, money, education, science, tech, location, achievement, comms, and
@@ -78,60 +78,56 @@ const ICONS: { name: string; label: string }[] = [
   { name: 'lucide:rocket', label: 'Rocket' },
   { name: 'lucide:check-circle-2', label: 'Check' },
   { name: 'lucide:circle-help', label: 'Help' },
-]
+];
 
 const filtered = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return ICONS
-  return ICONS.filter(
-    (i) =>
-      i.name.toLowerCase().includes(q) ||
-      i.label.toLowerCase().includes(q),
-  )
-})
+  const q = search.value.trim().toLowerCase();
+  if (!q) return ICONS;
+  return ICONS.filter(i => i.name.toLowerCase().includes(q) || i.label.toLowerCase().includes(q));
+});
 
 const currentLabel = computed(() => {
-  const found = ICONS.find((i) => i.name === props.modelValue)
-  return found?.label ?? props.modelValue
-})
+  const found = ICONS.find(i => i.name === props.modelValue);
+  return found?.label ?? props.modelValue;
+});
 
 function toggle() {
-  open.value = !open.value
+  open.value = !open.value;
   if (open.value) {
     // Defer focus to next paint so the popover is rendered.
-    setTimeout(() => searchRef.value?.focus(), 0)
+    setTimeout(() => searchRef.value?.focus(), 0);
   }
 }
 
 function pick(name: string) {
-  emit('update:modelValue', name)
-  open.value = false
-  search.value = ''
+  emit('update:modelValue', name);
+  open.value = false;
+  search.value = '';
 }
 
 function onDocClick(e: MouseEvent) {
-  if (!open.value) return
-  const target = e.target as Node
-  if (triggerRef.value?.contains(target)) return
-  if (popoverRef.value?.contains(target)) return
-  open.value = false
+  if (!open.value) return;
+  const target = e.target as Node;
+  if (triggerRef.value?.contains(target)) return;
+  if (popoverRef.value?.contains(target)) return;
+  open.value = false;
 }
 
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && open.value) {
-    open.value = false
-    triggerRef.value?.focus()
+    open.value = false;
+    triggerRef.value?.focus();
   }
 }
 
 onMounted(() => {
-  document.addEventListener('mousedown', onDocClick)
-  document.addEventListener('keydown', onKey)
-})
+  document.addEventListener('mousedown', onDocClick);
+  document.addEventListener('keydown', onKey);
+});
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', onDocClick)
-  document.removeEventListener('keydown', onKey)
-})
+  document.removeEventListener('mousedown', onDocClick);
+  document.removeEventListener('keydown', onKey);
+});
 </script>
 
 <template>
@@ -144,18 +140,8 @@ onBeforeUnmount(() => {
       class="flex items-center gap-2 rounded-lg border hairline-ink bg-paper px-3 py-2 text-sm font-sans w-full hover:border-brand-violet/40 focus:outline-none focus:border-brand-violet/50 focus:ring-2 focus:ring-brand-violet/20"
       @click="toggle"
     >
-      <Icon
-        v-if="modelValue"
-        :icon="modelValue"
-        width="18"
-        class="text-brand-violet shrink-0"
-      />
-      <Icon
-        v-else
-        icon="lucide:image-plus"
-        width="18"
-        class="text-ink/40 shrink-0"
-      />
+      <Icon v-if="modelValue" :icon="modelValue" width="18" class="text-brand-violet shrink-0" />
+      <Icon v-else icon="lucide:image-plus" width="18" class="text-ink/40 shrink-0" />
       <span class="flex-1 text-left truncate">
         {{ modelValue ? currentLabel : 'Pick an icon' }}
       </span>
@@ -182,16 +168,10 @@ onBeforeUnmount(() => {
           placeholder="Search icons…"
           class="rounded-lg border hairline-ink bg-paper px-3 py-1.5 text-sm font-sans focus:outline-none focus:border-brand-violet/50 focus:ring-2 focus:ring-brand-violet/20"
         />
-        <div
-          v-if="filtered.length === 0"
-          class="text-sm text-ink/55 text-center py-6"
-        >
+        <div v-if="filtered.length === 0" class="text-sm text-ink/55 text-center py-6">
           No icons match "{{ search }}".
         </div>
-        <div
-          v-else
-          class="grid grid-cols-6 gap-1 max-h-64 overflow-y-auto"
-        >
+        <div v-else class="grid grid-cols-6 gap-1 max-h-64 overflow-y-auto">
           <button
             v-for="i in filtered"
             :key="i.name"

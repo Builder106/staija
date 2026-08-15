@@ -1,219 +1,206 @@
 <script setup lang="ts" generic="T extends string | number">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { Icon } from '@iconify/vue'
+import { Icon } from '@iconify/vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 interface Option {
-  value: T
-  label: string
-  hint?: string
-  disabled?: boolean
+  value: T;
+  label: string;
+  hint?: string;
+  disabled?: boolean;
 }
 
 const props = withDefaults(
   defineProps<{
-    modelValue: T | null | undefined
-    options: Option[]
-    placeholder?: string
-    disabled?: boolean
-    id?: string
+    modelValue: T | null | undefined;
+    options: Option[];
+    placeholder?: string;
+    disabled?: boolean;
+    id?: string;
     /** Match the trigger's width on the popover. Defaults to true. */
-    matchWidth?: boolean
+    matchWidth?: boolean;
   }>(),
-  { placeholder: 'Select…', matchWidth: true },
-)
+  { placeholder: 'Select…', matchWidth: true }
+);
 
-const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>()
+const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>();
 
-const open = ref(false)
-const triggerEl = ref<HTMLButtonElement | null>(null)
-const listEl = ref<HTMLUListElement | null>(null)
-const activeIndex = ref(-1)
-const popoverStyle = ref<Record<string, string>>({})
+const open = ref(false);
+const triggerEl = ref<HTMLButtonElement | null>(null);
+const listEl = ref<HTMLUListElement | null>(null);
+const activeIndex = ref(-1);
+const popoverStyle = ref<Record<string, string>>({});
 
-const selectedIndex = computed(() =>
-  props.options.findIndex((o) => o.value === props.modelValue),
-)
-const selectedLabel = computed(
-  () => props.options[selectedIndex.value]?.label ?? '',
-)
+const selectedIndex = computed(() => props.options.findIndex(o => o.value === props.modelValue));
+const selectedLabel = computed(() => props.options[selectedIndex.value]?.label ?? '');
 
 function reposition() {
-  const t = triggerEl.value
-  if (!t) return
-  const rect = t.getBoundingClientRect()
-  const gap = 6
+  const t = triggerEl.value;
+  if (!t) return;
+  const rect = t.getBoundingClientRect();
+  const gap = 6;
   const style: Record<string, string> = {
     top: `${rect.bottom + gap}px`,
     left: `${rect.left}px`,
-  }
+  };
   if (props.matchWidth) {
-    style.width = `${rect.width}px`
+    style.width = `${rect.width}px`;
   } else {
-    style.minWidth = `${rect.width}px`
+    style.minWidth = `${rect.width}px`;
   }
-  popoverStyle.value = style
+  popoverStyle.value = style;
 }
 
 function openMenu() {
-  if (props.disabled || open.value) return
-  open.value = true
-  activeIndex.value = selectedIndex.value >= 0 ? selectedIndex.value : 0
+  if (props.disabled || open.value) return;
+  open.value = true;
+  activeIndex.value = selectedIndex.value >= 0 ? selectedIndex.value : 0;
   nextTick(() => {
-    reposition()
-    scrollActiveIntoView()
-    window.addEventListener('scroll', reposition, true)
-    window.addEventListener('resize', reposition)
-  })
+    reposition();
+    scrollActiveIntoView();
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+  });
 }
 
 function closeMenu(focusTrigger = true) {
-  if (!open.value) return
-  open.value = false
-  window.removeEventListener('scroll', reposition, true)
-  window.removeEventListener('resize', reposition)
-  if (focusTrigger) triggerEl.value?.focus()
+  if (!open.value) return;
+  open.value = false;
+  window.removeEventListener('scroll', reposition, true);
+  window.removeEventListener('resize', reposition);
+  if (focusTrigger) triggerEl.value?.focus();
 }
 
 function toggle() {
-  open.value ? closeMenu() : openMenu()
+  if (open.value) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
 }
 
 function pick(index: number) {
-  const opt = props.options[index]
-  if (!opt || opt.disabled) return
-  emit('update:modelValue', opt.value)
-  closeMenu()
+  const opt = props.options[index];
+  if (!opt || opt.disabled) return;
+  emit('update:modelValue', opt.value);
+  closeMenu();
 }
 
 function scrollActiveIntoView() {
-  const list = listEl.value
-  if (!list) return
-  const item = list.querySelector<HTMLElement>(
-    `[data-index="${activeIndex.value}"]`,
-  )
-  item?.scrollIntoView({ block: 'nearest' })
+  const list = listEl.value;
+  if (!list) return;
+  const item = list.querySelector<HTMLElement>(`[data-index="${activeIndex.value}"]`);
+  item?.scrollIntoView({ block: 'nearest' });
 }
 
 watch(activeIndex, () => {
-  if (open.value) scrollActiveIntoView()
-})
+  if (open.value) scrollActiveIntoView();
+});
 
 // Type-ahead: collect printable keys within a short window and jump to
 // the first matching option. Mirrors native <select> behavior so a
 // keyboard-driven editor doesn't have to arrow through long lists.
-let typeBuffer = ''
-let typeTimer: ReturnType<typeof setTimeout> | null = null
+let typeBuffer = '';
+let typeTimer: ReturnType<typeof setTimeout> | null = null;
 function handleTypeAhead(key: string) {
-  typeBuffer += key.toLowerCase()
-  if (typeTimer) clearTimeout(typeTimer)
+  typeBuffer += key.toLowerCase();
+  if (typeTimer) clearTimeout(typeTimer);
   typeTimer = setTimeout(() => {
-    typeBuffer = ''
-  }, 500)
-  const start = activeIndex.value + (typeBuffer.length === 1 ? 1 : 0)
-  const len = props.options.length
+    typeBuffer = '';
+  }, 500);
+  const start = activeIndex.value + (typeBuffer.length === 1 ? 1 : 0);
+  const len = props.options.length;
   for (let i = 0; i < len; i++) {
-    const idx = (start + i) % len
+    const idx = (start + i) % len;
     if (props.options[idx].label.toLowerCase().startsWith(typeBuffer)) {
-      activeIndex.value = idx
-      return
+      activeIndex.value = idx;
+      return;
     }
   }
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (props.disabled) return
+  if (props.disabled) return;
   // When closed, Enter/Space/ArrowDown/ArrowUp open the menu. Letters
   // open and seed the type-ahead so the editor can jump straight to a
   // matching option in one keystroke.
   if (!open.value) {
-    if (
-      e.key === 'Enter' ||
-      e.key === ' ' ||
-      e.key === 'ArrowDown' ||
-      e.key === 'ArrowUp'
-    ) {
-      e.preventDefault()
-      openMenu()
-      return
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      openMenu();
+      return;
     }
     if (e.key.length === 1 && /\S/.test(e.key)) {
-      e.preventDefault()
-      openMenu()
-      handleTypeAhead(e.key)
-      return
+      e.preventDefault();
+      openMenu();
+      handleTypeAhead(e.key);
+      return;
     }
-    return
+    return;
   }
   switch (e.key) {
     case 'Escape':
-      e.preventDefault()
-      closeMenu()
-      break
+      e.preventDefault();
+      closeMenu();
+      break;
     case 'Tab':
       // Don't swallow Tab — let focus move on, but close the menu so
       // it doesn't linger after the editor moves to the next field.
-      closeMenu(false)
-      break
+      closeMenu(false);
+      break;
     case 'ArrowDown':
-      e.preventDefault()
-      activeIndex.value = Math.min(
-        props.options.length - 1,
-        activeIndex.value + 1,
-      )
-      break
+      e.preventDefault();
+      activeIndex.value = Math.min(props.options.length - 1, activeIndex.value + 1);
+      break;
     case 'ArrowUp':
-      e.preventDefault()
-      activeIndex.value = Math.max(0, activeIndex.value - 1)
-      break
+      e.preventDefault();
+      activeIndex.value = Math.max(0, activeIndex.value - 1);
+      break;
     case 'Home':
-      e.preventDefault()
-      activeIndex.value = 0
-      break
+      e.preventDefault();
+      activeIndex.value = 0;
+      break;
     case 'End':
-      e.preventDefault()
-      activeIndex.value = props.options.length - 1
-      break
+      e.preventDefault();
+      activeIndex.value = props.options.length - 1;
+      break;
     case 'Enter':
     case ' ':
-      e.preventDefault()
-      if (activeIndex.value >= 0) pick(activeIndex.value)
-      break
+      e.preventDefault();
+      if (activeIndex.value >= 0) pick(activeIndex.value);
+      break;
     default:
       if (e.key.length === 1 && /\S/.test(e.key)) {
-        e.preventDefault()
-        handleTypeAhead(e.key)
+        e.preventDefault();
+        handleTypeAhead(e.key);
       }
   }
 }
 
 function onDocumentPointerDown(e: PointerEvent) {
-  if (!open.value) return
-  const target = e.target as Node | null
-  if (
-    triggerEl.value?.contains(target as Node) ||
-    listEl.value?.contains(target as Node)
-  ) {
-    return
+  if (!open.value) return;
+  const target = e.target as Node | null;
+  if (triggerEl.value?.contains(target as Node) || listEl.value?.contains(target as Node)) {
+    return;
   }
-  closeMenu(false)
+  closeMenu(false);
 }
 
-watch(open, (isOpen) => {
+watch(open, isOpen => {
   if (isOpen) {
-    document.addEventListener('pointerdown', onDocumentPointerDown, true)
+    document.addEventListener('pointerdown', onDocumentPointerDown, true);
   } else {
-    document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+    document.removeEventListener('pointerdown', onDocumentPointerDown, true);
   }
-})
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', reposition, true)
-  window.removeEventListener('resize', reposition)
-  document.removeEventListener('pointerdown', onDocumentPointerDown, true)
-  if (typeTimer) clearTimeout(typeTimer)
-})
+  window.removeEventListener('scroll', reposition, true);
+  window.removeEventListener('resize', reposition);
+  document.removeEventListener('pointerdown', onDocumentPointerDown, true);
+  if (typeTimer) clearTimeout(typeTimer);
+});
 
-const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
+const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined));
 </script>
 
 <template>
@@ -231,10 +218,7 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
       @click="toggle"
       @keydown="onKeydown"
     >
-      <span
-        class="ui-select__value"
-        :class="{ 'ui-select__placeholder': !selectedLabel }"
-      >
+      <span class="ui-select__value" :class="{ 'ui-select__placeholder': !selectedLabel }">
         {{ selectedLabel || placeholder }}
       </span>
       <span
@@ -242,11 +226,7 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
         :class="{ 'ui-select__chevron-wrap--open': open }"
         aria-hidden="true"
       >
-        <Icon
-          icon="lucide:chevrons-up-down"
-          width="16"
-          class="ui-select__chevron"
-        />
+        <Icon icon="lucide:chevrons-up-down" width="16" class="ui-select__chevron" />
       </span>
     </button>
 
@@ -259,9 +239,7 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
           role="listbox"
           class="ui-select__menu"
           :style="popoverStyle"
-          :aria-activedescendant="
-            activeIndex >= 0 && id ? `${id}-opt-${activeIndex}` : undefined
-          "
+          :aria-activedescendant="activeIndex >= 0 && id ? `${id}-opt-${activeIndex}` : undefined"
         >
           <li
             v-for="(opt, i) in options"
@@ -331,7 +309,10 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
   padding: 0 0 0 1rem !important;
   min-height: 2.875rem;
   overflow: hidden;
-  transition: border-color 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease,
+    box-shadow 0.12s ease;
 }
 .ui-select__trigger:hover:not(:disabled) {
   border-color: rgba(139, 85, 255, 0.4) !important;
@@ -350,7 +331,9 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
      "active" at a glance. */
   background-color: var(--color-surface);
   border-color: transparent !important;
-  box-shadow: 0 0 0 2px rgba(139, 85, 255, 0.55), 0 4px 12px -4px rgba(139, 85, 255, 0.25);
+  box-shadow:
+    0 0 0 2px rgba(139, 85, 255, 0.55),
+    0 4px 12px -4px rgba(139, 85, 255, 0.25);
 }
 .ui-select__value {
   overflow: hidden;
@@ -376,7 +359,9 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
   align-self: stretch;
   border-left: 1px solid rgba(139, 85, 255, 0.2);
   background-color: rgba(139, 85, 255, 0.08);
-  transition: background-color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
 }
 .ui-select__trigger:hover:not(:disabled) .ui-select__chevron-wrap {
   background-color: rgba(139, 85, 255, 0.15);
@@ -427,7 +412,7 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
   font-size: 0.875rem;
   color: var(--color-ink);
 }
-[data-theme="dark"] .ui-select__menu {
+[data-theme='dark'] .ui-select__menu {
   box-shadow:
     0 12px 32px -8px rgba(0, 0, 0, 0.6),
     0 4px 10px -2px rgba(0, 0, 0, 0.45),
@@ -494,7 +479,9 @@ const listId = computed(() => (props.id ? `${props.id}-listbox` : undefined))
 }
 .ui-select-pop-enter-active,
 .ui-select-pop-leave-active {
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
 }
 .ui-select-pop-enter-from,
 .ui-select-pop-leave-to {

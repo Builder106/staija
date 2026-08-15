@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue'
-import LottieAvatar from '../../components/avatars/LottieAvatar.vue'
-import {
-  avatarThumbForSlot,
-  PORTRAIT_SLOT_COUNT,
-} from '../../services/avatar'
-import {
-  hasLottieForSlot,
-  loadLottieForSlot,
-} from '../../services/avatar/lotties'
+import { computed, onMounted, ref } from 'vue';
+import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue';
+import LottieAvatar from '../../components/avatars/LottieAvatar.vue';
+import { avatarThumbForSlot, PORTRAIT_SLOT_COUNT } from '../../services/avatar';
+import { hasLottieForSlot, loadLottieForSlot } from '../../services/avatar/lotties';
 
 /**
  * Phase 1 + Phase 4 avatar preview. Mounts AnimatedAvatar in every
@@ -23,35 +17,33 @@ import {
  * verified end-to-end and signed off.
  */
 
-const TEST_SLOT = 1 // portrait-afro-medium
+const TEST_SLOT = 1; // portrait-afro-medium
 
-const testSrc = computed(() => avatarThumbForSlot(TEST_SLOT))
+const testSrc = computed(() => avatarThumbForSlot(TEST_SLOT));
 
 const allSlots = computed(() =>
   Array.from({ length: PORTRAIT_SLOT_COUNT }, (_, i) => ({
     slot: i,
     src: avatarThumbForSlot(i),
-  })),
-)
+  }))
+);
 
-const states = ['idle', 'hero', 'static'] as const
+const states = ['idle', 'hero', 'static'] as const;
 
 // Discover which slots have Lottie animations attached. The
 // `hasLottieForSlot` lookup is sync (Map.has under the hood); the
 // JSON itself is loaded lazily once we know we want to render it.
-const lottieSlots = computed(() =>
-  allSlots.value.filter((entry) => hasLottieForSlot(entry.slot)),
-)
+const lottieSlots = computed(() => allSlots.value.filter(entry => hasLottieForSlot(entry.slot)));
 
-const loadedLotties = ref<Record<number, Record<string, unknown> | null>>({})
+const loadedLotties = ref<Record<number, Record<string, unknown> | null>>({});
 
 onMounted(async () => {
   // Eagerly preload the small set of Lotties we know exist — preview
   // is the one place we genuinely want all of them up at once.
   for (const entry of lottieSlots.value) {
-    loadedLotties.value[entry.slot] = await loadLottieForSlot(entry.slot)
+    loadedLotties.value[entry.slot] = await loadLottieForSlot(entry.slot);
   }
-})
+});
 </script>
 
 <template>
@@ -59,20 +51,15 @@ onMounted(async () => {
     <header class="avatar-preview__header">
       <h1>Avatar preview</h1>
       <p>
-        Phase 1 motion against slot {{ TEST_SLOT }} (portrait-afro-medium).
-        Hover any avatar to see the lift transition. The full library
-        is rendered below for sanity.
+        Phase 1 motion against slot {{ TEST_SLOT }} (portrait-afro-medium). Hover any avatar to see
+        the lift transition. The full library is rendered below for sanity.
       </p>
     </header>
 
     <section class="avatar-preview__section">
       <h2>State presets — slot {{ TEST_SLOT }}</h2>
       <div class="avatar-preview__states">
-        <figure
-          v-for="state in states"
-          :key="state"
-          class="avatar-preview__cell"
-        >
+        <figure v-for="state in states" :key="state" class="avatar-preview__cell">
           <AnimatedAvatar
             :src="testSrc"
             :state="state"
@@ -87,11 +74,7 @@ onMounted(async () => {
     <section class="avatar-preview__section">
       <h2>All 10 slots — idle state</h2>
       <div class="avatar-preview__library">
-        <figure
-          v-for="entry in allSlots"
-          :key="entry.slot"
-          class="avatar-preview__cell"
-        >
+        <figure v-for="entry in allSlots" :key="entry.slot" class="avatar-preview__cell">
           <AnimatedAvatar
             :src="entry.src"
             state="idle"
@@ -107,8 +90,8 @@ onMounted(async () => {
       <h2>Lottie variants ({{ lottieSlots.length }})</h2>
       <p class="avatar-preview__hint">
         These slots have a rigged Lottie animation in
-        <code>src/assets/avatar-lotties/</code>. Each pair shows the
-        static thumbnail (left) next to its Lottie variant (right).
+        <code>src/assets/avatar-lotties/</code>. Each pair shows the static thumbnail (left) next to
+        its Lottie variant (right).
       </p>
       <div class="avatar-preview__library">
         <figure
@@ -216,5 +199,4 @@ onMounted(async () => {
   padding: 0 0.25rem;
   border-radius: 0.2rem;
 }
-
 </style>

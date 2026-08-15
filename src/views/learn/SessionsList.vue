@@ -1,44 +1,48 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import { useAuth } from '../../composables/useAuth'
-import { EnrollmentService, SessionService, toMillis } from '../../services/learn'
-import type { LiveSession } from '../../services/types'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { useAuth } from '../../composables/useAuth';
+import { EnrollmentService, SessionService, toMillis } from '../../services/learn';
+import type { LiveSession } from '../../services/types';
 
-const { user } = useAuth()
+const { user } = useAuth();
 
-const loading = ref(true)
-const sessions = ref<LiveSession[]>([])
-const error = ref<string | null>(null)
+const loading = ref(true);
+const sessions = ref<LiveSession[]>([]);
+const error = ref<string | null>(null);
 
 const upcoming = computed(() =>
-  sessions.value.filter((s) => toMillis(s.startsAt) >= Date.now()).sort((a, b) => toMillis(a.startsAt) - toMillis(b.startsAt)),
-)
+  sessions.value
+    .filter(s => toMillis(s.startsAt) >= Date.now())
+    .sort((a, b) => toMillis(a.startsAt) - toMillis(b.startsAt))
+);
 const past = computed(() =>
-  sessions.value.filter((s) => toMillis(s.startsAt) < Date.now()).sort((a, b) => toMillis(b.startsAt) - toMillis(a.startsAt)),
-)
+  sessions.value
+    .filter(s => toMillis(s.startsAt) < Date.now())
+    .sort((a, b) => toMillis(b.startsAt) - toMillis(a.startsAt))
+);
 
 async function load() {
-  if (!user.value) return
-  loading.value = true
+  if (!user.value) return;
+  loading.value = true;
   try {
-    const enrollments = await EnrollmentService.getActiveForStudent(user.value.uid)
+    const enrollments = await EnrollmentService.getActiveForStudent(user.value.uid);
     if (enrollments.length === 0) {
-      error.value = 'You are not enrolled in any active course.'
-      return
+      error.value = 'You are not enrolled in any active course.';
+      return;
     }
-    sessions.value = await SessionService.listForCohort(enrollments[0].cohortId)
+    sessions.value = await SessionService.listForCohort(enrollments[0].cohortId);
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load sessions.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load sessions.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -49,10 +53,10 @@ function fmt(s: LiveSession) {
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  })
+  });
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>

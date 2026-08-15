@@ -8,28 +8,23 @@
  * No-op under prefers-reduced-motion — content renders statically.
  */
 
-import { Motion } from 'motion-v'
-import { useReducedMotion } from '../../composables/useReducedMotion'
+import { Motion } from 'motion-v';
+import { useReducedMotion } from '../../composables/useReducedMotion';
 
 interface Props {
   /** Seconds to delay the animation after entering view. */
-  delay?: number
+  delay?: number;
   /** Pixels of vertical lift on entry. Negative values drop instead. */
-  y?: number
+  y?: number;
   /** Animation duration in seconds. */
-  duration?: number
+  duration?: number;
   /** Re-run on every enter (false) vs only the first time (true, default). */
-  once?: boolean
+  once?: boolean;
 }
 
-const {
-  delay = 0,
-  y = 24,
-  duration = 0.5,
-  once = true,
-} = defineProps<Props>()
+const { delay = 0, y = 24, duration = 0.5, once = true } = defineProps<Props>();
 
-const reduce = useReducedMotion()
+const reduce = useReducedMotion();
 </script>
 
 <template>

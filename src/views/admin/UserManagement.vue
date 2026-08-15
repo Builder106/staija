@@ -1,56 +1,56 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { RouterLink } from 'vue-router'
-import { httpsCallable } from 'firebase/functions'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiCard from '../../components/ui/UiCard.vue'
+import { Icon } from '@iconify/vue';
+import { collection, limit as fsLimit, getDocs, orderBy, query } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { computed, onMounted, ref, watch } from 'vue';
+import { RouterLink } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { useAuth } from '../../composables/useAuth';
+import { auth, db, functions } from '../../config/firebase';
 import {
+  ALL_ROLES,
+  AuditService,
   AuthService,
   PermissionService,
-  AuditService,
-  ALL_ROLES,
-  type UserRole,
   type AuditLog,
-} from '../../services/firebase'
-import { collection, getDocs, orderBy, query, limit as fsLimit } from 'firebase/firestore'
-import { auth, db, functions } from '../../config/firebase'
-import { useAuth } from '../../composables/useAuth'
-import type { MentorInvite } from '../../services/types'
+  type UserRole,
+} from '../../services/firebase';
+import type { MentorInvite } from '../../services/types';
 
 interface EnrichedUser {
-  uid: string
-  email: string | null
-  displayName: string | null
-  photoURL: string | null
-  role: UserRole | null
-  emailVerified: boolean
-  disabled: boolean
-  creationTime: string | null
-  lastSignInTime: string | null
-  program: string | null
-  applicationStatus: string | null
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  role: UserRole | null;
+  emailVerified: boolean;
+  disabled: boolean;
+  creationTime: string | null;
+  lastSignInTime: string | null;
+  program: string | null;
+  applicationStatus: string | null;
 }
 
-const { userProfile } = useAuth()
+const { userProfile } = useAuth();
 
-const users = ref<EnrichedUser[]>([])
-const loading = ref(true)
-const loadError = ref<string | null>(null)
-const searchQuery = ref('')
-const activeFilter = ref<UserRole | null>(null)
-const currentPage = ref(1)
-const itemsPerPage = 12
+const users = ref<EnrichedUser[]>([]);
+const loading = ref(true);
+const loadError = ref<string | null>(null);
+const searchQuery = ref('');
+const activeFilter = ref<UserRole | null>(null);
+const currentPage = ref(1);
+const itemsPerPage = 12;
 
-const showRoleModal = ref(false)
-const showUserDetails = ref(false)
-const selectedUser = ref<EnrichedUser | null>(null)
-const newRole = ref<UserRole | null>(null)
+const showRoleModal = ref(false);
+const showUserDetails = ref(false);
+const selectedUser = ref<EnrichedUser | null>(null);
+const newRole = ref<UserRole | null>(null);
 
 // Mentor-invite state. The page mounts with the modal closed; staff
 // clicks "Invite a mentor" in the hero, fills in optional context
@@ -58,87 +58,86 @@ const newRole = ref<UserRole | null>(null)
 // createMentorInvite callable. On success the modal swaps from the
 // form state to a result state with the copyable URL — staff pastes
 // it into their preferred channel (email, LinkedIn, WhatsApp).
-const showInviteModal = ref(false)
-const inviteNote = ref('')
-const inviteEmail = ref('')
-const inviteExpiresInDays = ref<number | null>(30)
-const inviteCount = ref<number>(1)
-const inviteSubmitting = ref(false)
-const inviteError = ref<string | null>(null)
+const showInviteModal = ref(false);
+const inviteNote = ref('');
+const inviteEmail = ref('');
+const inviteExpiresInDays = ref<number | null>(30);
+const inviteCount = ref<number>(1);
+const inviteSubmitting = ref(false);
+const inviteError = ref<string | null>(null);
 /** Array because bulk minting returns N invites — single-mint is
  *  `inviteResults.value.length === 1`, which collapses to the same
  *  UI shape (one row, one Copy button) for the common case. */
-const inviteResults = ref<Array<{ url: string; expiresAt: number }>>([])
+const inviteResults = ref<Array<{ url: string; expiresAt: number }>>([]);
 /** Per-URL copy-feedback state. Keys are the URLs themselves so we
  *  don't need to track index → URL separately. */
-const copiedFlags = ref<Record<string, boolean>>({})
-const copiedAll = ref(false)
+const copiedFlags = ref<Record<string, boolean>>({});
+const copiedAll = ref(false);
 
 function openInviteModal() {
-  inviteNote.value = ''
-  inviteEmail.value = ''
-  inviteExpiresInDays.value = 30
-  inviteCount.value = 1
-  inviteError.value = null
-  inviteResults.value = []
-  copiedFlags.value = {}
-  copiedAll.value = false
-  showInviteModal.value = true
+  inviteNote.value = '';
+  inviteEmail.value = '';
+  inviteExpiresInDays.value = 30;
+  inviteCount.value = 1;
+  inviteError.value = null;
+  inviteResults.value = [];
+  copiedFlags.value = {};
+  copiedAll.value = false;
+  showInviteModal.value = true;
 }
 
 function closeInviteModal() {
-  showInviteModal.value = false
+  showInviteModal.value = false;
   setTimeout(() => {
-    inviteNote.value = ''
-    inviteEmail.value = ''
-    inviteResults.value = []
-    inviteError.value = null
-  }, 200)
+    inviteNote.value = '';
+    inviteEmail.value = '';
+    inviteResults.value = [];
+    inviteError.value = null;
+  }, 200);
 }
 
 async function submitInvite() {
-  if (inviteSubmitting.value) return
-  inviteSubmitting.value = true
-  inviteError.value = null
+  if (inviteSubmitting.value) return;
+  inviteSubmitting.value = true;
+  inviteError.value = null;
   try {
     const fn = httpsCallable<
       { note?: string; email?: string; expiresInDays?: number; count?: number },
       { invites: Array<{ token: string; url: string; expiresAt: number }> }
-    >(functions, 'createMentorInvite')
+    >(functions, 'createMentorInvite');
     const res = await fn({
       note: inviteNote.value.trim() || undefined,
       // Email restriction is ignored server-side when count > 1, but
       // we still send it for the single-invite case where staff
       // wants to lock to a specific recipient.
-      email: inviteCount.value === 1 && inviteEmail.value.trim()
-        ? inviteEmail.value.trim()
-        : undefined,
+      email:
+        inviteCount.value === 1 && inviteEmail.value.trim() ? inviteEmail.value.trim() : undefined,
       expiresInDays: inviteExpiresInDays.value ?? undefined,
       count: inviteCount.value,
-    })
-    inviteResults.value = res.data.invites.map((i) => ({
+    });
+    inviteResults.value = res.data.invites.map(i => ({
       url: i.url,
       expiresAt: i.expiresAt,
-    }))
+    }));
     // Reload the pending-invites table so the newly minted rows show
     // up immediately without a manual refresh.
-    void loadMentorInvites()
+    void loadMentorInvites();
   } catch (err) {
-    inviteError.value = err instanceof Error ? err.message : 'Could not mint invite.'
+    inviteError.value = err instanceof Error ? err.message : 'Could not mint invite.';
   } finally {
-    inviteSubmitting.value = false
+    inviteSubmitting.value = false;
   }
 }
 
 async function copyInviteLink(url: string) {
   try {
-    await navigator.clipboard.writeText(url)
-    copiedFlags.value = { ...copiedFlags.value, [url]: true }
+    await navigator.clipboard.writeText(url);
+    copiedFlags.value = { ...copiedFlags.value, [url]: true };
     setTimeout(() => {
-      copiedFlags.value = { ...copiedFlags.value, [url]: false }
-    }, 1500)
+      copiedFlags.value = { ...copiedFlags.value, [url]: false };
+    }, 1500);
   } catch {
-    inviteError.value = "Couldn't copy automatically — select the URL and copy by hand."
+    inviteError.value = "Couldn't copy automatically — select the URL and copy by hand.";
   }
 }
 
@@ -147,13 +146,15 @@ async function copyInviteLink(url: string) {
  *  cell. Falls back to individual-copy errors silently; the per-row
  *  Copy buttons are the recovery path. */
 async function copyAllInviteLinks() {
-  if (inviteResults.value.length === 0) return
+  if (inviteResults.value.length === 0) return;
   try {
-    await navigator.clipboard.writeText(inviteResults.value.map((i) => i.url).join('\n'))
-    copiedAll.value = true
-    setTimeout(() => { copiedAll.value = false }, 1500)
+    await navigator.clipboard.writeText(inviteResults.value.map(i => i.url).join('\n'));
+    copiedAll.value = true;
+    setTimeout(() => {
+      copiedAll.value = false;
+    }, 1500);
   } catch {
-    inviteError.value = "Couldn't copy automatically — copy each link by hand."
+    inviteError.value = "Couldn't copy automatically — copy each link by hand.";
   }
 }
 
@@ -162,63 +163,66 @@ async function copyAllInviteLinks() {
 // recent rows; older invites are still queryable via Firestore
 // Console if needed, but the operational surface is "recent
 // pending + recently-consumed", not the full history.
-type InviteRow = MentorInvite & { id: string; status: 'pending' | 'consumed' | 'expired' | 'revoked' }
-const mentorInvites = ref<InviteRow[]>([])
-const mentorInvitesLoading = ref(false)
-const revokingTokens = ref<Set<string>>(new Set())
+type InviteRow = MentorInvite & {
+  id: string;
+  status: 'pending' | 'consumed' | 'expired' | 'revoked';
+};
+const mentorInvites = ref<InviteRow[]>([]);
+const mentorInvitesLoading = ref(false);
+const revokingTokens = ref<Set<string>>(new Set());
 
 function inviteStatus(invite: MentorInvite): InviteRow['status'] {
-  if (invite.revoked === true) return 'revoked'
-  if (invite.consumed === true) return 'consumed'
-  if (typeof invite.expiresAt === 'number' && invite.expiresAt < Date.now()) return 'expired'
-  return 'pending'
+  if (invite.revoked === true) return 'revoked';
+  if (invite.consumed === true) return 'consumed';
+  if (typeof invite.expiresAt === 'number' && invite.expiresAt < Date.now()) return 'expired';
+  return 'pending';
 }
 
 async function loadMentorInvites() {
-  mentorInvitesLoading.value = true
+  mentorInvitesLoading.value = true;
   try {
-    const q = query(
-      collection(db, 'mentorInvites'),
-      orderBy('createdAt', 'desc'),
-      fsLimit(50),
-    )
-    const snap = await getDocs(q)
-    mentorInvites.value = snap.docs.map((d) => {
-      const data = d.data() as MentorInvite
-      return { ...data, id: d.id, status: inviteStatus(data) }
-    })
+    const q = query(collection(db, 'mentorInvites'), orderBy('createdAt', 'desc'), fsLimit(50));
+    const snap = await getDocs(q);
+    mentorInvites.value = snap.docs.map(d => {
+      const data = d.data() as MentorInvite;
+      return { ...data, id: d.id, status: inviteStatus(data) };
+    });
   } catch (err) {
     // Non-fatal — the list is auxiliary; UserManagement still
     // functions without it.
-    console.warn('[UserManagement] loadMentorInvites failed', err)
-    mentorInvites.value = []
+    console.warn('[UserManagement] loadMentorInvites failed', err);
+    mentorInvites.value = [];
   } finally {
-    mentorInvitesLoading.value = false
+    mentorInvitesLoading.value = false;
   }
 }
 
 async function revokeInvite(token: string) {
-  if (revokingTokens.value.has(token)) return
-  revokingTokens.value = new Set([...revokingTokens.value, token])
+  if (revokingTokens.value.has(token)) return;
+  revokingTokens.value = new Set([...revokingTokens.value, token]);
   try {
-    const fn = httpsCallable<
-      { token: string },
-      { ok: true; changed: boolean }
-    >(functions, 'revokeMentorInvite')
-    await fn({ token })
-    await loadMentorInvites()
+    const fn = httpsCallable<{ token: string }, { ok: true; changed: boolean }>(
+      functions,
+      'revokeMentorInvite'
+    );
+    await fn({ token });
+    await loadMentorInvites();
   } catch (err) {
-    console.warn('[UserManagement] revokeMentorInvite failed', err)
+    console.warn('[UserManagement] revokeMentorInvite failed', err);
   } finally {
-    const next = new Set(revokingTokens.value)
-    next.delete(token)
-    revokingTokens.value = next
+    const next = new Set(revokingTokens.value);
+    next.delete(token);
+    revokingTokens.value = next;
   }
 }
 
 function formatInviteDate(ms: number | undefined): string {
-  if (!ms) return '—'
-  return new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  if (!ms) return '—';
+  return new Date(ms).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 /** Rebuild the public invite URL from a token. The originally-minted
@@ -229,104 +233,106 @@ function formatInviteDate(ms: number | undefined): string {
  *  dev deploys honest — a staging environment shouldn't copy
  *  production URLs out of staff's clipboard. */
 function inviteUrlFor(token: string): string {
-  if (typeof window === 'undefined') return `/invite/${token}`
-  return `${window.location.origin}/invite/${token}`
+  if (typeof window === 'undefined') return `/invite/${token}`;
+  return `${window.location.origin}/invite/${token}`;
 }
-const changeReason = ref('')
-const roleChanging = ref(false)
-const userAuditLogs = ref<AuditLog[]>([])
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const changeReason = ref('');
+const roleChanging = ref(false);
+const userAuditLogs = ref<AuditLog[]>([]);
+const message = ref<{ type: 'success' | 'error'; text: string } | null>(null);
 
-const allRoles: UserRole[] = ALL_ROLES
+const allRoles: UserRole[] = ALL_ROLES;
 
 const filteredUsers = computed(() => {
-  let list = users.value
-  if (activeFilter.value) list = list.filter((u) => u.role === activeFilter.value)
+  let list = users.value;
+  if (activeFilter.value) list = list.filter(u => u.role === activeFilter.value);
   if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase()
+    const q = searchQuery.value.toLowerCase();
     list = list.filter(
-      (u) =>
+      u =>
         u.displayName?.toLowerCase().includes(q) ||
         u.email?.toLowerCase().includes(q) ||
-        u.role?.toLowerCase().includes(q),
-    )
+        u.role?.toLowerCase().includes(q)
+    );
   }
-  return list
-})
+  return list;
+});
 
 const paginatedUsers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredUsers.value.slice(start, start + itemsPerPage)
-})
+  const start = (currentPage.value - 1) * itemsPerPage;
+  return filteredUsers.value.slice(start, start + itemsPerPage);
+});
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage))
+);
 
 const assignableRoles = computed(() =>
-  allRoles.filter((role) =>
-    PermissionService.canAssignRole(userProfile.value?.role ?? 'applicant', role),
-  ),
-)
+  allRoles.filter(role =>
+    PermissionService.canAssignRole(userProfile.value?.role ?? 'applicant', role)
+  )
+);
 
 watch([activeFilter, searchQuery], () => {
-  currentPage.value = 1
-})
+  currentPage.value = 1;
+});
 
 async function loadUsers() {
-  loading.value = true
-  loadError.value = null
+  loading.value = true;
+  loadError.value = null;
   try {
     const callable = httpsCallable<Record<string, never>, { users: EnrichedUser[] }>(
       functions,
-      'adminListUsers',
-    )
-    const result = await callable({})
-    users.value = result.data.users
+      'adminListUsers'
+    );
+    const result = await callable({});
+    users.value = result.data.users;
   } catch (err) {
-    const msg = (err as { message?: string }).message ?? 'Failed to load users.'
-    loadError.value = msg
-    users.value = []
+    const msg = (err as { message?: string }).message ?? 'Failed to load users.';
+    loadError.value = msg;
+    users.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function getRoleCount(role: UserRole) {
-  return users.value.filter((u) => u.role === role).length
+  return users.value.filter(u => u.role === role).length;
 }
 
 function getInitials(name: string | null) {
-  if (!name) return '?'
+  if (!name) return '?';
   return name
     .split(/\s+/)
-    .map((n) => n[0])
+    .map(n => n[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 function formatAbsoluteDate(iso: string | null) {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function formatRelative(iso: string | null) {
-  if (!iso) return 'Never'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return 'Never'
-  const diff = Date.now() - d.getTime()
-  const secs = Math.floor(diff / 1000)
-  if (secs < 60) return 'Just now'
-  const mins = Math.floor(secs / 60)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  const months = Math.floor(days / 30)
-  if (months < 12) return `${months}mo ago`
-  return `${Math.floor(months / 12)}y ago`
+  if (!iso) return 'Never';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 'Never';
+  const diff = Date.now() - d.getTime();
+  const secs = Math.floor(diff / 1000);
+  if (secs < 60) return 'Just now';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
 }
 
 const roleColors: Record<string, string> = {
@@ -336,86 +342,88 @@ const roleColors: Record<string, string> = {
   student: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
   mentor: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
   applicant: 'bg-ink/5 text-ink/70 ring-1 ring-ink/10',
-}
+};
 
 function roleClass(role: string | null) {
-  return role ? roleColors[role] ?? roleColors.applicant : 'bg-ink/5 text-ink/50 ring-1 ring-ink/10'
+  return role
+    ? (roleColors[role] ?? roleColors.applicant)
+    : 'bg-ink/5 text-ink/50 ring-1 ring-ink/10';
 }
 
 function openRoleModal(user: EnrichedUser) {
-  if (user.uid === auth.currentUser?.uid) return
-  selectedUser.value = user
-  newRole.value = user.role
-  changeReason.value = ''
-  showRoleModal.value = true
+  if (user.uid === auth.currentUser?.uid) return;
+  selectedUser.value = user;
+  newRole.value = user.role;
+  changeReason.value = '';
+  showRoleModal.value = true;
 }
 
 function closeRoleModal() {
-  showRoleModal.value = false
-  selectedUser.value = null
-  newRole.value = null
-  changeReason.value = ''
+  showRoleModal.value = false;
+  selectedUser.value = null;
+  newRole.value = null;
+  changeReason.value = '';
 }
 
 async function viewUserDetails(user: EnrichedUser) {
-  selectedUser.value = user
-  showUserDetails.value = true
+  selectedUser.value = user;
+  showUserDetails.value = true;
   try {
-    userAuditLogs.value = await AuditService.getAuditLogs(user.uid, 10)
+    userAuditLogs.value = await AuditService.getAuditLogs(user.uid, 10);
   } catch {
-    userAuditLogs.value = []
+    userAuditLogs.value = [];
   }
 }
 
 function closeUserDetails() {
-  showUserDetails.value = false
-  selectedUser.value = null
-  userAuditLogs.value = []
+  showUserDetails.value = false;
+  selectedUser.value = null;
+  userAuditLogs.value = [];
 }
 
 async function confirmRoleChange() {
-  if (!selectedUser.value || !newRole.value || !changeReason.value.trim()) return
+  if (!selectedUser.value || !newRole.value || !changeReason.value.trim()) return;
   if (newRole.value === selectedUser.value.role) {
-    showMessage('error', 'Pick a role different from the current one.')
-    return
+    showMessage('error', 'Pick a role different from the current one.');
+    return;
   }
-  roleChanging.value = true
+  roleChanging.value = true;
   try {
-    await AuthService.assignRole(selectedUser.value.uid, newRole.value, changeReason.value)
-    const idx = users.value.findIndex((u) => u.uid === selectedUser.value?.uid)
-    if (idx !== -1) users.value[idx] = { ...users.value[idx], role: newRole.value }
-    showMessage('success', `Role updated to ${newRole.value}.`)
-    closeRoleModal()
+    await AuthService.assignRole(selectedUser.value.uid, newRole.value, changeReason.value);
+    const idx = users.value.findIndex(u => u.uid === selectedUser.value?.uid);
+    if (idx !== -1) users.value[idx] = { ...users.value[idx], role: newRole.value };
+    showMessage('success', `Role updated to ${newRole.value}.`);
+    closeRoleModal();
   } catch (err) {
-    const msg = (err as { message?: string }).message ?? 'Could not change role.'
-    showMessage('error', msg)
+    const msg = (err as { message?: string }).message ?? 'Could not change role.';
+    showMessage('error', msg);
   } finally {
-    roleChanging.value = false
+    roleChanging.value = false;
   }
 }
 
 function showMessage(type: 'success' | 'error', text: string) {
-  message.value = { type, text }
-  setTimeout(() => (message.value = null), 5000)
+  message.value = { type, text };
+  setTimeout(() => (message.value = null), 5000);
 }
 
 function getActivityIcon(type: string) {
-  if (type === 'role_change') return 'lucide:refresh-cw'
-  if (type === 'permission_check') return 'lucide:lock'
-  return 'lucide:file-edit'
+  if (type === 'role_change') return 'lucide:refresh-cw';
+  if (type === 'permission_check') return 'lucide:lock';
+  return 'lucide:file-edit';
 }
 
 function getActivityText(log: AuditLog) {
-  if (log.type === 'role_change') return `Role changed from ${log.previousRole} to ${log.newRole}`
+  if (log.type === 'role_change') return `Role changed from ${log.previousRole} to ${log.newRole}`;
   if (log.type === 'permission_check')
-    return `${log.granted ? 'Granted' : 'Denied'} access to ${log.permission}`
-  return 'Activity logged'
+    return `${log.granted ? 'Granted' : 'Denied'} access to ${log.permission}`;
+  return 'Activity logged';
 }
 
 onMounted(() => {
-  loadUsers()
-  void loadMentorInvites()
-})
+  loadUsers();
+  void loadMentorInvites();
+});
 </script>
 
 <template>
@@ -428,7 +436,9 @@ onMounted(() => {
             <Heading :level="1" class="mb-3">
               User <span class="text-brand-violet">management</span>.
             </Heading>
-            <Body class="text-ink/70">Roles, permissions, and account status across all users.</Body>
+            <Body class="text-ink/70"
+              >Roles, permissions, and account status across all users.</Body
+            >
           </div>
           <UiButton variant="primary" @click="openInviteModal">
             <span class="flex items-center gap-2">
@@ -523,7 +533,11 @@ onMounted(() => {
 
         <!-- Loading / error -->
         <UiCard v-if="loading" class="p-10 bg-surface text-center">
-          <Icon icon="lucide:loader-2" width="24" class="animate-spin text-brand-violet mx-auto mb-3" />
+          <Icon
+            icon="lucide:loader-2"
+            width="24"
+            class="animate-spin text-brand-violet mx-auto mb-3"
+          />
           <Body class="text-ink/60 text-sm">Loading users…</Body>
         </UiCard>
 
@@ -628,7 +642,11 @@ onMounted(() => {
                     >
                       View profile
                     </RouterLink>
-                    <span v-if="user.role === 'mentor'" class="inline-block w-px h-3 bg-ink/20 mx-2" aria-hidden="true" />
+                    <span
+                      v-if="user.role === 'mentor'"
+                      class="inline-block w-px h-3 bg-ink/20 mx-2"
+                      aria-hidden="true"
+                    />
                     <button
                       type="button"
                       class="text-xs font-medium text-brand-violet hover:underline disabled:text-ink/30 disabled:cursor-not-allowed disabled:no-underline"
@@ -686,7 +704,9 @@ onMounted(() => {
           <div class="px-5 py-4 flex items-center justify-between border-b hairline-ink">
             <div>
               <h2 class="font-display text-lg font-semibold m-0 text-ink">Mentor invites</h2>
-              <p class="text-xs text-ink/55 m-0 mt-1">Most recent 50. Refreshes after mint or revoke.</p>
+              <p class="text-xs text-ink/55 m-0 mt-1">
+                Most recent 50. Refreshes after mint or revoke.
+              </p>
             </div>
             <button
               type="button"
@@ -697,10 +717,16 @@ onMounted(() => {
               {{ mentorInvitesLoading ? 'Loading…' : 'Refresh' }}
             </button>
           </div>
-          <div v-if="mentorInvites.length === 0 && !mentorInvitesLoading" class="px-5 py-10 text-center text-sm text-ink/55">
+          <div
+            v-if="mentorInvites.length === 0 && !mentorInvitesLoading"
+            class="px-5 py-10 text-center text-sm text-ink/55"
+          >
             No invites yet. Mint one via "Invite a mentor" above.
           </div>
-          <div v-else-if="mentorInvitesLoading && mentorInvites.length === 0" class="px-5 py-10 text-center text-sm text-ink/55">
+          <div
+            v-else-if="mentorInvitesLoading && mentorInvites.length === 0"
+            class="px-5 py-10 text-center text-sm text-ink/55"
+          >
             <Icon icon="lucide:loader-2" width="20" class="animate-spin inline" />
           </div>
           <div v-else class="overflow-x-auto">
@@ -736,10 +762,16 @@ onMounted(() => {
                     </span>
                   </td>
                   <td class="px-5 py-3 text-ink/80 text-xs">{{ invite.createdByName }}</td>
-                  <td class="px-5 py-3 text-ink/70 text-xs whitespace-nowrap">{{ formatInviteDate(invite.createdAt) }}</td>
-                  <td class="px-5 py-3 text-ink/70 text-xs whitespace-nowrap">{{ formatInviteDate(invite.expiresAt) }}</td>
+                  <td class="px-5 py-3 text-ink/70 text-xs whitespace-nowrap">
+                    {{ formatInviteDate(invite.createdAt) }}
+                  </td>
+                  <td class="px-5 py-3 text-ink/70 text-xs whitespace-nowrap">
+                    {{ formatInviteDate(invite.expiresAt) }}
+                  </td>
                   <td class="px-5 py-3 text-ink/70 text-xs">{{ invite.email ?? '—' }}</td>
-                  <td class="px-5 py-3 text-ink/70 text-xs max-w-[16rem] truncate">{{ invite.note ?? '—' }}</td>
+                  <td class="px-5 py-3 text-ink/70 text-xs max-w-[16rem] truncate">
+                    {{ invite.note ?? '—' }}
+                  </td>
                   <td class="px-5 py-3 text-right whitespace-nowrap">
                     <button
                       v-if="invite.status === 'pending'"
@@ -758,10 +790,7 @@ onMounted(() => {
                     >
                       {{ revokingTokens.has(invite.id) ? 'Revoking…' : 'Revoke' }}
                     </button>
-                    <span
-                      v-else-if="invite.status === 'consumed'"
-                      class="text-xs text-ink/50"
-                    >
+                    <span v-else-if="invite.status === 'consumed'" class="text-xs text-ink/50">
                       claimed
                     </span>
                   </td>
@@ -817,13 +846,16 @@ onMounted(() => {
                   </div>
                   <div class="text-ink/60 text-xs truncate">{{ selectedUser?.email }}</div>
                   <div class="text-ink/50 text-xs mt-0.5">
-                    Current role: <span class="capitalize font-medium">{{ selectedUser?.role || 'none' }}</span>
+                    Current role:
+                    <span class="capitalize font-medium">{{ selectedUser?.role || 'none' }}</span>
                   </div>
                 </div>
               </div>
 
               <div class="flex flex-col gap-2">
-                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">New role</label>
+                <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >New role</label
+                >
                 <div class="grid grid-cols-2 gap-2">
                   <label
                     v-for="role in assignableRoles"
@@ -831,7 +863,12 @@ onMounted(() => {
                     class="flex items-center gap-2 px-3 py-2 rounded-md border hairline-ink hover:bg-ink/[0.02] cursor-pointer text-sm capitalize"
                     :class="newRole === role ? 'border-brand-violet bg-brand-violet/5' : ''"
                   >
-                    <input v-model="newRole" type="radio" :value="role" class="accent-brand-violet" />
+                    <input
+                      v-model="newRole"
+                      type="radio"
+                      :value="role"
+                      class="accent-brand-violet"
+                    />
                     {{ role.replace('_', ' ') }}
                   </label>
                 </div>
@@ -930,30 +967,42 @@ onMounted(() => {
 
               <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 <div>
-                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">UID</dt>
+                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">
+                    UID
+                  </dt>
                   <dd class="text-ink font-mono text-xs break-all">{{ selectedUser.uid }}</dd>
                 </div>
                 <div>
-                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">Status</dt>
+                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">
+                    Status
+                  </dt>
                   <dd class="text-ink">{{ selectedUser.disabled ? 'Disabled' : 'Active' }}</dd>
                 </div>
                 <div>
-                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">Joined</dt>
+                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">
+                    Joined
+                  </dt>
                   <dd class="text-ink">{{ formatAbsoluteDate(selectedUser.creationTime) }}</dd>
                 </div>
                 <div>
-                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">Last sign in</dt>
+                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">
+                    Last sign in
+                  </dt>
                   <dd class="text-ink">{{ formatRelative(selectedUser.lastSignInTime) }}</dd>
                 </div>
                 <div v-if="selectedUser.program">
-                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">Program</dt>
+                  <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">
+                    Program
+                  </dt>
                   <dd class="text-ink capitalize">{{ selectedUser.program.replace('_', ' ') }}</dd>
                 </div>
                 <div v-if="selectedUser.applicationStatus">
                   <dt class="text-ink/50 text-xs uppercase tracking-wide font-semibold mb-0.5">
                     Application
                   </dt>
-                  <dd class="text-ink capitalize">{{ selectedUser.applicationStatus.replace('_', ' ') }}</dd>
+                  <dd class="text-ink capitalize">
+                    {{ selectedUser.applicationStatus.replace('_', ' ') }}
+                  </dd>
                 </div>
               </dl>
 
@@ -1023,24 +1072,33 @@ onMounted(() => {
             <template v-if="inviteResults.length > 0">
               <div class="p-6 flex flex-col gap-5">
                 <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div
+                    class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"
+                  >
                     <Icon icon="lucide:check-circle-2" width="20" />
                   </div>
                   <div>
                     <Heading :level="3" class="!text-lg !m-0">
-                      {{ inviteResults.length === 1 ? 'Invite link ready' : `${inviteResults.length} invite links ready` }}
+                      {{
+                        inviteResults.length === 1
+                          ? 'Invite link ready'
+                          : `${inviteResults.length} invite links ready`
+                      }}
                     </Heading>
                     <p class="text-sm text-ink/60 m-0 mt-1">
-                      Each is single-use, expiring {{ new Date(inviteResults[0].expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}.
+                      Each is single-use, expiring
+                      {{
+                        new Date(inviteResults[0].expiresAt).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })
+                      }}.
                     </p>
                   </div>
                 </div>
                 <div class="flex flex-col gap-2 max-h-72 overflow-y-auto">
-                  <div
-                    v-for="invite in inviteResults"
-                    :key="invite.url"
-                    class="flex gap-2"
-                  >
+                  <div v-for="invite in inviteResults" :key="invite.url" class="flex gap-2">
                     <input
                       type="text"
                       :value="invite.url"
@@ -1051,9 +1109,11 @@ onMounted(() => {
                     <button
                       type="button"
                       class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold border transition-colors focus-ring-brand shrink-0"
-                      :class="copiedFlags[invite.url]
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-brand-violet/10 text-brand-violet border-brand-violet/30 hover:bg-brand-violet/15'"
+                      :class="
+                        copiedFlags[invite.url]
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-brand-violet/10 text-brand-violet border-brand-violet/30 hover:bg-brand-violet/15'
+                      "
                       @click="copyInviteLink(invite.url)"
                     >
                       <Icon
@@ -1071,21 +1131,19 @@ onMounted(() => {
                   v-if="inviteResults.length > 1"
                   type="button"
                   class="inline-flex items-center gap-1.5 text-sm font-semibold rounded-lg px-3 py-2 border transition-colors focus-ring-brand"
-                  :class="copiedAll
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-brand-violet/10 text-brand-violet border-brand-violet/30 hover:bg-brand-violet/15'"
+                  :class="
+                    copiedAll
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-brand-violet/10 text-brand-violet border-brand-violet/30 hover:bg-brand-violet/15'
+                  "
                   @click="copyAllInviteLinks"
                 >
                   <Icon :icon="copiedAll ? 'lucide:check' : 'lucide:copy'" width="14" />
                   {{ copiedAll ? 'All copied' : 'Copy all' }}
                 </button>
                 <div class="flex items-center gap-2 ml-auto">
-                  <UiButton variant="secondary" @click="openInviteModal">
-                    Mint more
-                  </UiButton>
-                  <UiButton variant="primary" @click="closeInviteModal">
-                    Done
-                  </UiButton>
+                  <UiButton variant="secondary" @click="openInviteModal"> Mint more </UiButton>
+                  <UiButton variant="primary" @click="closeInviteModal"> Done </UiButton>
                 </div>
               </div>
             </template>
@@ -1096,8 +1154,8 @@ onMounted(() => {
                 <div>
                   <Heading :level="3" class="!text-lg !m-0">Invite a mentor</Heading>
                   <p class="text-sm text-ink/60 m-0 mt-1">
-                    Mints a single-use link. When the recipient signs
-                    in and accepts, their account becomes a mentor.
+                    Mints a single-use link. When the recipient signs in and accepts, their account
+                    becomes a mentor.
                   </p>
                 </div>
 
@@ -1116,7 +1174,8 @@ onMounted(() => {
 
                 <div class="flex flex-col gap-2">
                   <label class="text-xs font-semibold text-ink/70 uppercase tracking-wide">
-                    Restrict to email <span class="text-ink/40 normal-case">(optional, single invite only)</span>
+                    Restrict to email
+                    <span class="text-ink/40 normal-case">(optional, single invite only)</span>
                   </label>
                   <input
                     v-model="inviteEmail"
@@ -1126,9 +1185,11 @@ onMounted(() => {
                     class="border hairline-ink rounded-lg px-3 py-2 text-sm bg-paper focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <p class="text-xs text-ink/50 m-0">
-                    {{ inviteCount > 1
-                      ? 'Email restriction only applies when minting a single invite.'
-                      : 'Leave blank to let anyone with the link consume it.' }}
+                    {{
+                      inviteCount > 1
+                        ? 'Email restriction only applies when minting a single invite.'
+                        : 'Leave blank to let anyone with the link consume it.'
+                    }}
                   </p>
                 </div>
 
@@ -1159,12 +1220,19 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <p v-if="inviteError" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 m-0">
+                <p
+                  v-if="inviteError"
+                  class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 m-0"
+                >
                   {{ inviteError }}
                 </p>
               </div>
               <div class="flex justify-end gap-2 px-6 py-4 border-t hairline-ink bg-ink/[0.02]">
-                <UiButton variant="secondary" :disabled="inviteSubmitting" @click="closeInviteModal">
+                <UiButton
+                  variant="secondary"
+                  :disabled="inviteSubmitting"
+                  @click="closeInviteModal"
+                >
                   Cancel
                 </UiButton>
                 <UiButton variant="primary" :disabled="inviteSubmitting" @click="submitInvite">

@@ -4,5 +4,3 @@
     <p>The page you’re looking for doesn’t exist. <a href="/">Go home</a>.</p>
   </section>
 </template>
-
-

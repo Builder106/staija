@@ -1,124 +1,128 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { publicStorage } from '../../config/firebase'
+import { Icon } from '@iconify/vue';
+import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
+import { computed, ref } from 'vue';
+import { publicStorage } from '../../config/firebase';
 
 const props = defineProps<{
-  modelValue: string
+  modelValue: string;
   /** Storage prefix to upload into, e.g. "programs/stepup-scholars/hero". */
-  pathPrefix: string
+  pathPrefix: string;
   /** Visual aspect ratio for the thumbnail + drop zone. */
-  shape?: 'landscape' | 'square' | 'portrait' | 'circle'
+  shape?: 'landscape' | 'square' | 'portrait' | 'circle';
   /** Used as the alt text for the rendered preview and the dropzone aria-label. */
-  ariaLabel?: string
-}>()
+  ariaLabel?: string;
+}>();
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+  'update:modelValue': [value: string];
+}>();
 
-const uploading = ref(false)
-const error = ref('')
-const dragActive = ref(false)
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const showUrlInput = ref(false)
+const uploading = ref(false);
+const error = ref('');
+const dragActive = ref(false);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const showUrlInput = ref(false);
 
 const aspectClass = computed(() => {
   switch (props.shape ?? 'landscape') {
-    case 'square': return 'aspect-square'
-    case 'portrait': return 'aspect-[3/4]'
-    case 'circle': return 'aspect-square rounded-full'
+    case 'square':
+      return 'aspect-square';
+    case 'portrait':
+      return 'aspect-[3/4]';
+    case 'circle':
+      return 'aspect-square rounded-full';
     case 'landscape':
     default:
-      return 'aspect-[4/3]'
+      return 'aspect-[4/3]';
   }
-})
+});
 
 const previewWidth = computed(() => {
-  return (props.shape ?? 'landscape') === 'circle' ? 'w-24' : 'w-40'
-})
+  return (props.shape ?? 'landscape') === 'circle' ? 'w-24' : 'w-40';
+});
 
 async function handleFile(file: File) {
   if (!file.type.startsWith('image/')) {
-    error.value = 'Please choose an image file.'
-    return
+    error.value = 'Please choose an image file.';
+    return;
   }
   if (file.size > 5 * 1024 * 1024) {
-    error.value = 'Image must be under 5 MB.'
-    return
+    error.value = 'Image must be under 5 MB.';
+    return;
   }
-  uploading.value = true
-  error.value = ''
+  uploading.value = true;
+  error.value = '';
   try {
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     // Unique filename keeps old upload URLs working (cached pages, version
     // history) — no overwrite. A future cleanup job can reap orphans.
-    const stamp = Date.now()
-    const rand = Math.random().toString(36).slice(2, 8)
-    const path = `${props.pathPrefix}/${stamp}-${rand}.${ext}`
+    const stamp = Date.now();
+    const rand = Math.random().toString(36).slice(2, 8);
+    const path = `${props.pathPrefix}/${stamp}-${rand}.${ext}`;
     // Always use publicStorage — these are program-page assets, served
     // unauthenticated to the world. publicStorage points at the no-cost
     // multi-region bucket; falls back to the default bucket if
     // VITE_FIREBASE_PUBLIC_BUCKET isn't set in the environment.
-    const r = storageRef(publicStorage, path)
-    await uploadBytes(r, file)
-    const url = await getDownloadURL(r)
-    emit('update:modelValue', url)
+    const r = storageRef(publicStorage, path);
+    await uploadBytes(r, file);
+    const url = await getDownloadURL(r);
+    emit('update:modelValue', url);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Upload failed.'
+    error.value = err instanceof Error ? err.message : 'Upload failed.';
   } finally {
-    uploading.value = false
+    uploading.value = false;
   }
 }
 
 function onPick() {
-  fileInputRef.value?.click()
+  fileInputRef.value?.click();
 }
 
 function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (file) handleFile(file)
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) handleFile(file);
   // Reset so re-picking the same file fires change again.
-  input.value = ''
+  input.value = '';
 }
 
 function onDrop(e: DragEvent) {
-  e.preventDefault()
-  dragActive.value = false
-  const file = e.dataTransfer?.files?.[0]
-  if (file) handleFile(file)
+  e.preventDefault();
+  dragActive.value = false;
+  const file = e.dataTransfer?.files?.[0];
+  if (file) handleFile(file);
 }
 
 function onDragOver(e: DragEvent) {
-  e.preventDefault()
-  dragActive.value = true
+  e.preventDefault();
+  dragActive.value = true;
 }
 
 function onDragLeave(e: DragEvent) {
-  e.preventDefault()
-  dragActive.value = false
+  e.preventDefault();
+  dragActive.value = false;
 }
 
 function clearImage() {
-  emit('update:modelValue', '')
-  showUrlInput.value = false
+  emit('update:modelValue', '');
+  showUrlInput.value = false;
 }
 
 function onUrlInput(e: Event) {
-  emit('update:modelValue', (e.target as HTMLInputElement).value)
+  emit('update:modelValue', (e.target as HTMLInputElement).value);
 }
 </script>
 
 <template>
   <div class="flex flex-col gap-3">
     <!-- Has image: thumbnail + replace/remove -->
-    <div
-      v-if="modelValue && !uploading"
-      class="flex items-start gap-4"
-    >
+    <div v-if="modelValue && !uploading" class="flex items-start gap-4">
       <div
-        :class="['overflow-hidden border hairline-ink bg-ink/5 shrink-0', previewWidth, aspectClass]"
+        :class="[
+          'overflow-hidden border hairline-ink bg-ink/5 shrink-0',
+          previewWidth,
+          aspectClass,
+        ]"
       >
         <img
           :src="modelValue"
@@ -161,7 +165,9 @@ function onUrlInput(e: Event) {
       v-else
       :class="[
         'rounded-xl border-2 border-dashed p-6 flex flex-col items-center gap-2 cursor-pointer transition-colors text-center',
-        dragActive ? 'border-brand-violet bg-brand-violet/5' : 'hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5',
+        dragActive
+          ? 'border-brand-violet bg-brand-violet/5'
+          : 'hairline-ink hover:border-brand-violet/40 hover:bg-brand-violet/5',
       ]"
       role="button"
       :aria-label="`Upload image. ${ariaLabel || ''}`"
@@ -181,13 +187,7 @@ function onUrlInput(e: Event) {
       <span class="text-xs text-ink/50">PNG, JPG, GIF, WebP — up to 5&nbsp;MB</span>
     </div>
 
-    <input
-      ref="fileInputRef"
-      type="file"
-      accept="image/*"
-      class="hidden"
-      @change="onFileChange"
-    />
+    <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="onFileChange" />
 
     <!-- URL fallback for power users / pasting from external hosts -->
     <button

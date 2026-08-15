@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StepUpDetailView from '../components/programs/StepUpDetailView.vue'
+import StepUpDetailView from '../components/programs/StepUpDetailView.vue';
 </script>
 
 <template>

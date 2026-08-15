@@ -1,22 +1,14 @@
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs,
-  addDoc,
-  limit
-} from 'firebase/firestore'
-import { db } from '../config/firebase.ts'
-import type { AuditLog, UserRole, Permission } from './types'
+import { addDoc, collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
+import { db } from '../config/firebase.ts';
+import type { AuditLog, Permission, UserRole } from './types';
 
 export class AuditService {
   static async logRoleChange(params: {
-    userId: string
-    previousRole: UserRole
-    newRole: UserRole
-    changedBy: string
-    reason?: string
+    userId: string;
+    previousRole: UserRole;
+    newRole: UserRole;
+    changedBy: string;
+    reason?: string;
   }): Promise<void> {
     try {
       const auditLog = {
@@ -28,20 +20,20 @@ export class AuditService {
         reason: params.reason || 'Role change',
         timestamp: new Date(),
         ipAddress: '',
-        userAgent: ''
-      }
+        userAgent: '',
+      };
 
-      await addDoc(collection(db, 'audit_logs'), auditLog)
+      await addDoc(collection(db, 'audit_logs'), auditLog);
     } catch (error) {
-      console.error('Failed to log role change:', error)
+      console.error('Failed to log role change:', error);
     }
   }
 
   static async logPermissionCheck(params: {
-    userId: string
-    permission: Permission
-    granted: boolean
-    context?: string
+    userId: string;
+    permission: Permission;
+    granted: boolean;
+    context?: string;
   }): Promise<void> {
     try {
       const auditLog = {
@@ -50,32 +42,28 @@ export class AuditService {
         permission: params.permission,
         granted: params.granted,
         context: params.context || '',
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      await addDoc(collection(db, 'audit_logs'), auditLog)
+      await addDoc(collection(db, 'audit_logs'), auditLog);
     } catch (error) {
-      console.error('Failed to log permission check:', error)
+      console.error('Failed to log permission check:', error);
     }
   }
 
   static async getAuditLogs(userId?: string, logLimit: number = 50): Promise<AuditLog[]> {
     try {
-      let q = query(
-        collection(db, 'audit_logs'),
-        orderBy('timestamp', 'desc'),
-        limit(logLimit)
-      )
+      let q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(logLimit));
 
       if (userId) {
-        q = query(q, where('userId', '==', userId))
+        q = query(q, where('userId', '==', userId));
       }
 
-      const snapshot = await getDocs(q)
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog))
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as AuditLog);
     } catch (error) {
-      console.error('Failed to get audit logs:', error)
-      throw error
+      console.error('Failed to get audit logs:', error);
+      throw error;
     }
   }
 }

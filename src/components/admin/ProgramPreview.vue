@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
-import UiChip from '../ui/UiChip.vue'
-import type { ProgramStat } from '../../services/firebase'
+import { Icon } from '@iconify/vue';
+import type { ProgramStat } from '../../services/firebase';
+import UiChip from '../ui/UiChip.vue';
 
 defineProps<{
-  name: string
-  pitch: string
-  eligibility: string
-  heroImg: string
-  stats: ProgramStat[]
-}>()
+  name: string;
+  pitch: string;
+  eligibility: string;
+  heroImg: string;
+  stats: ProgramStat[];
+}>();
 </script>
 
 <!--
@@ -35,7 +35,9 @@ defineProps<{
 <template>
   <div class="rounded-2xl overflow-hidden border hairline-ink bg-ink relative">
     <!-- Mode label -->
-    <div class="absolute top-3 left-3 z-20 px-2.5 py-1 rounded-full bg-paper/90 text-ink text-[10px] font-semibold tracking-widest uppercase backdrop-blur-sm">
+    <div
+      class="absolute top-3 left-3 z-20 px-2.5 py-1 rounded-full bg-paper/90 text-ink text-[10px] font-semibold tracking-widest uppercase backdrop-blur-sm"
+    >
       Live preview
     </div>
 

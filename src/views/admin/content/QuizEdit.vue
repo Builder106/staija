@@ -1,35 +1,35 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../../components/ui/Container.vue'
-import Section from '../../../components/ui/Section.vue'
-import Heading from '../../../components/ui/Heading.vue'
-import Eyebrow from '../../../components/ui/Eyebrow.vue'
-import UiCard from '../../../components/ui/UiCard.vue'
-import UiButton from '../../../components/ui/UiButton.vue'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import Container from '../../../components/ui/Container.vue';
+import Eyebrow from '../../../components/ui/Eyebrow.vue';
+import Heading from '../../../components/ui/Heading.vue';
+import Section from '../../../components/ui/Section.vue';
+import UiButton from '../../../components/ui/UiButton.vue';
+import UiCard from '../../../components/ui/UiCard.vue';
+import { useAdminBase } from '../../../composables/useAdminBase';
+import { useFormDirty } from '../../../composables/useFormDirty';
 import {
-  getEntry,
   createEntry,
-  updateEntry,
-  publishEntry,
+  getEntry,
   normalizeSlug,
+  publishEntry,
+  updateEntry,
   type QuizFields,
-} from '../../../services/lmsContent'
-import { useFormDirty } from '../../../composables/useFormDirty'
-import { useAdminBase } from '../../../composables/useAdminBase'
+} from '../../../services/lmsContent';
 
-const route = useRoute()
-const router = useRouter()
-const { adminBase } = useAdminBase()
+const route = useRoute();
+const router = useRouter();
+const { adminBase } = useAdminBase();
 
-const isNew = computed(() => route.params.id === 'new' || !route.params.id)
-const id = ref<string | null>(isNew.value ? null : (route.params.id as string))
-const loading = ref(!isNew.value)
-const saving = ref(false)
-const publishing = ref(false)
-const error = ref<string | null>(null)
-const isPublished = ref(false)
+const isNew = computed(() => route.params.id === 'new' || !route.params.id);
+const id = ref<string | null>(isNew.value ? null : (route.params.id as string));
+const loading = ref(!isNew.value);
+const saving = ref(false);
+const publishing = ref(false);
+const error = ref<string | null>(null);
+const isPublished = ref(false);
 
 const form = ref<QuizFields>({
   slug: '',
@@ -37,39 +37,39 @@ const form = ref<QuizFields>({
   summary: '',
   passThresholdPercent: 70,
   questions: [],
-})
-const { isDirty, markClean } = useFormDirty(form)
+});
+const { isDirty, markClean } = useFormDirty(form);
 
 async function load() {
-  if (!id.value) return
-  loading.value = true
+  if (!id.value) return;
+  loading.value = true;
   try {
-    const entry = await getEntry(id.value)
-    isPublished.value = entry.isPublished
-    const f = entry.fields
+    const entry = await getEntry(id.value);
+    isPublished.value = entry.isPublished;
+    const f = entry.fields;
     form.value = {
       slug: (f.slug as string) ?? '',
       title: (f.title as string) ?? '',
       summary: (f.summary as string) ?? '',
       passThresholdPercent: (f.passThresholdPercent as number) ?? 70,
       questions: (f.questions as QuizFields['questions']) ?? [],
-    }
-    markClean()
+    };
+    markClean();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load quiz.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load quiz.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 const canSave = computed(
-  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value,
-)
+  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value
+);
 
 function addQuestion() {
-  const qId = `q_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
-  const opt1Id = `opt_${Date.now()}_1`
-  const opt2Id = `opt_${Date.now()}_2`
+  const qId = `q_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  const opt1Id = `opt_${Date.now()}_1`;
+  const opt2Id = `opt_${Date.now()}_2`;
   form.value.questions.push({
     id: qId,
     questionText: '',
@@ -79,71 +79,71 @@ function addQuestion() {
     ],
     correctOptionId: opt1Id,
     explanation: '',
-  })
+  });
 }
 
 function removeQuestion(index: number) {
-  form.value.questions.splice(index, 1)
+  form.value.questions.splice(index, 1);
 }
 
 function addOption(qIndex: number) {
-  const optId = `opt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
-  form.value.questions[qIndex].options.push({ id: optId, text: '' })
+  const optId = `opt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  form.value.questions[qIndex].options.push({ id: optId, text: '' });
 }
 
 function removeOption(qIndex: number, optIndex: number) {
-  const q = form.value.questions[qIndex]
-  if (q.options.length <= 2) return
-  const removedOpt = q.options.splice(optIndex, 1)[0]
+  const q = form.value.questions[qIndex];
+  if (q.options.length <= 2) return;
+  const removedOpt = q.options.splice(optIndex, 1)[0];
   if (q.correctOptionId === removedOpt.id && q.options.length > 0) {
-    q.correctOptionId = q.options[0].id
+    q.correctOptionId = q.options[0].id;
   }
 }
 
 function moveQuestion(index: number, direction: 'up' | 'down') {
-  const targetIndex = direction === 'up' ? index - 1 : index + 1
-  if (targetIndex < 0 || targetIndex >= form.value.questions.length) return
-  const temp = form.value.questions[index]
-  form.value.questions[index] = form.value.questions[targetIndex]
-  form.value.questions[targetIndex] = temp
+  const targetIndex = direction === 'up' ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= form.value.questions.length) return;
+  const temp = form.value.questions[index];
+  form.value.questions[index] = form.value.questions[targetIndex];
+  form.value.questions[targetIndex] = temp;
 }
 
 async function save() {
-  if (!canSave.value) return
-  saving.value = true
-  error.value = null
+  if (!canSave.value) return;
+  saving.value = true;
+  error.value = null;
   try {
     if (id.value) {
-      await updateEntry(id.value, { type: 'quiz', fields: form.value })
+      await updateEntry(id.value, { type: 'quiz', fields: form.value });
     } else {
-      const created = await createEntry({ type: 'quiz', fields: form.value })
-      id.value = created.id
-      router.replace({ path: `${adminBase.value}/content/quizzes/${created.id}` })
+      const created = await createEntry({ type: 'quiz', fields: form.value });
+      id.value = created.id;
+      router.replace({ path: `${adminBase.value}/content/quizzes/${created.id}` });
     }
-    markClean()
+    markClean();
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to save quiz.'
+    error.value = (err as { message?: string }).message ?? 'Failed to save quiz.';
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function publish() {
-  if (!id.value) return
-  publishing.value = true
-  error.value = null
+  if (!id.value) return;
+  publishing.value = true;
+  error.value = null;
   try {
-    if (isDirty.value) await save()
-    await publishEntry(id.value)
-    isPublished.value = true
+    if (isDirty.value) await save();
+    await publishEntry(id.value);
+    isPublished.value = true;
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to publish quiz.'
+    error.value = (err as { message?: string }).message ?? 'Failed to publish quiz.';
   } finally {
-    publishing.value = false
+    publishing.value = false;
   }
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -167,16 +167,13 @@ onMounted(load)
             <span
               v-if="!isNew"
               class="text-xs font-semibold px-2.5 py-1 rounded-full"
-              :class="isPublished ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+              :class="
+                isPublished ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+              "
             >
               {{ isPublished ? 'Published' : 'Draft' }}
             </span>
-            <UiButton
-              variant="secondary"
-              size="sm"
-              :disabled="!canSave || saving"
-              @click="save"
-            >
+            <UiButton variant="secondary" size="sm" :disabled="!canSave || saving" @click="save">
               {{ saving ? 'Saving...' : 'Save Draft' }}
             </UiButton>
             <UiButton
@@ -191,23 +188,28 @@ onMounted(load)
           </div>
         </div>
 
-        <div v-if="error" class="p-4 bg-red-50 text-red-800 rounded-lg text-sm flex items-center gap-2">
+        <div
+          v-if="error"
+          class="p-4 bg-red-50 text-red-800 rounded-lg text-sm flex items-center gap-2"
+        >
           <Icon icon="lucide:alert-triangle" width="18" />
           {{ error }}
         </div>
 
-        <div v-if="loading" class="p-12 text-center text-ink/50">
-          Loading quiz data...
-        </div>
+        <div v-if="loading" class="p-12 text-center text-ink/50">Loading quiz data...</div>
 
         <template v-else>
           <!-- Primary Settings Card -->
           <UiCard class="p-6 md:p-8 bg-surface flex flex-col gap-6">
             <Heading :level="2" class="text-lg">Quiz Settings</Heading>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col gap-2">
-                <label for="quiz-title" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Title</label>
+                <label
+                  for="quiz-title"
+                  class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Title</label
+                >
                 <input
                   id="quiz-title"
                   v-model="form.title"
@@ -219,7 +221,11 @@ onMounted(load)
               </div>
 
               <div class="flex flex-col gap-2">
-                <label for="quiz-slug" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Slug</label>
+                <label
+                  for="quiz-slug"
+                  class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                  >Slug</label
+                >
                 <input
                   id="quiz-slug"
                   v-model="form.slug"
@@ -232,7 +238,11 @@ onMounted(load)
             </div>
 
             <div class="flex flex-col gap-2">
-              <label for="quiz-summary" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Summary / Instructions</label>
+              <label
+                for="quiz-summary"
+                class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Summary / Instructions</label
+              >
               <textarea
                 id="quiz-summary"
                 v-model="form.summary"
@@ -243,7 +253,11 @@ onMounted(load)
             </div>
 
             <div class="flex flex-col gap-2 max-w-xs">
-              <label for="quiz-threshold" class="text-xs font-semibold text-ink/70 uppercase tracking-wide">Passing Threshold (%)</label>
+              <label
+                for="quiz-threshold"
+                class="text-xs font-semibold text-ink/70 uppercase tracking-wide"
+                >Passing Threshold (%)</label
+              >
               <div class="flex items-center gap-2">
                 <input
                   id="quiz-threshold"
@@ -262,18 +276,27 @@ onMounted(load)
           <UiCard class="p-6 md:p-8 bg-surface flex flex-col gap-6">
             <div class="flex items-center justify-between">
               <div>
-                <Heading :level="2" class="text-lg">Questions ({{ form.questions.length }})</Heading>
-                <p class="text-xs text-ink/60 mt-1">Configure questions, options, and explanations.</p>
+                <Heading :level="2" class="text-lg"
+                  >Questions ({{ form.questions.length }})</Heading
+                >
+                <p class="text-xs text-ink/60 mt-1">
+                  Configure questions, options, and explanations.
+                </p>
               </div>
               <UiButton variant="secondary" size="sm" @click="addQuestion">
                 <Icon icon="lucide:plus" width="14" class="mr-1" /> Add Question
               </UiButton>
             </div>
 
-            <div v-if="form.questions.length === 0" class="p-8 text-center border-2 border-dashed border-ink/10 rounded-xl">
+            <div
+              v-if="form.questions.length === 0"
+              class="p-8 text-center border-2 border-dashed border-ink/10 rounded-xl"
+            >
               <Icon icon="lucide:help-circle" width="32" class="mx-auto text-ink/30 mb-2" />
               <p class="text-sm font-medium text-ink/70">No questions added yet.</p>
-              <p class="text-xs text-ink/50 mt-1">Click "Add Question" to begin adding multiple-choice questions.</p>
+              <p class="text-xs text-ink/50 mt-1">
+                Click "Add Question" to begin adding multiple-choice questions.
+              </p>
             </div>
 
             <div v-else class="flex flex-col gap-6">
@@ -284,7 +307,9 @@ onMounted(load)
               >
                 <!-- Question Header / Actions -->
                 <div class="flex items-center justify-between gap-2 pb-3 border-b border-ink/10">
-                  <span class="text-xs font-bold text-accent uppercase tracking-wider">Question {{ qIndex + 1 }}</span>
+                  <span class="text-xs font-bold text-accent uppercase tracking-wider"
+                    >Question {{ qIndex + 1 }}</span
+                  >
                   <div class="flex items-center gap-1">
                     <button
                       type="button"
@@ -328,7 +353,9 @@ onMounted(load)
 
                 <!-- Options -->
                 <div class="flex flex-col gap-2">
-                  <label class="text-xs font-semibold text-ink/70 flex items-center justify-between">
+                  <label
+                    class="text-xs font-semibold text-ink/70 flex items-center justify-between"
+                  >
                     <span>Options (select correct answer)</span>
                     <button
                       type="button"
@@ -374,7 +401,9 @@ onMounted(load)
 
                 <!-- Explanation -->
                 <div class="flex flex-col gap-1.5 pt-2 border-t border-ink/10">
-                  <label class="text-xs font-semibold text-ink/70">Explanation (shown after attempt)</label>
+                  <label class="text-xs font-semibold text-ink/70"
+                    >Explanation (shown after attempt)</label
+                  >
                   <input
                     v-model="q.explanation"
                     type="text"

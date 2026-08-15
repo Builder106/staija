@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import UiButton from './ui/UiButton.vue'
-import Container from './ui/Container.vue'
-import ThemeToggle from './ThemeToggle.vue'
-import { useAuth } from '../composables/useAuth'
-import { usePermissions } from '../composables/usePermissions'
-import { donationsEnabled } from '../config/features'
-import { resolveAvatarSrc } from '../services/avatar'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useAuth } from '../composables/useAuth';
+import { usePermissions } from '../composables/usePermissions';
+import { donationsEnabled } from '../config/features';
+import { resolveAvatarSrc } from '../services/avatar';
+import ThemeToggle from './ThemeToggle.vue';
+import Container from './ui/Container.vue';
+import UiButton from './ui/UiButton.vue';
 
-const isScrolled = ref(false)
-const mobileOpen = ref(false)
-const route = useRoute()
-const router = useRouter()
-const { isAuthenticated, displayName, signOut, user, userProfile, loading } = useAuth()
+const isScrolled = ref(false);
+const mobileOpen = ref(false);
+const route = useRoute();
+const router = useRouter();
+const { isAuthenticated, displayName, signOut, user, userProfile, loading } = useAuth();
 
 const avatarSrc = computed(() =>
   resolveAvatarSrc({
@@ -22,8 +22,8 @@ const avatarSrc = computed(() =>
     avatarSlot: userProfile.value?.avatarSlot,
     seed: user.value?.uid ?? '',
   })
-)
-const { isAdmin, isStaff, isMentor, isStudent, isAlumni } = usePermissions()
+);
+const { isAdmin, isStaff, isMentor, isStudent, isAlumni } = usePermissions();
 
 // Where the "Dashboard" link in the header points, by role. Mirrors the
 // router's post-login redirect cascade in src/router/index.ts so an
@@ -34,16 +34,16 @@ const { isAdmin, isStaff, isMentor, isStudent, isAlumni } = usePermissions()
 // exclusive in this codebase — `isAdmin` is strict, `isStaff` returns
 // true for both; we check `isAdmin` first to land admin on /admin).
 const dashboardPath = computed(() => {
-  if (isAdmin.value) return '/admin'
-  if (isStaff.value) return '/staff'
+  if (isAdmin.value) return '/admin';
+  if (isStaff.value) return '/staff';
   // Students land in the LMS directly. The legacy /student dashboard
   // is kept around with quick-link buttons that all point to /learn,
   // but going straight there is the better UX for active learners.
-  if (isStudent.value) return '/learn'
-  if (isAlumni.value) return '/alumni'
-  if (isMentor.value) return '/mentor'
-  return '/applicant'
-})
+  if (isStudent.value) return '/learn';
+  if (isAlumni.value) return '/alumni';
+  if (isMentor.value) return '/mentor';
+  return '/applicant';
+});
 
 const navLinks = [
   { name: 'StepUp Scholars', href: '/programs/stepup-scholars' },
@@ -51,38 +51,43 @@ const navLinks = [
   { name: 'Events', href: '/events' },
   { name: 'Stories', href: '/blog' },
   { name: 'About', href: '/about' },
-]
+];
 
 // rAF-throttle the scroll handler so we coalesce burst scroll events into
 // at most one update per frame. Without this, scroll fires hundreds of
 // times during a fast scroll and each call writes to the reactive ref,
 // triggering Vue's reactivity for no perceptible gain.
-let scrollFrame = 0
+let scrollFrame = 0;
 function handleScroll() {
-  if (scrollFrame) return
+  if (scrollFrame) return;
   scrollFrame = requestAnimationFrame(() => {
-    isScrolled.value = window.scrollY > 20
-    scrollFrame = 0
-  })
+    isScrolled.value = window.scrollY > 20;
+    scrollFrame = 0;
+  });
 }
 
 async function handleSignOut() {
-  await signOut()
-  router.push('/')
+  await signOut();
+  router.push('/');
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('scroll', handleScroll, { passive: true });
   // Set initial state for pages loaded mid-scroll (e.g. back/forward nav
   // restoring scrollY). Without this, isScrolled defaults to false and
   // the header renders unscrolled even if the page is deep-scrolled.
-  handleScroll()
-})
+  handleScroll();
+});
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-  if (scrollFrame) cancelAnimationFrame(scrollFrame)
-})
-watch(() => route.fullPath, () => { mobileOpen.value = false })
+  window.removeEventListener('scroll', handleScroll);
+  if (scrollFrame) cancelAnimationFrame(scrollFrame);
+});
+watch(
+  () => route.fullPath,
+  () => {
+    mobileOpen.value = false;
+  }
+);
 </script>
 
 <template>
@@ -96,7 +101,11 @@ watch(() => route.fullPath, () => { mobileOpen.value = false })
   >
     <Container>
       <div class="flex items-center justify-between">
-        <RouterLink to="/" class="flex items-center gap-2 focus-ring-brand rounded-sm" aria-label="STAIJA — home">
+        <RouterLink
+          to="/"
+          class="flex items-center gap-2 focus-ring-brand rounded-sm"
+          aria-label="STAIJA — home"
+        >
           <!-- Right-sized logo variants. The master 1563×1563 STAIJA.png is
                1.07 MB and was the single biggest bandwidth hit on cold
                loads. staija-40 / staija-80 are pre-rasterized via sips
@@ -167,18 +176,12 @@ watch(() => route.fullPath, () => { mobileOpen.value = false })
               >
                 Settings
               </RouterLink>
-              <UiButton
-                variant="secondary"
-                type="button"
-                @click="handleSignOut"
-              >
+              <UiButton variant="secondary" type="button" @click="handleSignOut">
                 Sign out
               </UiButton>
             </template>
             <template v-else>
-              <UiButton variant="secondary" :to="'/login'">
-                Sign in
-              </UiButton>
+              <UiButton variant="secondary" :to="'/login'"> Sign in </UiButton>
             </template>
           </template>
           <UiButton v-if="donationsEnabled" variant="primary" :to="'/donate'">Donate</UiButton>
@@ -228,7 +231,11 @@ watch(() => route.fullPath, () => { mobileOpen.value = false })
                 <UiButton variant="primary" class="w-full justify-center" :to="dashboardPath">
                   Go to dashboard
                 </UiButton>
-                <UiButton variant="secondary" class="w-full justify-center" :to="'/account/settings'">
+                <UiButton
+                  variant="secondary"
+                  class="w-full justify-center"
+                  :to="'/account/settings'"
+                >
                   Settings
                 </UiButton>
                 <UiButton variant="secondary" class="w-full justify-center" @click="handleSignOut">
@@ -238,7 +245,12 @@ watch(() => route.fullPath, () => { mobileOpen.value = false })
               <UiButton v-else variant="secondary" class="w-full justify-center" :to="'/login'">
                 Sign in
               </UiButton>
-              <UiButton v-if="donationsEnabled" variant="primary" class="w-full justify-center" :to="'/donate'">
+              <UiButton
+                v-if="donationsEnabled"
+                variant="primary"
+                class="w-full justify-center"
+                :to="'/donate'"
+              >
                 Donate
               </UiButton>
             </div>

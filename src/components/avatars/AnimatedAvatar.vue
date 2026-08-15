@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Motion } from 'motion-v'
+import { Motion } from 'motion-v';
+import { computed, ref } from 'vue';
 import {
   AVATAR_BREATH_AMPLITUDE,
   AVATAR_DURATIONS,
   AVATAR_EASINGS,
   usePrefersReducedMotion,
-} from '../../composables/useAvatarMotion'
+} from '../../composables/useAvatarMotion';
 
 /**
  * Phase 1 avatar wrapper. Adds three layers of motion to a static
@@ -30,62 +30,56 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    src: string
-    alt?: string
-    size?: number
-    state?: 'idle' | 'hero' | 'static'
+    src: string;
+    alt?: string;
+    size?: number;
+    state?: 'idle' | 'hero' | 'static';
   }>(),
   {
     alt: '',
     size: 80,
     state: 'idle',
-  },
-)
+  }
+);
 
-const { prefersReducedMotion } = usePrefersReducedMotion()
+const { prefersReducedMotion } = usePrefersReducedMotion();
 
 // Per-mount random phase offset for the breath cycle. When multiple
 // avatars render on a page (alumni grid, comment thread), we don't
 // want them pulsing in lockstep — that reads as artificial. Stable
 // per instance: computed once on setup, never reactive.
-const breathPhaseDelay = ref(Math.random() * AVATAR_DURATIONS.breath)
+const breathPhaseDelay = ref(Math.random() * AVATAR_DURATIONS.breath);
 
 const breathAmplitude = computed(() =>
-  props.state === 'hero'
-    ? AVATAR_BREATH_AMPLITUDE.hero
-    : AVATAR_BREATH_AMPLITUDE.idle,
-)
+  props.state === 'hero' ? AVATAR_BREATH_AMPLITUDE.hero : AVATAR_BREATH_AMPLITUDE.idle
+);
 
-const animatesBreath = computed(
-  () => props.state !== 'static' && !prefersReducedMotion.value,
-)
+const animatesBreath = computed(() => props.state !== 'static' && !prefersReducedMotion.value);
 
 const initial = computed(() =>
-  prefersReducedMotion.value
-    ? { opacity: 1, scale: 1 }
-    : { opacity: 0, scale: 0.92 },
-)
+  prefersReducedMotion.value ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }
+);
 
 const animate = computed(() => {
   if (prefersReducedMotion.value) {
-    return { opacity: 1, scale: 1 }
+    return { opacity: 1, scale: 1 };
   }
   if (!animatesBreath.value) {
-    return { opacity: 1, scale: 1 }
+    return { opacity: 1, scale: 1 };
   }
-  const a = breathAmplitude.value
-  return { opacity: 1, scale: [1, 1 + a, 1] }
-})
+  const a = breathAmplitude.value;
+  return { opacity: 1, scale: [1, 1 + a, 1] };
+});
 
 const transition = computed(() => {
   if (prefersReducedMotion.value) {
-    return { duration: 0 }
+    return { duration: 0 };
   }
   if (!animatesBreath.value) {
     return {
       duration: AVATAR_DURATIONS.mount,
       ease: AVATAR_EASINGS.out,
-    }
+    };
   }
   return {
     opacity: { duration: AVATAR_DURATIONS.mount, ease: AVATAR_EASINGS.out },
@@ -95,8 +89,8 @@ const transition = computed(() => {
       repeat: Infinity,
       delay: breathPhaseDelay.value,
     },
-  }
-})
+  };
+});
 
 const whileHover = computed(() =>
   prefersReducedMotion.value
@@ -107,13 +101,13 @@ const whileHover = computed(() =>
           duration: AVATAR_DURATIONS.hover,
           ease: AVATAR_EASINGS.out,
         },
-      },
-)
+      }
+);
 
 const sizeStyle = computed(() => ({
   width: `${props.size}px`,
   height: `${props.size}px`,
-}))
+}));
 </script>
 
 <template>

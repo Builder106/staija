@@ -28,15 +28,15 @@
  * reaps anything older than 30 days.
  */
 
-import { StorageService } from './storageService'
-import type { DraftProgramSlug, StagedFile } from './applicationDrafts'
+import type { DraftProgramSlug, StagedFile } from './applicationDrafts';
+import { StorageService } from './storageService';
 
 /** Kinds of staged uploads. `audio` is special-cased — there can be
  *  multiple audio recordings per draft, keyed by motivation field
  *  name, so the path-builder takes an extra `fieldName` parameter. */
-export type StagedFileKind = 'transcript' | 'id' | 'showcase' | 'audio'
+export type StagedFileKind = 'transcript' | 'id' | 'showcase' | 'audio';
 
-const STAGING_PREFIX = 'applicationStaging'
+const STAGING_PREFIX = 'applicationStaging';
 
 /**
  * Single source of truth for the staging path shape. Used by the
@@ -50,13 +50,12 @@ export function stagingPathFor(
   kind: StagedFileKind,
   hash: string,
   fileName: string,
-  fieldName?: string,
+  fieldName?: string
 ): string {
-  const safeName = sanitizeFileName(fileName)
-  const kindSegment = kind === 'audio' && fieldName
-    ? `audio-${sanitizeFieldName(fieldName)}`
-    : kind
-  return `${STAGING_PREFIX}/${uid}/${program}/${kindSegment}-${hash}-${safeName}`
+  const safeName = sanitizeFileName(fileName);
+  const kindSegment =
+    kind === 'audio' && fieldName ? `audio-${sanitizeFieldName(fieldName)}` : kind;
+  return `${STAGING_PREFIX}/${uid}/${program}/${kindSegment}-${hash}-${safeName}`;
 }
 
 /** Strip filename characters that confuse Storage's URL encoding or
@@ -69,12 +68,12 @@ function sanitizeFileName(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 80)
-  return clean || 'file'
+    .slice(0, 80);
+  return clean || 'file';
 }
 
 function sanitizeFieldName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_-]+/g, '-')
+  return name.replace(/[^a-zA-Z0-9_-]+/g, '-');
 }
 
 /** 8 random hex bytes (16 chars). Uses crypto.getRandomValues so
@@ -82,11 +81,11 @@ function sanitizeFieldName(name: string): string {
  *  timestamp-derived string in environments without WebCrypto. */
 function randomHash(): string {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    const bytes = new Uint8Array(8)
-    crypto.getRandomValues(bytes)
-    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
   }
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 10)
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 }
 
 /**
@@ -102,18 +101,18 @@ export async function uploadToStaging(
   program: DraftProgramSlug,
   kind: StagedFileKind,
   file: File,
-  opts?: { fieldName?: string },
+  opts?: { fieldName?: string }
 ): Promise<StagedFile> {
-  const hash = randomHash()
-  const storagePath = stagingPathFor(uid, program, kind, hash, file.name, opts?.fieldName)
-  await StorageService.uploadFile(file, storagePath)
+  const hash = randomHash();
+  const storagePath = stagingPathFor(uid, program, kind, hash, file.name, opts?.fieldName);
+  await StorageService.uploadFile(file, storagePath);
   return {
     storagePath,
     fileName: file.name,
     sizeBytes: file.size,
     contentType: file.type || 'application/octet-stream',
     uploadedAt: Date.now(),
-  }
+  };
 }
 
 /**
@@ -124,9 +123,9 @@ export async function uploadToStaging(
  */
 export async function deleteFromStaging(storagePath: string): Promise<void> {
   try {
-    await StorageService.deleteFile(storagePath)
+    await StorageService.deleteFile(storagePath);
   } catch (err) {
-    console.warn('[stagedFiles] deleteFromStaging failed', storagePath, err)
+    console.warn('[stagedFiles] deleteFromStaging failed', storagePath, err);
   }
 }
 
@@ -143,9 +142,9 @@ export async function deleteFromStaging(storagePath: string): Promise<void> {
  */
 export async function verifyStagedFile(storagePath: string): Promise<boolean> {
   try {
-    await StorageService.getFileURL(storagePath)
-    return true
+    await StorageService.getFileURL(storagePath);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }

@@ -1,70 +1,79 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import { useAuth } from '../../composables/useAuth'
-import { getMyDonations, cancelMyDonation, formatNaira, type Donation } from '../../services/donations'
+import { Icon } from '@iconify/vue';
+import { onMounted, ref } from 'vue';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import { useAuth } from '../../composables/useAuth';
+import {
+  cancelMyDonation,
+  formatNaira,
+  getMyDonations,
+  type Donation,
+} from '../../services/donations';
 
-const { displayName } = useAuth()
-const donations = ref<Donation[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
-const cancelling = ref<string | null>(null)
+const { displayName } = useAuth();
+const donations = ref<Donation[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
+const cancelling = ref<string | null>(null);
 
 async function load() {
-  loading.value = true
-  error.value = null
+  loading.value = true;
+  error.value = null;
   try {
-    donations.value = await getMyDonations()
+    donations.value = await getMyDonations();
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load donations'
+    error.value = e instanceof Error ? e.message : 'Failed to load donations';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function cancel(d: Donation) {
-  if (!d.paystackSubscriptionCode) return
-  if (!window.confirm('Cancel this monthly donation? Your support so far stays counted; you just won\'t be charged again.')) {
-    return
+  if (!d.paystackSubscriptionCode) return;
+  if (
+    !window.confirm(
+      "Cancel this monthly donation? Your support so far stays counted; you just won't be charged again."
+    )
+  ) {
+    return;
   }
-  cancelling.value = d.ref
+  cancelling.value = d.ref;
   try {
-    await cancelMyDonation(d.paystackSubscriptionCode)
-    await load()
+    await cancelMyDonation(d.paystackSubscriptionCode);
+    await load();
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Cancellation failed'
+    error.value = e instanceof Error ? e.message : 'Cancellation failed';
   } finally {
-    cancelling.value = null
+    cancelling.value = null;
   }
 }
 
 function formatDate(d: Date): string {
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function statusLabel(d: Donation): string {
-  if (d.status === 'success' && d.frequency === 'monthly') return 'Monthly | active'
-  if (d.status === 'success') return 'Completed'
-  if (d.status === 'failed') return 'Failed'
-  if (d.status === 'cancelled') return 'Cancelled'
-  return 'Pending'
+  if (d.status === 'success' && d.frequency === 'monthly') return 'Monthly | active';
+  if (d.status === 'success') return 'Completed';
+  if (d.status === 'failed') return 'Failed';
+  if (d.status === 'cancelled') return 'Cancelled';
+  return 'Pending';
 }
 
 function statusColor(d: Donation): string {
-  if (d.status === 'success') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-  if (d.status === 'failed') return 'bg-red-50 text-red-700 border-red-200'
-  if (d.status === 'cancelled') return 'bg-ink/5 text-ink/60 border-ink/10'
-  return 'bg-amber-50 text-amber-700 border-amber-200'
+  if (d.status === 'success') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (d.status === 'failed') return 'bg-red-50 text-red-700 border-red-200';
+  if (d.status === 'cancelled') return 'bg-ink/5 text-ink/60 border-ink/10';
+  return 'bg-amber-50 text-amber-700 border-amber-200';
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -72,17 +81,23 @@ onMounted(load)
     <Section class="!pb-8 !pt-12 md:!pt-16">
       <Container class="max-w-4xl">
         <Eyebrow class="text-brand-violet mb-4 block">My Donations</Eyebrow>
-        <Heading :level="1" class="mb-4">Thanks{{ displayName ? `, ${displayName}` : '' }}.</Heading>
+        <Heading :level="1" class="mb-4"
+          >Thanks{{ displayName ? `, ${displayName}` : '' }}.</Heading
+        >
         <Body large class="text-ink/70">
-          Here's a record of your support. You can cancel any monthly donation at any time —
-          we'll never charge you again after that.
+          Here's a record of your support. You can cancel any monthly donation at any time — we'll
+          never charge you again after that.
         </Body>
       </Container>
     </Section>
 
     <Section class="!pt-4 !pb-24">
       <Container class="max-w-4xl flex flex-col gap-4">
-        <div v-if="error" role="alert" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <div
+          v-if="error"
+          role="alert"
+          class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3"
+        >
           {{ error }}
         </div>
 
@@ -114,9 +129,12 @@ onMounted(load)
             class="p-6 flex flex-col md:flex-row md:items-center gap-4"
           >
             <div class="flex flex-col flex-1 gap-1">
-              <div class="font-display text-2xl font-semibold text-ink">{{ formatNaira(d.amountKobo) }}</div>
+              <div class="font-display text-2xl font-semibold text-ink">
+                {{ formatNaira(d.amountKobo) }}
+              </div>
               <div class="text-sm text-ink/60">
-                {{ formatDate(d.createdAt) }} | ref <span class="font-mono text-xs">{{ d.ref }}</span>
+                {{ formatDate(d.createdAt) }} | ref
+                <span class="font-mono text-xs">{{ d.ref }}</span>
               </div>
             </div>
             <span
@@ -126,7 +144,9 @@ onMounted(load)
               {{ statusLabel(d) }}
             </span>
             <UiButton
-              v-if="d.frequency === 'monthly' && d.status === 'success' && d.paystackSubscriptionCode"
+              v-if="
+                d.frequency === 'monthly' && d.status === 'success' && d.paystackSubscriptionCode
+              "
               variant="secondary"
               :disabled="cancelling === d.ref"
               @click="cancel(d)"

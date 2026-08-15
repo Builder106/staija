@@ -19,11 +19,11 @@
  * be an obvious spam vector.
  */
 
-import { getAppConfig } from '../utils/env'
-import { auth } from '../config/firebase'
+import { auth } from '../config/firebase';
+import { getAppConfig } from '../utils/env';
 
-const REF_ID_KEY = 'staija.refId'
-const REFERRER_ID_KEY = 'staija.referrerId'
+const REF_ID_KEY = 'staija.refId';
+const REFERRER_ID_KEY = 'staija.referrerId';
 
 /** Visible characters only — keep the URL clean and easy to share over
  *  voice. 7 random chars × ~5.5 bits ≈ 38 bits, fine for an unguessable
@@ -32,16 +32,16 @@ function mintShortId(): string {
   // 7 chars from a 36-char alphabet — base36 encoding of a crypto
   // random number, padded if it's shorter than 7 chars in the rare
   // case the random integer falls into a low value.
-  const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
   // crypto.getRandomValues exists in every browser we ship to (it's
   // required by the existing Firebase Auth flows).
-  const bytes = new Uint8Array(7)
-  crypto.getRandomValues(bytes)
-  let out = ''
+  const bytes = new Uint8Array(7);
+  crypto.getRandomValues(bytes);
+  let out = '';
   for (let i = 0; i < 7; i++) {
-    out += ALPHABET[bytes[i] % ALPHABET.length]
+    out += ALPHABET[bytes[i] % ALPHABET.length];
   }
-  return out
+  return out;
 }
 
 function isLikelyValidRefId(value: unknown): value is string {
@@ -52,7 +52,7 @@ function isLikelyValidRefId(value: unknown): value is string {
     // Letters, digits, dash only — keeps URL-encoding boring and
     // server-side validation cheap.
     /^[A-Za-z0-9-]+$/.test(value)
-  )
+  );
 }
 
 /**
@@ -64,20 +64,20 @@ function isLikelyValidRefId(value: unknown): value is string {
  * Pass the current signed-in uid if known; pass `null` when anonymous.
  */
 export function getOrMintMyReferralId(uid: string | null): string {
-  if (uid) return `u-${uid}`
-  if (typeof window === 'undefined') return ''
+  if (uid) return `u-${uid}`;
+  if (typeof window === 'undefined') return '';
   try {
-    const existing = window.localStorage.getItem(REF_ID_KEY)
-    if (isLikelyValidRefId(existing)) return existing
-    const fresh = `a-${mintShortId()}`
-    window.localStorage.setItem(REF_ID_KEY, fresh)
-    return fresh
+    const existing = window.localStorage.getItem(REF_ID_KEY);
+    if (isLikelyValidRefId(existing)) return existing;
+    const fresh = `a-${mintShortId()}`;
+    window.localStorage.setItem(REF_ID_KEY, fresh);
+    return fresh;
   } catch {
     // Private mode or quota — fall back to a fresh id with no
     // persistence. The visitor's share links won't be stable across
     // visits in that environment, which is the right tradeoff vs.
     // blowing up.
-    return `a-${mintShortId()}`
+    return `a-${mintShortId()}`;
   }
 }
 
@@ -111,35 +111,35 @@ export function getOrMintMyReferralId(uid: string | null): string {
  * subsequent signup with a different email.
  */
 export function captureReferrerFromUrl(): string | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') return null;
   try {
-    const params = new URLSearchParams(window.location.search)
-    const raw = params.get('ref')
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('ref');
 
     // Build the set of ids that count as "me" right now.
-    const selfIds = new Set<string>()
-    const signedInUid = auth.currentUser?.uid ?? null
-    if (signedInUid) selfIds.add(`u-${signedInUid}`)
-    const myAnonId = window.localStorage.getItem(REF_ID_KEY)
-    if (myAnonId) selfIds.add(myAnonId)
+    const selfIds = new Set<string>();
+    const signedInUid = auth.currentUser?.uid ?? null;
+    if (signedInUid) selfIds.add(`u-${signedInUid}`);
+    const myAnonId = window.localStorage.getItem(REF_ID_KEY);
+    if (myAnonId) selfIds.add(myAnonId);
 
     // Half 2: scrub any stored self-credit from a prior call that
     // landed before we knew the auth state. Runs every call, so the
     // post-auth recapture from router.afterEach finishes the cleanup
     // even when the current URL has no `?ref=`.
-    const stored = window.localStorage.getItem(REFERRER_ID_KEY)
+    const stored = window.localStorage.getItem(REFERRER_ID_KEY);
     if (stored && selfIds.has(stored)) {
-      window.localStorage.removeItem(REFERRER_ID_KEY)
+      window.localStorage.removeItem(REFERRER_ID_KEY);
     }
 
     // Half 1: refuse to write a self-ref on this call.
-    if (!isLikelyValidRefId(raw)) return null
-    if (selfIds.has(raw)) return null
+    if (!isLikelyValidRefId(raw)) return null;
+    if (selfIds.has(raw)) return null;
 
-    window.localStorage.setItem(REFERRER_ID_KEY, raw)
-    return raw
+    window.localStorage.setItem(REFERRER_ID_KEY, raw);
+    return raw;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -149,12 +149,12 @@ export function captureReferrerFromUrl(): string | null {
  * referrer's id along.
  */
 export function getCapturedReferrerId(): string | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') return null;
   try {
-    const value = window.localStorage.getItem(REFERRER_ID_KEY)
-    return isLikelyValidRefId(value) ? value : null
+    const value = window.localStorage.getItem(REFERRER_ID_KEY);
+    return isLikelyValidRefId(value) ? value : null;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -166,24 +166,24 @@ export function getCapturedReferrerId(): string | null {
  * falls back to generic hero copy on null.
  */
 export async function resolveReferrerDisplayName(
-  referrerId: string | null,
+  referrerId: string | null
 ): Promise<string | null> {
-  if (!referrerId || !referrerId.startsWith('u-')) return null
-  const uid = referrerId.slice(2)
-  if (!uid) return null
+  if (!referrerId || !referrerId.startsWith('u-')) return null;
+  const uid = referrerId.slice(2);
+  if (!uid) return null;
 
-  const endpoint = getAppConfig().referrerNameEndpoint
-  if (!endpoint) return null
+  const endpoint = getAppConfig().referrerNameEndpoint;
+  if (!endpoint) return null;
 
   try {
-    const url = `${endpoint}?uid=${encodeURIComponent(uid)}`
-    const res = await fetch(url, { method: 'GET' })
-    if (!res.ok) return null
-    const data = (await res.json()) as { displayName?: unknown }
+    const url = `${endpoint}?uid=${encodeURIComponent(uid)}`;
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { displayName?: unknown };
     return typeof data.displayName === 'string' && data.displayName.trim().length > 0
       ? data.displayName.trim()
-      : null
+      : null;
   } catch {
-    return null
+    return null;
   }
 }

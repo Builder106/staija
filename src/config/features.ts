@@ -22,4 +22,4 @@
  * Firebase Secret Manager (`PAYSTACK_SECRET_KEY`), configure the live
  * webhook URL in Paystack, and redeploy `paystackWebhook`.
  */
-export const donationsEnabled = false
+export const donationsEnabled = false;

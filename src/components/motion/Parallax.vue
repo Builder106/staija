@@ -16,9 +16,9 @@
  * No-op under prefers-reduced-motion.
  */
 
-import { ref } from 'vue'
-import { Motion, useScroll, useTransform } from 'motion-v'
-import { useReducedMotion } from '../../composables/useReducedMotion'
+import { Motion, useScroll, useTransform } from 'motion-v';
+import { ref } from 'vue';
+import { useReducedMotion } from '../../composables/useReducedMotion';
 
 interface Props {
   /**
@@ -26,32 +26,28 @@ interface Props {
    * scrolls down (foreground feel). Negative: content trails the scroll.
    * Range is open-ended but values outside ±1 usually look unnatural.
    */
-  speed?: number
+  speed?: number;
   /** Total travel range in pixels across one viewport pass. */
-  distance?: number
+  distance?: number;
 }
 
-const { speed = 0.3, distance = 80 } = defineProps<Props>()
-const target = ref<HTMLElement | null>(null)
-const reduce = useReducedMotion()
+const { speed = 0.3, distance = 80 } = defineProps<Props>();
+const target = ref<HTMLElement | null>(null);
+const reduce = useReducedMotion();
 
 const { scrollYProgress } = useScroll({
   target,
   offset: ['start end', 'end start'],
-})
+});
 
-const y = useTransform(scrollYProgress, [0, 1], [speed * distance, -speed * distance])
+const y = useTransform(scrollYProgress, [0, 1], [speed * distance, -speed * distance]);
 
-defineOptions({ inheritAttrs: true })
+defineOptions({ inheritAttrs: true });
 </script>
 
 <template>
   <div ref="target">
-    <Motion
-      v-if="!reduce"
-      class="parallax-inner"
-      :style="{ y, willChange: 'transform' }"
-    >
+    <Motion v-if="!reduce" class="parallax-inner" :style="{ y, willChange: 'transform' }">
       <slot />
     </Motion>
     <template v-else>

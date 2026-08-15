@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
-import { Icon } from '@iconify/vue'
-import katex from 'katex'
-import 'katex/dist/katex.min.css'
-import UiButton from '../ui/UiButton.vue'
-import MermaidViewer from './MermaidViewer.vue'
-import { askLmsTutor, type AskLmsTutorResult } from '../../services/learn'
+import { Icon } from '@iconify/vue';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import { nextTick, ref, watch } from 'vue';
+import { askLmsTutor, type AskLmsTutorResult } from '../../services/learn';
+import UiButton from '../ui/UiButton.vue';
+import MermaidViewer from './MermaidViewer.vue';
 
 interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  suggestedFollowUps?: string[]
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  suggestedFollowUps?: string[];
 }
 
 const props = defineProps<{
-  open: boolean
-  lessonTitle: string
-  lessonBodyPlain: string
-  courseTitle?: string
-  program?: string
+  open: boolean;
+  lessonTitle: string;
+  lessonBodyPlain: string;
+  courseTitle?: string;
+  program?: string;
   initialQuestionContext?: {
-    questionText: string
-    userAnswerText?: string
-    explanation?: string
-  }
-}>()
+    questionText: string;
+    userAnswerText?: string;
+    explanation?: string;
+  };
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const inputQuestion = ref('')
-const loading = ref(false)
-const error = ref<string | null>(null)
-const messages = ref<Message[]>([])
-const chatContainer = ref<HTMLElement | null>(null)
+const inputQuestion = ref('');
+const loading = ref(false);
+const error = ref<string | null>(null);
+const messages = ref<Message[]>([]);
+const chatContainer = ref<HTMLElement | null>(null);
 
 // Initialize with welcoming tutor message
 function resetChat() {
-  let intro = `Hi there! I am your STAIJA AI STEM Tutor. I can help explain concepts in **${props.lessonTitle}**, answer questions, or generate visual concept maps.`
+  let intro = `Hi there! I am your STAIJA AI STEM Tutor. I can help explain concepts in **${props.lessonTitle}**, answer questions, or generate visual concept maps.`;
   if (props.initialQuestionContext) {
-    intro = `I can help you review this quiz question: **"${props.initialQuestionContext.questionText}"**. Ask me anything about it!`
+    intro = `I can help you review this quiz question: **"${props.initialQuestionContext.questionText}"**. Ask me anything about it!`;
   }
   messages.value = [
     {
@@ -54,47 +54,47 @@ function resetChat() {
         'What are common misconceptions here?',
       ],
     },
-  ]
+  ];
 }
 
 watch(
   () => props.open,
-  (isOpen) => {
+  isOpen => {
     if (isOpen && messages.value.length === 0) {
-      resetChat()
+      resetChat();
     }
   },
-  { immediate: true },
-)
+  { immediate: true }
+);
 
 async function scrollToBottom() {
-  await nextTick()
+  await nextTick();
   if (chatContainer.value) {
-    chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
   }
 }
 
 async function sendQuestion(textToSend?: string) {
-  const q = (textToSend || inputQuestion.value).trim()
-  if (!q || loading.value) return
+  const q = (textToSend || inputQuestion.value).trim();
+  if (!q || loading.value) return;
 
-  inputQuestion.value = ''
-  error.value = null
+  inputQuestion.value = '';
+  error.value = null;
 
-  const userMsgId = `user-${Date.now()}`
+  const userMsgId = `user-${Date.now()}`;
   messages.value.push({
     id: userMsgId,
     role: 'user',
     content: q,
-  })
+  });
 
-  await scrollToBottom()
-  loading.value = true
+  await scrollToBottom();
+  loading.value = true;
 
   try {
     const history = messages.value
-      .filter((m) => m.id !== 'intro')
-      .map((m) => ({ role: m.role, content: m.content }))
+      .filter(m => m.id !== 'intro')
+      .map(m => ({ role: m.role, content: m.content }));
 
     const res: AskLmsTutorResult = await askLmsTutor({
       lessonTitle: props.lessonTitle,
@@ -104,78 +104,81 @@ async function sendQuestion(textToSend?: string) {
       studentQuestion: q,
       chatHistory: history,
       questionContext: props.initialQuestionContext,
-    })
+    });
 
     messages.value.push({
       id: `asst-${Date.now()}`,
       role: 'assistant',
       content: res.reply,
       suggestedFollowUps: res.suggestedFollowUps,
-    })
+    });
 
-    await scrollToBottom()
+    await scrollToBottom();
   } catch (err: unknown) {
-    console.error('Tutor error:', err)
-    error.value = 'Failed to fetch tutor response. Please check your network or try again.'
+    console.error('Tutor error:', err);
+    error.value = 'Failed to fetch tutor response. Please check your network or try again.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 // Parses text blocks, rendering Mermaid blocks into <MermaidViewer> components
 function parseContentBlocks(text: string) {
-  const blocks: Array<{ type: 'text' | 'mermaid' | 'math'; content: string }> = []
+  const blocks: Array<{ type: 'text' | 'mermaid' | 'math'; content: string }> = [];
 
   // Split by mermaid code blocks ```mermaid ... ```
-  const mermaidRegex = /```mermaid\s*([\s\S]*?)\s*```/g
-  let lastIndex = 0
-  let match: RegExpExecArray | null
+  const mermaidRegex = /```mermaid\s*([\s\S]*?)\s*```/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
 
   while ((match = mermaidRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      blocks.push({ type: 'text', content: text.substring(lastIndex, match.index) })
+      blocks.push({ type: 'text', content: text.substring(lastIndex, match.index) });
     }
-    blocks.push({ type: 'mermaid', content: match[1].trim() })
-    lastIndex = mermaidRegex.lastIndex
+    blocks.push({ type: 'mermaid', content: match[1].trim() });
+    lastIndex = mermaidRegex.lastIndex;
   }
 
   if (lastIndex < text.length) {
-    blocks.push({ type: 'text', content: text.substring(lastIndex) })
+    blocks.push({ type: 'text', content: text.substring(lastIndex) });
   }
 
-  return blocks
+  return blocks;
 }
 
 // Formats text with KaTeX math and basic Markdown (bold, lists)
 function formatFormattedText(text: string): string {
-  if (!text) return ''
+  if (!text) return '';
 
   // 1. Render block math $$ ... $$
   let formatted = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
     try {
-      return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })
+      return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false });
     } catch {
-      return math
+      return math;
     }
-  })
+  });
 
   // 2. Render inline math \( ... \) or $ ... $
   formatted = formatted.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => {
     try {
-      return katex.renderToString(math.trim(), { displayMode: false, throwOnError: false })
+      return katex.renderToString(math.trim(), { displayMode: false, throwOnError: false });
     } catch {
-      return math
+      return math;
     }
-  })
+  });
 
   // 3. Bold, lists, code spans
   formatted = formatted
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-ink/10 rounded text-brand-violet font-mono text-xs">$1</code>')
+    .replace(
+      /`([^`]+)`/g,
+      '<code class="px-1 py-0.5 bg-ink/10 rounded text-brand-violet font-mono text-xs">$1</code>'
+    )
     .replace(/\n\n/g, '<br/><br/>')
-    .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+    .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>');
 
-  return formatted
+  return formatted;
 }
 </script>
 
@@ -211,9 +214,13 @@ function formatFormattedText(text: string): string {
         class="fixed right-0 top-0 bottom-0 w-full max-w-md bg-surface border-l border-ink/10 z-50 shadow-2xl flex flex-col"
       >
         <!-- Header -->
-        <div class="p-4 border-b border-ink/10 flex items-center justify-between bg-surface-raised/50">
+        <div
+          class="p-4 border-b border-ink/10 flex items-center justify-between bg-surface-raised/50"
+        >
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center font-bold">
+            <div
+              class="w-8 h-8 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center font-bold"
+            >
               <Icon icon="lucide:bot" width="18" />
             </div>
             <div>
@@ -272,12 +279,18 @@ function formatFormattedText(text: string): string {
           </div>
 
           <!-- Loading indicator -->
-          <div v-if="loading" class="self-start flex items-center gap-2 p-3 bg-surface-raised border border-ink/10 rounded-2xl rounded-bl-none text-xs text-ink/60">
+          <div
+            v-if="loading"
+            class="self-start flex items-center gap-2 p-3 bg-surface-raised border border-ink/10 rounded-2xl rounded-bl-none text-xs text-ink/60"
+          >
             <Icon icon="lucide:loader-2" width="16" class="animate-spin text-brand-violet" />
             Tutor is thinking...
           </div>
 
-          <div v-if="error" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl">
+          <div
+            v-if="error"
+            class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl"
+          >
             {{ error }}
           </div>
         </div>

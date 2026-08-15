@@ -1,8 +1,8 @@
 <template>
-  <button 
-    class="connection-btn" 
-    :class="status" 
-    @click="handleClick" 
+  <button
+    class="connection-btn"
+    :class="status"
+    @click="handleClick"
     :disabled="loading || status === 'pending_sent' || status === 'connected'"
   >
     <span v-if="loading">...</span>
@@ -14,53 +14,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, toRefs, watch } from 'vue'
-import { ConnectionService } from '../../services/connectionService'
-import { AuthService } from '../../services/firebase'
+import { onMounted, ref, toRefs, watch } from 'vue';
+import { ConnectionService } from '../../services/connectionService';
+import { AuthService } from '../../services/firebase';
 
 const props = defineProps<{
-  targetUid: string
-}>()
+  targetUid: string;
+}>();
 
-const { targetUid } = toRefs(props)
-const status = ref<'connected' | 'pending_sent' | 'pending_received' | 'none'>('none')
-const loading = ref(false)
-const currentUser = AuthService.getCurrentUser()
+const { targetUid } = toRefs(props);
+const status = ref<'connected' | 'pending_sent' | 'pending_received' | 'none'>('none');
+const loading = ref(false);
+const currentUser = AuthService.getCurrentUser();
 
 const checkStatus = async () => {
-  if (!currentUser) return
+  if (!currentUser) return;
   try {
-    status.value = await ConnectionService.getConnectionStatus(currentUser.uid, targetUid.value)
+    status.value = await ConnectionService.getConnectionStatus(currentUser.uid, targetUid.value);
   } catch (e) {
-    console.error(e)
+    console.error(e);
   }
-}
+};
 
 const handleClick = async () => {
-  if (!currentUser) return
-  loading.value = true
+  if (!currentUser) return;
+  loading.value = true;
   try {
     if (status.value === 'none') {
-      await ConnectionService.sendRequest(currentUser.uid, targetUid.value)
-      status.value = 'pending_sent'
+      await ConnectionService.sendRequest(currentUser.uid, targetUid.value);
+      status.value = 'pending_sent';
     } else if (status.value === 'pending_received') {
       // Find the request ID - this is inefficient, in real app we might pass requestId if known
-      const requests = await ConnectionService.getPendingRequests(currentUser.uid)
-      const req = requests.find(r => r.fromUid === targetUid.value)
+      const requests = await ConnectionService.getPendingRequests(currentUser.uid);
+      const req = requests.find(r => r.fromUid === targetUid.value);
       if (req && req.id) {
-        await ConnectionService.respondToRequest(req.id, 'accepted')
-        status.value = 'connected'
+        await ConnectionService.respondToRequest(req.id, 'accepted');
+        status.value = 'connected';
       }
     }
   } catch (e) {
-    alert('Action failed: ' + (e as Error).message)
+    alert('Action failed: ' + (e as Error).message);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
-watch(targetUid, checkStatus)
-onMounted(checkStatus)
+watch(targetUid, checkStatus);
+onMounted(checkStatus);
 </script>
 
 <style scoped>
@@ -96,4 +96,3 @@ onMounted(checkStatus)
   cursor: not-allowed;
 }
 </style>
-

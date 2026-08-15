@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
-import type { AnimationItem } from 'lottie-web'
+import type { AnimationItem } from 'lottie-web';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = withDefaults(
   defineProps<{
-    loop?: boolean
-    autoplay?: boolean
+    loop?: boolean;
+    autoplay?: boolean;
   }>(),
-  { loop: true, autoplay: true },
-)
+  { loop: true, autoplay: true }
+);
 
-const container = ref<HTMLDivElement | null>(null)
-let instance: AnimationItem | null = null
-let disposed = false
+const container = ref<HTMLDivElement | null>(null);
+let instance: AnimationItem | null = null;
+let disposed = false;
 
 onMounted(async () => {
-  if (!container.value) return
+  if (!container.value) return;
   const [{ default: lottie }, animationModule] = await Promise.all([
     import('lottie-web'),
     import('../assets/hero.json'),
-  ])
-  if (disposed || !container.value) return
+  ]);
+  if (disposed || !container.value) return;
   instance = lottie.loadAnimation({
     container: container.value,
     renderer: 'svg',
@@ -33,14 +33,14 @@ onMounted(async () => {
       progressiveLoad: false,
       hideOnTransparent: true,
     },
-  })
-})
+  });
+});
 
 onBeforeUnmount(() => {
-  disposed = true
-  instance?.destroy()
-  instance = null
-})
+  disposed = true;
+  instance?.destroy();
+  instance = null;
+});
 </script>
 
 <template>
@@ -48,7 +48,7 @@ onBeforeUnmount(() => {
     ref="container"
     class="w-full h-full max-w-[560px] relative"
     aria-hidden="true"
-    style="width: 100%; height: 100%; min-width: 0; min-height: 0;"
+    style="width: 100%; height: 100%; min-width: 0; min-height: 0"
   >
     <!-- Static placeholder matching Lottie intrinsic aspect ratio (1080x950).
          Prevents CLS while lottie-web + hero.json load asynchronously.

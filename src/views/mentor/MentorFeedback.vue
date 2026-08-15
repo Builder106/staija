@@ -1,153 +1,161 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../components/ui/Container.vue'
-import Section from '../../components/ui/Section.vue'
-import Heading from '../../components/ui/Heading.vue'
-import Body from '../../components/ui/Body.vue'
-import Eyebrow from '../../components/ui/Eyebrow.vue'
-import UiButton from '../../components/ui/UiButton.vue'
-import UiCard from '../../components/ui/UiCard.vue'
-import UiChip from '../../components/ui/UiChip.vue'
+import { Icon } from '@iconify/vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import Body from '../../components/ui/Body.vue';
+import Container from '../../components/ui/Container.vue';
+import Eyebrow from '../../components/ui/Eyebrow.vue';
+import Heading from '../../components/ui/Heading.vue';
+import Section from '../../components/ui/Section.vue';
+import UiButton from '../../components/ui/UiButton.vue';
+import UiCard from '../../components/ui/UiCard.vue';
+import UiChip from '../../components/ui/UiChip.vue';
+import { DatabaseService } from '../../services/database';
 import {
   AuthService,
   MentorService,
   type MentorAssignment,
   type MentorFeedback,
   type UserProfile,
-} from '../../services/firebase'
-import { DatabaseService } from '../../services/database'
+} from '../../services/firebase';
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const studentId = computed(() => String(route.params.studentId ?? ''))
+const studentId = computed(() => String(route.params.studentId ?? ''));
 
-const assignment = ref<MentorAssignment | null>(null)
-const studentProfile = ref<UserProfile | null>(null)
-const pastFeedback = ref<MentorFeedback[]>([])
-const loading = ref(true)
-const error = ref('')
-const notAssigned = ref(false)
+const assignment = ref<MentorAssignment | null>(null);
+const studentProfile = ref<UserProfile | null>(null);
+const pastFeedback = ref<MentorFeedback[]>([]);
+const loading = ref(true);
+const error = ref('');
+const notAssigned = ref(false);
 
-const draft = ref('')
-const submitting = ref(false)
-const submitError = ref('')
+const draft = ref('');
+const submitting = ref(false);
+const submitError = ref('');
 
 const studentName = computed(() => {
-  return studentProfile.value?.displayName || studentProfile.value?.email || 'Student'
-})
+  return studentProfile.value?.displayName || studentProfile.value?.email || 'Student';
+});
 
 const programLabel = computed(() => {
-  if (!assignment.value) return ''
-  return assignment.value.program === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge'
-})
+  if (!assignment.value) return '';
+  return assignment.value.program === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge';
+});
 
 async function loadData() {
-  loading.value = true
-  error.value = ''
-  notAssigned.value = false
+  loading.value = true;
+  error.value = '';
+  notAssigned.value = false;
   try {
-    const currentUser = AuthService.getCurrentUser()
+    const currentUser = AuthService.getCurrentUser();
     if (!currentUser) {
-      router.push('/login')
-      return
+      router.push('/login');
+      return;
     }
     if (!studentId.value) {
-      error.value = 'Missing student ID.'
-      return
+      error.value = 'Missing student ID.';
+      return;
     }
 
     const [a, profile, fb] = await Promise.all([
       MentorService.getAssignment(currentUser.uid, studentId.value),
       DatabaseService.getUserProfile(studentId.value),
       MentorService.getFeedbackForStudent(currentUser.uid, studentId.value),
-    ])
+    ]);
 
     if (!a) {
       // The mentor isn't assigned to this student. Don't reveal whether the
       // student exists — just say there's no active pairing.
-      notAssigned.value = true
-      return
+      notAssigned.value = true;
+      return;
     }
 
-    assignment.value = a
-    studentProfile.value = profile
-    pastFeedback.value = fb
+    assignment.value = a;
+    studentProfile.value = profile;
+    pastFeedback.value = fb;
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load this student.'
+    error.value = err instanceof Error ? err.message : 'Failed to load this student.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function handleSubmit() {
-  if (submitting.value) return
-  const content = draft.value.trim()
+  if (submitting.value) return;
+  const content = draft.value.trim();
   if (!content) {
-    submitError.value = 'Please write some feedback before submitting.'
-    return
+    submitError.value = 'Please write some feedback before submitting.';
+    return;
   }
   if (!assignment.value) {
-    submitError.value = 'You can only submit feedback for an actively assigned student.'
-    return
+    submitError.value = 'You can only submit feedback for an actively assigned student.';
+    return;
   }
 
-  submitting.value = true
-  submitError.value = ''
+  submitting.value = true;
+  submitError.value = '';
   try {
-    const currentUser = AuthService.getCurrentUser()
-    if (!currentUser) throw new Error('Not signed in.')
+    const currentUser = AuthService.getCurrentUser();
+    if (!currentUser) throw new Error('Not signed in.');
     const id = await MentorService.submitFeedback({
       mentorId: currentUser.uid,
       studentId: studentId.value,
       content,
-    })
+    });
     pastFeedback.value = [
-      { id, mentorId: currentUser.uid, studentId: studentId.value, content, submittedAt: new Date() },
+      {
+        id,
+        mentorId: currentUser.uid,
+        studentId: studentId.value,
+        content,
+        submittedAt: new Date(),
+      },
       ...pastFeedback.value,
-    ]
-    draft.value = ''
+    ];
+    draft.value = '';
   } catch (err) {
-    submitError.value = err instanceof Error ? err.message : 'Failed to submit feedback.'
+    submitError.value = err instanceof Error ? err.message : 'Failed to submit feedback.';
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
 function timeAgo(value: unknown): string {
-  const ms = Date.now() - toMillis(value)
-  const min = Math.floor(ms / 60000)
-  if (min < 1) return 'just now'
-  if (min < 60) return `${min} min ago`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} hr ago`
-  const day = Math.floor(hr / 24)
-  if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`
+  const ms = Date.now() - toMillis(value);
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} hr ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} day${day === 1 ? '' : 's'} ago`;
   return new Date(toMillis(value)).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  })
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function toMillis(value: unknown): number {
-  if (value instanceof Date) return value.getTime()
+  if (value instanceof Date) return value.getTime();
   if (
     value &&
     typeof value === 'object' &&
     'toDate' in value &&
     typeof (value as { toDate: () => Date }).toDate === 'function'
   ) {
-    return (value as { toDate: () => Date }).toDate().getTime()
+    return (value as { toDate: () => Date }).toDate().getTime();
   }
   if (typeof value === 'string' || typeof value === 'number') {
-    return new Date(value).getTime()
+    return new Date(value).getTime();
   }
-  return 0
+  return 0;
 }
 
-onMounted(loadData)
-watch(studentId, loadData)
+onMounted(loadData);
+watch(studentId, loadData);
 </script>
 
 <template>
@@ -166,18 +174,14 @@ watch(studentId, loadData)
         Loading…
       </div>
 
-      <div
-        v-else-if="notAssigned"
-        class="rounded-2xl border hairline-ink p-8 max-w-2xl"
-      >
+      <div v-else-if="notAssigned" class="rounded-2xl border hairline-ink p-8 max-w-2xl">
         <Heading :level="3" class="mb-3">Not your student.</Heading>
         <Body class="text-ink/70">
-          You don't have an active mentor assignment for this student, so this
-          feedback page isn't available to you. If you think this is a
-          mistake, email
+          You don't have an active mentor assignment for this student, so this feedback page isn't
+          available to you. If you think this is a mistake, email
           <a href="mailto:contact@staija.org" class="text-brand-violet hover:underline">
-            contact@staija.org
-          </a>.
+            contact@staija.org </a
+          >.
         </Body>
       </div>
 
@@ -208,9 +212,8 @@ watch(studentId, loadData)
         <UiCard class="p-6 md:p-8 mb-10">
           <Heading :level="3" class="mb-2">Leave feedback</Heading>
           <Body class="text-ink/65 mb-5 text-sm">
-            Visible to you and to STAIJA staff. Don't include anything you
-            wouldn't want the student to read eventually — they may see this in
-            a future student-side view.
+            Visible to you and to STAIJA staff. Don't include anything you wouldn't want the student
+            to read eventually — they may see this in a future student-side view.
           </Body>
           <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
             <textarea
@@ -220,22 +223,14 @@ watch(studentId, loadData)
               placeholder="What's going well? What needs attention? Any concerns to flag?"
               class="w-full rounded-xl border hairline-ink bg-paper px-4 py-3 text-base leading-relaxed font-sans focus:outline-none focus:border-brand-violet/50 focus:ring-2 focus:ring-brand-violet/20 disabled:opacity-60"
             />
-            <p
-              v-if="submitError"
-              role="alert"
-              class="text-sm text-red-700 m-0"
-            >
+            <p v-if="submitError" role="alert" class="text-sm text-red-700 m-0">
               {{ submitError }}
             </p>
             <div class="flex items-center justify-between gap-4">
               <span class="text-xs text-ink/50">
                 {{ draft.trim().length }} character{{ draft.trim().length === 1 ? '' : 's' }}
               </span>
-              <UiButton
-                variant="primary"
-                type="submit"
-                :disabled="submitting || !draft.trim()"
-              >
+              <UiButton variant="primary" type="submit" :disabled="submitting || !draft.trim()">
                 <Icon
                   v-if="submitting"
                   icon="lucide:loader-2"
@@ -254,11 +249,7 @@ watch(studentId, loadData)
           You haven't left any feedback for this student yet.
         </div>
         <div v-else class="flex flex-col gap-4">
-          <UiCard
-            v-for="entry in pastFeedback"
-            :key="entry.id ?? entry.content"
-            class="p-5"
-          >
+          <UiCard v-for="entry in pastFeedback" :key="entry.id ?? entry.content" class="p-5">
             <p class="text-xs text-ink/55 mb-2">
               {{ timeAgo(entry.submittedAt) }}
             </p>

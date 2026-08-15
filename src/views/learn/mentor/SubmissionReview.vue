@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import Container from '../../../components/ui/Container.vue'
-import Section from '../../../components/ui/Section.vue'
-import Heading from '../../../components/ui/Heading.vue'
-import Body from '../../../components/ui/Body.vue'
-import Eyebrow from '../../../components/ui/Eyebrow.vue'
-import UiCard from '../../../components/ui/UiCard.vue'
-import UiButton from '../../../components/ui/UiButton.vue'
-import { DatabaseService } from '../../../services/database'
-import { SubmissionService, gradeSubmission, toMillis } from '../../../services/learn'
-import type { AssignmentSubmission, UserProfile } from '../../../services/types'
+import { Icon } from '@iconify/vue';
+import { onMounted, ref } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import Body from '../../../components/ui/Body.vue';
+import Container from '../../../components/ui/Container.vue';
+import Eyebrow from '../../../components/ui/Eyebrow.vue';
+import Heading from '../../../components/ui/Heading.vue';
+import Section from '../../../components/ui/Section.vue';
+import UiButton from '../../../components/ui/UiButton.vue';
+import UiCard from '../../../components/ui/UiCard.vue';
+import { DatabaseService } from '../../../services/database';
+import { SubmissionService, gradeSubmission, toMillis } from '../../../services/learn';
+import type { AssignmentSubmission, UserProfile } from '../../../services/types';
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const loading = ref(true)
-const submission = ref<AssignmentSubmission | null>(null)
-const student = ref<UserProfile | null>(null)
-const error = ref<string | null>(null)
+const loading = ref(true);
+const submission = ref<AssignmentSubmission | null>(null);
+const student = ref<UserProfile | null>(null);
+const error = ref<string | null>(null);
 
-const grade = ref<number | null>(null)
-const comment = ref('')
-const saving = ref(false)
+const grade = ref<number | null>(null);
+const comment = ref('');
+const saving = ref(false);
 
 async function load() {
-  loading.value = true
+  loading.value = true;
   try {
-    const id = route.params.id as string
-    const s = await SubmissionService.getSubmission(id)
+    const id = route.params.id as string;
+    const s = await SubmissionService.getSubmission(id);
     if (!s) {
-      error.value = 'Submission not found.'
-      return
+      error.value = 'Submission not found.';
+      return;
     }
-    submission.value = s
-    student.value = await DatabaseService.getUserProfile(s.studentId)
-    grade.value = s.grade ?? null
-    comment.value = s.mentorComment ?? ''
+    submission.value = s;
+    student.value = await DatabaseService.getUserProfile(s.studentId);
+    grade.value = s.grade ?? null;
+    comment.value = s.mentorComment ?? '';
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load.'
+    error.value = (err as { message?: string }).message ?? 'Failed to load.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function save(status: 'returned' | 'graded') {
-  if (!submission.value || saving.value) return
-  saving.value = true
-  error.value = null
+  if (!submission.value || saving.value) return;
+  saving.value = true;
+  error.value = null;
   try {
     await gradeSubmission({
       submissionId: submission.value.id ?? '',
       grade: status === 'graded' && grade.value !== null ? grade.value : undefined,
       mentorComment: comment.value.trim() || undefined,
       status,
-    })
-    router.push({ name: 'mentor-dashboard' })
+    });
+    router.push({ name: 'mentor-dashboard' });
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Save failed.'
+    error.value = (err as { message?: string }).message ?? 'Save failed.';
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
@@ -71,17 +71,20 @@ function fmtDate(value: unknown) {
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  })
+  });
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
   <div class="flex flex-col bg-paper min-h-screen">
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-3xl">
-        <RouterLink to="/mentor" class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1">
+        <RouterLink
+          to="/mentor"
+          class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
+        >
           <Icon icon="lucide:arrow-left" width="12" /> Mentor portal
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-2 block">Review submission</Eyebrow>
