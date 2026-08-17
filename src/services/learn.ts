@@ -155,7 +155,10 @@ export class CohortService {
   }
 
   static async updateCohort(cohortId: string, updates: Partial<Cohort>): Promise<void> {
-    await updateDoc(doc(db, 'cohorts', cohortId), updates as import('firebase/firestore').UpdateData<Cohort>);
+    await updateDoc(
+      doc(db, 'cohorts', cohortId),
+      updates as import('firebase/firestore').UpdateData<Cohort>
+    );
   }
 
   static async deleteCohort(cohortId: string): Promise<void> {

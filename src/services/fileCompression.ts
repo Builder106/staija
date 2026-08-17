@@ -97,7 +97,10 @@ type ScalableImageSource = ImageBitmap | HTMLImageElement;
 
 function getImageDimensions(source: ScalableImageSource): { width: number; height: number } {
   if ('naturalWidth' in source) {
-    return { width: source.naturalWidth || source.width, height: source.naturalHeight || source.height };
+    return {
+      width: source.naturalWidth || source.width,
+      height: source.naturalHeight || source.height,
+    };
   }
   return { width: source.width, height: source.height };
 }
