@@ -486,10 +486,7 @@ function onMarqueePointerRelease(e: PointerEvent) {
 /* design-system: DESIGN.md · detail-view: sprint register (see note vs.
    StepUpDetailView above, in the <script> block). */
 
-/* Seamless loop: the track holds two identical copies of the country
-   list, so translating exactly -50% lands back on frame one. The global
-   prefers-reduced-motion rule in style.css freezes this to a static
-   strip. */
+/* Infinite ticker track holds duplicate item list for continuous wrap */
 .marquee {
   overflow: hidden;
   /* Edge fade instead of a hard clip -- flags/names dissolve in and out

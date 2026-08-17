@@ -14,7 +14,6 @@ const rendering = ref(false);
 // Generate unique ID per instance
 const diagramId = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
 
-// Initialize mermaid config
 mermaid.initialize({
   startOnLoad: false,
   theme: 'dark',

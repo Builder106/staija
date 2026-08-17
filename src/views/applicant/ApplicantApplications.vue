@@ -230,7 +230,6 @@ const remainingProgramLabel = computed(() =>
       : ''
 );
 
-// Computed properties
 const filteredApplications = computed(() => {
   let filtered = applications.value;
 

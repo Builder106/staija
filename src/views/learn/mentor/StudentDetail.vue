@@ -115,13 +115,8 @@ async function copyEmail() {
   }
 }
 
-// Inline feedback composer. Previously this surface only had a link
-// out to /mentor/feedback/:studentId, which meant mentors lost the
-// student context (their progress / submissions list) every time
-// they wanted to write a note. The composer here writes directly via
-// the same MentorService.submitFeedback path the dedicated page uses
-// and prepends the new row to the local feedback list on success —
-// no reload required, mentor stays on the page.
+// Inline feedback composer writes via MentorService.submitFeedback
+// and prepends the new entry to the local list on success.
 const feedbackDraft = ref('');
 const feedbackSubmitting = ref(false);
 const feedbackError = ref<string | null>(null);

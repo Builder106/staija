@@ -37,7 +37,6 @@ const error = ref<string | null>(null);
 const messages = ref<Message[]>([]);
 const chatContainer = ref<HTMLElement | null>(null);
 
-// Initialize with welcoming tutor message
 function resetChat() {
   let intro = `Hi there! I am your STAIJA AI STEM Tutor. I can help explain concepts in **${props.lessonTitle}**, answer questions, or generate visual concept maps.`;
   if (props.initialQuestionContext) {

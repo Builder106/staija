@@ -237,7 +237,6 @@ export const cancelSubscription = onCall<{ subscriptionCode: string }>(
 
     const secret = PAYSTACK_SECRET_KEY.value()
 
-    // Step 1: fetch the subscription to get email_token.
     const fetchRes = await fetch(`https://api.paystack.co/subscription/${subCode}`, {
       headers: { Authorization: `Bearer ${secret}` },
     })
@@ -251,7 +250,6 @@ export const cancelSubscription = onCall<{ subscriptionCode: string }>(
       throw new HttpsError('internal', 'Paystack did not return email_token; cannot cancel.')
     }
 
-    // Step 2: disable the subscription.
     const disableRes = await fetch('https://api.paystack.co/subscription/disable', {
       method: 'POST',
       headers: {

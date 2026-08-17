@@ -5,10 +5,6 @@ import { createApp } from 'vue';
 // `lg:grid-cols-*` and break footer / hero / other responsive grids.
 import './style.css';
 import './styles/legacy.css';
-// page-transition.css removed alongside the <Transition> wrapper in
-// DefaultLayout. The classes it defined (.page-enter-from etc.) are
-// no longer applied to anything; keeping the file around would just
-// be dead bytes in the bundle.
 import { inject } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
 import App from './App.vue';
@@ -18,9 +14,7 @@ import { installAnalyticsRouter } from './services/analytics';
 import { captureReferrerFromUrl } from './services/referrals';
 import { startVersionWatcher } from './services/versionCheck';
 
-// Inject Vercel Analytics
 inject();
-// Inject Vercel Speed Insights
 injectSpeedInsights();
 
 // Auto-reload long-lived tabs when a new deploy ships. Without this,

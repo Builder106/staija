@@ -454,13 +454,8 @@ async function loadData() {
     // didInitialDraftSync flag (reset to false below) lets the first
     // reconcile push local-only drafts to cloud; subsequent
     // reconciles skip the push to avoid feedback loops.
-    //
-    // Crucially: `loading` is NOT flipped off inside this callback
-    // anymore. Doing so meant a stalled long-polling probe kept the
-    // dashboard spinning for ~60s on flaky networks. Now we flip
-    // loading off after the one-shot applications fetch returns —
-    // the snapshot callback continues to reconcile drafts in the
-    // background as cloud data arrives.
+    // Note: loading remains true until the initial applications query
+    // resolves; draft updates continue reconciling in the background.
     didInitialDraftSync = false;
     if (unsubscribeDrafts) unsubscribeDrafts();
     unsubscribeDrafts = watchUserDrafts(currentUser.uid, async cloudDocs => {

@@ -24,7 +24,6 @@ const firebaseConfig = getFirebaseConfig();
 // Log environment info in development
 // logEnvironmentInfo()
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Initialize App Check (browser only — App Check has no Node equivalent and
@@ -85,7 +84,6 @@ export async function getAppCheckToken(): Promise<string | null> {
   }
 }
 
-// Initialize Firebase services
 export const auth = getAuth(app);
 // initializeFirestore (not getFirestore) so we can pass transport options.
 // experimentalAutoDetectLongPolling probes the default WebChannel streaming
@@ -139,5 +137,4 @@ if (typeof window !== 'undefined' && import.meta.env.PROD) {
 
 export { analytics, performance };
 
-// Export the app instance
 export default app;
