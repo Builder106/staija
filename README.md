@@ -13,7 +13,15 @@
 
 # STAIJA
 
-Web platform for STAIJA's StepUp Scholars and Dynamerge programs — application management, applicant tracking, mentorship, and public content for STEM students across Nigeria.
+> **Educational platform supporting Nigeria's future STEM leaders.** Manages student scholarship applications, mentorship pairings, course learning, and alumni networks.
+
+## 💡 What is STAIJA?
+
+The Science and Technology Association for Indigenous Jumpstart Advancement (STAIJA) empowers students across Nigeria to pursue careers in science, technology, engineering, and mathematics. 
+
+This platform serves as the central digital hub for STAIJA's scholarship programs (StepUp Scholars and Dynamerge). It streamlines the entire student journey: applying online, matching admitted students with professional mentors, delivering coursework and assignments, and maintaining an active alumni network.
+
+**Live site:** [staija.org](https://staija.org)
 
 ## How it works
 
