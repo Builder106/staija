@@ -1,9 +1,9 @@
-import "./index.css";
-import { Composition } from "remotion";
-import { loadFont as loadIBMPlexSans } from "@remotion/google-fonts/IBMPlexSans";
-import { loadFont as loadIBMPlexMono } from "@remotion/google-fonts/IBMPlexMono";
-import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
-import { UIDemoComposition } from "./Composition";
+import './index.css';
+import { Composition } from 'remotion';
+import { loadFont as loadIBMPlexSans } from '@remotion/google-fonts/IBMPlexSans';
+import { loadFont as loadIBMPlexMono } from '@remotion/google-fonts/IBMPlexMono';
+import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
+import { UIDemoComposition } from './Composition';
 
 loadIBMPlexSans();
 loadIBMPlexMono();

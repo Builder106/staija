@@ -47,14 +47,14 @@ const original = ref<ProfileForm>({ displayName: '', bio: '', photoURL: '', avat
 
 watch(
   userProfile,
-  p => {
+  (p) => {
     form.value.displayName = p?.displayName ?? '';
     form.value.bio = p?.bio ?? '';
     form.value.photoURL = p?.photoURL ?? '';
     form.value.avatarSlot = p?.avatarSlot ?? null;
     original.value = { ...form.value };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const dirty = computed(
@@ -62,7 +62,7 @@ const dirty = computed(
     form.value.displayName !== original.value.displayName ||
     form.value.bio !== original.value.bio ||
     form.value.photoURL !== original.value.photoURL ||
-    form.value.avatarSlot !== original.value.avatarSlot
+    form.value.avatarSlot !== original.value.avatarSlot,
 );
 const bioOver = computed(() => form.value.bio.length > BIO_MAX);
 const canSave = computed(() => dirty.value && !bioOver.value && !saving.value && !uploading.value);
@@ -187,24 +187,24 @@ const mentorOriginal = ref<MentorForm>({
 
 watch(
   userProfile,
-  p => {
+  (p) => {
     mentorForm.value.mentorBio = p?.mentorBio ?? '';
     mentorForm.value.mentorAvailability = p?.mentorAvailability ?? '';
     mentorForm.value.mentorPublicProfile = p?.mentorPublicProfile === true;
     mentorOriginal.value = { ...mentorForm.value };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const mentorDirty = computed(
   () =>
     mentorForm.value.mentorBio !== mentorOriginal.value.mentorBio ||
     mentorForm.value.mentorAvailability !== mentorOriginal.value.mentorAvailability ||
-    mentorForm.value.mentorPublicProfile !== mentorOriginal.value.mentorPublicProfile
+    mentorForm.value.mentorPublicProfile !== mentorOriginal.value.mentorPublicProfile,
 );
 const mentorBioOver = computed(() => mentorForm.value.mentorBio.length > MENTOR_BIO_MAX);
 const mentorAvailabilityOver = computed(
-  () => mentorForm.value.mentorAvailability.length > MENTOR_AVAILABILITY_MAX
+  () => mentorForm.value.mentorAvailability.length > MENTOR_AVAILABILITY_MAX,
 );
 const mentorSaving = ref(false);
 const mentorSaveError = ref<string | null>(null);
@@ -214,7 +214,7 @@ const canSaveMentor = computed(
     mentorDirty.value &&
     !mentorBioOver.value &&
     !mentorAvailabilityOver.value &&
-    !mentorSaving.value
+    !mentorSaving.value,
 );
 
 async function handleSaveMentor() {
@@ -254,7 +254,7 @@ function getInitials(name: string | null | undefined) {
   if (!name) return '?';
   return name
     .split(/\s+/)
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
@@ -264,7 +264,7 @@ function getInitials(name: string | null | undefined) {
 // avatar service so the precedence (uploaded > picked slot > seeded
 // default) stays in one place.
 const avatarSeed = computed(() =>
-  user.value ? avatarSeedFor({ uid: user.value.uid, email: user.value.email }) : 'staija-default'
+  user.value ? avatarSeedFor({ uid: user.value.uid, email: user.value.email }) : 'staija-default',
 );
 
 const resolvedAvatarSrc = computed(() => {
@@ -290,7 +290,7 @@ const displayedSlot = computed<number | null>(() => {
 });
 
 const lottieAvailable = computed(
-  () => displayedSlot.value !== null && hasLottieForSlot(displayedSlot.value)
+  () => displayedSlot.value !== null && hasLottieForSlot(displayedSlot.value),
 );
 
 // Lazily-loaded Lottie JSON for the displayed slot. Reloaded when
@@ -298,14 +298,14 @@ const lottieAvailable = computed(
 const lottieAnimation = ref<Record<string, unknown> | null>(null);
 watch(
   displayedSlot,
-  async slot => {
+  async (slot) => {
     if (slot === null || !hasLottieForSlot(slot)) {
       lottieAnimation.value = null;
       return;
     }
     lottieAnimation.value = await loadLottieForSlot(slot);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function formatDate(date: unknown): string {
@@ -347,15 +347,17 @@ const notifPrefs = ref<EmailPreferences>({});
 const notifOriginal = ref<EmailPreferences>({});
 watch(
   userProfile,
-  p => {
+  (p) => {
     notifPrefs.value = { ...(p?.emailPreferences ?? {}) };
     notifOriginal.value = { ...notifPrefs.value };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const notifDirty = computed(() =>
-  notifKeys.some(k => isEnabled(notifPrefs.value, k.key) !== isEnabled(notifOriginal.value, k.key))
+  notifKeys.some(
+    (k) => isEnabled(notifPrefs.value, k.key) !== isEnabled(notifOriginal.value, k.key),
+  ),
 );
 const notifSaving = ref(false);
 const notifMessage = ref<string | null>(null);
@@ -392,7 +394,7 @@ async function saveNotifs() {
 // --- Security ---------------------------------------------------------
 
 const hasPasswordProvider = computed(
-  () => user.value?.providerData?.some(p => p.providerId === 'password') ?? false
+  () => user.value?.providerData?.some((p) => p.providerId === 'password') ?? false,
 );
 const sendingVerification = ref(false);
 const verificationMessage = ref<string | null>(null);
@@ -420,7 +422,7 @@ const pwError = ref<string | null>(null);
 const pwSuccess = ref(false);
 
 const pwValid = computed(
-  () => pwCurrent.value.length > 0 && pwNew.value.length >= 8 && pwNew.value === pwNewConfirm.value
+  () => pwCurrent.value.length > 0 && pwNew.value.length >= 8 && pwNew.value === pwNewConfirm.value,
 );
 
 async function changePassword() {
@@ -462,7 +464,7 @@ async function signOutEverywhere() {
   try {
     const callable = httpsCallable<Record<string, never>, { ok: boolean }>(
       functions,
-      'signOutEverywhere'
+      'signOutEverywhere',
     );
     await callable({});
     await signOut();
@@ -479,13 +481,13 @@ async function signOutEverywhere() {
 const directoryHidden = ref(false);
 watch(
   userProfile,
-  p => {
+  (p) => {
     directoryHidden.value = p?.directoryHidden === true;
   },
-  { immediate: true }
+  { immediate: true },
 );
 const showDirectoryToggle = computed(() =>
-  ['alumni', 'admin'].includes(userProfile.value?.role ?? '')
+  ['alumni', 'admin'].includes(userProfile.value?.role ?? ''),
 );
 const directorySaving = ref(false);
 
@@ -514,7 +516,7 @@ async function exportData() {
   try {
     const callable = httpsCallable<Record<string, never>, Record<string, unknown>>(
       functions,
-      'exportUserData'
+      'exportUserData',
     );
     const result = await callable({});
     const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
@@ -537,7 +539,7 @@ async function exportData() {
 
 const SELF_DELETABLE = new Set(['applicant', 'student', 'alumni', 'mentor']);
 const canSelfDelete = computed(() =>
-  userProfile.value?.role ? SELF_DELETABLE.has(userProfile.value.role) : true
+  userProfile.value?.role ? SELF_DELETABLE.has(userProfile.value.role) : true,
 );
 
 const showConfirm = ref(false);
@@ -553,7 +555,7 @@ async function handleDelete() {
   try {
     const callable = httpsCallable<Record<string, never>, { ok: boolean }>(
       functions,
-      'deleteAccount'
+      'deleteAccount',
     );
     await callable({});
     await signOut();

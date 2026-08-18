@@ -29,7 +29,7 @@ const firstName = computed(() => {
 });
 
 const totalUngraded = computed(() =>
-  Object.values(ungradedByStudent.value).reduce((a, b) => a + b, 0)
+  Object.values(ungradedByStudent.value).reduce((a, b) => a + b, 0),
 );
 
 async function loadData() {
@@ -43,7 +43,7 @@ async function loadData() {
     // Live-counting ungraded submissions for the badge. Snapshot updates
     // whenever a student submits or this mentor grades, so the badge is
     // current without needing to refresh.
-    queueUnsub = SubmissionService.subscribeMentorQueue(currentUser.uid, subs => {
+    queueUnsub = SubmissionService.subscribeMentorQueue(currentUser.uid, (subs) => {
       const tally: Record<string, number> = {};
       for (const s of subs) {
         tally[s.studentId] = (tally[s.studentId] ?? 0) + 1;

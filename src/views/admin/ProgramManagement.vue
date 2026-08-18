@@ -197,7 +197,7 @@ async function sendAnnouncement(p: Program) {
 }
 
 const sortedPrograms = computed(() =>
-  [...programs.value].sort((a, b) => a.name.localeCompare(b.name))
+  [...programs.value].sort((a, b) => a.name.localeCompare(b.name)),
 );
 
 // History modal state. Open one program's history at a time; the editor
@@ -233,7 +233,7 @@ function closeHistory() {
 function restoreFromHistory(snapshot: ProgramHistorySnapshot) {
   const programId = historyOpen.value?.programId;
   if (!programId) return;
-  const p = programs.value.find(x => x.id === programId);
+  const p = programs.value.find((x) => x.id === programId);
   if (!p) return;
   // Load the snapshot into the live draft so the editor can review and
   // press Save to apply. We deliberately do NOT auto-save the restore —
@@ -266,11 +266,11 @@ function snapshotDraft(p: Program): ProgramDraft {
     heroImg: p.heroImg ?? '',
     // Deep-clone the arrays so editing the draft doesn't mutate the
     // canonical Program object until the user clicks Save.
-    stats: (p.stats ?? []).map(s => ({ ...s })),
-    features: (p.features ?? []).map(f => ({ ...f })),
-    timeline: (p.timeline ?? []).map(t => ({ ...t })),
+    stats: (p.stats ?? []).map((s) => ({ ...s })),
+    features: (p.features ?? []).map((f) => ({ ...f })),
+    timeline: (p.timeline ?? []).map((t) => ({ ...t })),
     eligibilityList: [...(p.eligibilityList ?? [])],
-    mentors: (p.mentors ?? []).map(m => ({ ...m })),
+    mentors: (p.mentors ?? []).map((m) => ({ ...m })),
     applicationStart: p.dates?.applicationStart || '',
     applicationEnd: p.dates?.applicationEnd || '',
     programStart: p.dates?.programStart || '',
@@ -323,7 +323,7 @@ async function saveChanges(p: Program) {
     await DatabaseService.saveProgramWithHistory(
       p.id,
       updates,
-      currentUser?.uid ?? p.updatedBy ?? ''
+      currentUser?.uid ?? p.updatedBy ?? '',
     );
     Object.assign(p, updates, { updatedAt: new Date() });
     showToast('success', `${p.name} saved.`);
@@ -341,7 +341,7 @@ async function seedDefaults() {
     await loadPrograms();
     showToast(
       'success',
-      'Created StepUp and Dynamerge defaults. Set the dates, then flip status to active when applications open.'
+      'Created StepUp and Dynamerge defaults. Set the dates, then flip status to active when applications open.',
     );
   } catch (err) {
     showToast('error', err instanceof Error ? err.message : 'Seed failed.');

@@ -14,7 +14,7 @@ let unsubscribe: (() => void) | null = null;
 function startListening() {
   if (unsubscribe) return;
 
-  unsubscribe = AuthService.onAuthStateChanged(async firebaseUser => {
+  unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser) => {
     user.value = firebaseUser;
     if (firebaseUser) {
       try {
@@ -53,7 +53,7 @@ export function useAuth() {
   const isAuthenticated = computed(() => !!user.value);
   const role = computed(() => userProfile.value?.role ?? null);
   const displayName = computed(
-    () => userProfile.value?.displayName || user.value?.displayName || user.value?.email || null
+    () => userProfile.value?.displayName || user.value?.displayName || user.value?.email || null,
   );
 
   async function refreshProfile() {

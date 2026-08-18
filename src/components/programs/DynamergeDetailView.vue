@@ -69,7 +69,7 @@ const TRACKS: { id: TrackId; name: string; icon: string; copy: string }[] = [
   },
 ];
 const activeTrackId = ref<TrackId>('ai');
-const activeTrack = computed(() => TRACKS.find(t => t.id === activeTrackId.value) ?? TRACKS[0]);
+const activeTrack = computed(() => TRACKS.find((t) => t.id === activeTrackId.value) ?? TRACKS[0]);
 
 // Marquee sample — decorative reinforcement of the real eligibility rule
 // ("resident of any African country"), not a claim about where students

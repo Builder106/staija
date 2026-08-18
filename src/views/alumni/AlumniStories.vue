@@ -54,7 +54,7 @@ const message = ref('');
 
 const load = async () => {
   const snap = await getDocs(collection(db, 'alumni_stories'));
-  stories.value = snap.docs.map(d => ({ id: d.id, ...(d.data() as Story) }));
+  stories.value = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Story) }));
 };
 
 const submitStory = async () => {

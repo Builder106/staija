@@ -50,7 +50,7 @@ export function stagingPathFor(
   kind: StagedFileKind,
   hash: string,
   fileName: string,
-  fieldName?: string
+  fieldName?: string,
 ): string {
   const safeName = sanitizeFileName(fileName);
   const kindSegment =
@@ -83,7 +83,7 @@ function randomHash(): string {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     const bytes = new Uint8Array(8);
     crypto.getRandomValues(bytes);
-    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
   }
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 }
@@ -101,7 +101,7 @@ export async function uploadToStaging(
   program: DraftProgramSlug,
   kind: StagedFileKind,
   file: File,
-  opts?: { fieldName?: string }
+  opts?: { fieldName?: string },
 ): Promise<StagedFile> {
   const hash = randomHash();
   const storagePath = stagingPathFor(uid, program, kind, hash, file.name, opts?.fieldName);

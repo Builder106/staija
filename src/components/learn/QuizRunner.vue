@@ -31,12 +31,12 @@ const bestAttempt = computed(() => {
 });
 
 const hasPassed = computed(() => {
-  return result.value?.passed || attempts.value.some(a => a.passed);
+  return result.value?.passed || attempts.value.some((a) => a.passed);
 });
 
 const isCompleteAnswers = computed(() => {
   if (!quiz.value?.questions) return false;
-  return quiz.value.questions.every(q => !!userAnswers.value[q.id]);
+  return quiz.value.questions.every((q) => !!userAnswers.value[q.id]);
 });
 
 async function load() {
@@ -44,7 +44,7 @@ async function load() {
   error.value = null;
   try {
     const [fetchedQuiz, fetchedAttempts] = await Promise.all([
-      QuizService.getQuizById(props.quizId).then(async q => {
+      QuizService.getQuizById(props.quizId).then(async (q) => {
         if (q) return q;
         return QuizService.getQuizBySlug(props.quizId);
       }),
@@ -52,7 +52,7 @@ async function load() {
     ]);
     quiz.value = fetchedQuiz;
     attempts.value = fetchedAttempts;
-    if (fetchedAttempts.some(a => a.passed)) {
+    if (fetchedAttempts.some((a) => a.passed)) {
       const highest = [...fetchedAttempts].sort((a, b) => b.score - a.score)[0];
       emit('passed', highest.score);
     }

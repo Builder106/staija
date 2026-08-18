@@ -90,10 +90,10 @@ const expired = computed(() => {
 });
 
 const alreadyConsumedByMe = computed(
-  () => invite.value?.consumed === true && invite.value.consumedBy === user.value?.uid
+  () => invite.value?.consumed === true && invite.value.consumedBy === user.value?.uid,
 );
 const alreadyConsumedBySomeoneElse = computed(
-  () => invite.value?.consumed === true && invite.value.consumedBy !== user.value?.uid
+  () => invite.value?.consumed === true && invite.value.consumedBy !== user.value?.uid,
 );
 
 const emailMismatch = computed(() => {
@@ -108,7 +108,7 @@ const canAccept = computed(
     invite.value !== null &&
     !expired.value &&
     !alreadyConsumedBySomeoneElse.value &&
-    !emailMismatch.value
+    !emailMismatch.value,
 );
 
 function loginUrl(): string {

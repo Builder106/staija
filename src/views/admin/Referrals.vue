@@ -35,8 +35,8 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 
 const totalSignups = computed(() => rows.value.reduce((sum, r) => sum + r.signupCount, 0));
-const identifiedCount = computed(() => rows.value.filter(r => r.identified).length);
-const anonymousCount = computed(() => rows.value.filter(r => !r.uid).length);
+const identifiedCount = computed(() => rows.value.filter((r) => r.identified).length);
+const anonymousCount = computed(() => rows.value.filter((r) => !r.uid).length);
 
 async function load() {
   loading.value = true;

@@ -62,7 +62,7 @@ export interface AutoSaveHandle {
 export function useAutoSave<T extends object>(
   key: string,
   state: Ref<T>,
-  options: AutoSaveOptions = {}
+  options: AutoSaveOptions = {},
 ): AutoSaveHandle {
   const debounceMs = options.debounceMs ?? 30_000;
   const fullKey = STORAGE_PREFIX + key;
@@ -175,7 +175,7 @@ export function useAutoSave<T extends object>(
       if (timer) clearTimeout(timer);
       timer = setTimeout(persist, debounceMs);
     },
-    { deep: true }
+    { deep: true },
   );
 
   // Persist on tab close / page hide so a 30s window doesn't lose work.

@@ -19,7 +19,7 @@ export function useFormDirty<T>(form: Ref<T>) {
     () => {
       isDirty.value = JSON.stringify(form.value) !== snapshot;
     },
-    { deep: true }
+    { deep: true },
   );
 
   function markClean() {

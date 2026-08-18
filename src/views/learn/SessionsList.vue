@@ -20,13 +20,13 @@ const error = ref<string | null>(null);
 
 const upcoming = computed(() =>
   sessions.value
-    .filter(s => toMillis(s.startsAt) >= Date.now())
-    .sort((a, b) => toMillis(a.startsAt) - toMillis(b.startsAt))
+    .filter((s) => toMillis(s.startsAt) >= Date.now())
+    .sort((a, b) => toMillis(a.startsAt) - toMillis(b.startsAt)),
 );
 const past = computed(() =>
   sessions.value
-    .filter(s => toMillis(s.startsAt) < Date.now())
-    .sort((a, b) => toMillis(b.startsAt) - toMillis(a.startsAt))
+    .filter((s) => toMillis(s.startsAt) < Date.now())
+    .sort((a, b) => toMillis(b.startsAt) - toMillis(a.startsAt)),
 );
 
 async function load() {

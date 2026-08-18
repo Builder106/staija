@@ -7,7 +7,7 @@ const props = withDefaults(
     loop?: boolean;
     autoplay?: boolean;
   }>(),
-  { loop: true, autoplay: true }
+  { loop: true, autoplay: true },
 );
 
 const container = ref<HTMLDivElement | null>(null);

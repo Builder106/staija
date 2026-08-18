@@ -244,7 +244,7 @@ async function retryEmail() {
   try {
     const fn = httpsCallable<{ applicationId: string }, { ok: boolean; kind: string; to: string }>(
       functions,
-      'retryApplicationEmail'
+      'retryApplicationEmail',
     );
     const res = await fn({ applicationId: application.value.id });
     retryMessage.value = `Email re-sent to ${res.data.to}.`;
@@ -335,7 +335,7 @@ async function loadDocumentURLs() {
   const rows = documentRows.value;
   if (rows.length === 0) return;
   await Promise.all(
-    rows.map(async row => {
+    rows.map(async (row) => {
       try {
         const url = await StorageService.getFileURL(row.path);
         documentURLs.value = { ...documentURLs.value, [row.key]: url };
@@ -343,7 +343,7 @@ async function loadDocumentURLs() {
         // Leave the key unset — template renders a "couldn't fetch"
         // affordance for that row.
       }
-    })
+    }),
   );
 }
 
@@ -452,7 +452,7 @@ onMounted(loadApplication);
                   Submitted
                   {{
                     formatDate(
-                      toDate(application.submittedAt) ?? toDate(application.createdAt) ?? undefined
+                      toDate(application.submittedAt) ?? toDate(application.createdAt) ?? undefined,
                     )
                   }}
                 </span>

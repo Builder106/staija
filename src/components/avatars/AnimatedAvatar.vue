@@ -39,7 +39,7 @@ const props = withDefaults(
     alt: '',
     size: 80,
     state: 'idle',
-  }
+  },
 );
 
 const { prefersReducedMotion } = usePrefersReducedMotion();
@@ -51,13 +51,13 @@ const { prefersReducedMotion } = usePrefersReducedMotion();
 const breathPhaseDelay = ref(Math.random() * AVATAR_DURATIONS.breath);
 
 const breathAmplitude = computed(() =>
-  props.state === 'hero' ? AVATAR_BREATH_AMPLITUDE.hero : AVATAR_BREATH_AMPLITUDE.idle
+  props.state === 'hero' ? AVATAR_BREATH_AMPLITUDE.hero : AVATAR_BREATH_AMPLITUDE.idle,
 );
 
 const animatesBreath = computed(() => props.state !== 'static' && !prefersReducedMotion.value);
 
 const initial = computed(() =>
-  prefersReducedMotion.value ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }
+  prefersReducedMotion.value ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 },
 );
 
 const animate = computed(() => {
@@ -101,7 +101,7 @@ const whileHover = computed(() =>
           duration: AVATAR_DURATIONS.hover,
           ease: AVATAR_EASINGS.out,
         },
-      }
+      },
 );
 
 const sizeStyle = computed(() => ({

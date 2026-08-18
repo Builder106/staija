@@ -47,7 +47,7 @@ watch(
   () => props.code,
   () => {
     nextTick(renderDiagram);
-  }
+  },
 );
 </script>
 

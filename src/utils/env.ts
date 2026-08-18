@@ -51,7 +51,7 @@ const REQUIRED_ENV_VARS = [
  * Validates that all required environment variables are present
  */
 export function validateEnvironment(): void {
-  const missingVars = REQUIRED_ENV_VARS.filter(varName => !import.meta.env[varName]);
+  const missingVars = REQUIRED_ENV_VARS.filter((varName) => !import.meta.env[varName]);
 
   if (missingVars.length > 0) {
     console.warn('⚠️ Missing environment variables. Using development defaults.');
@@ -62,7 +62,7 @@ export function validateEnvironment(): void {
 
     const errorMessage = [
       'Missing required environment variables:',
-      ...missingVars.map(varName => `  - ${varName}`),
+      ...missingVars.map((varName) => `  - ${varName}`),
       '',
       'Please check your .env file and ensure all required variables are set.',
     ].join('\n');

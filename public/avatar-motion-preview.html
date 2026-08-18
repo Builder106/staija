@@ -191,8 +191,8 @@
 
       // Load the SVG inline so GSAP can target #ids directly.
       fetch('/avatars/_preview/portrait.svg')
-        .then(r => r.text())
-        .then(svgText => {
+        .then((r) => r.text())
+        .then((svgText) => {
           loading.remove();
           stage.insertAdjacentHTML('beforeend', svgText);
           const svg = stage.querySelector('svg');
@@ -234,10 +234,10 @@
 
         function clearAll() {
           gsap.killTweensOf(
-            '#avatar-root, #hair-front, #hair-puff-left, #hair-puff-right, #earring-left, #earring-right, #eye-left, #eye-right, #eyebrow-left, #eyebrow-right, #lips'
+            '#avatar-root, #hair-front, #hair-puff-left, #hair-puff-right, #earring-left, #earring-right, #eye-left, #eye-right, #eyebrow-left, #eyebrow-right, #lips',
           );
           if (blinkCall) blinkCall.kill();
-          hoverTweens.forEach(t => t.kill());
+          hoverTweens.forEach((t) => t.kill());
           hoverTweens = [];
         }
 
@@ -346,7 +346,7 @@
         }
 
         function applyHover(on) {
-          hoverTweens.forEach(t => t.kill());
+          hoverTweens.forEach((t) => t.kill());
           hoverTweens = [];
           if (on) {
             hoverTweens.push(
@@ -361,7 +361,7 @@
                 duration: 0.25,
                 ease: 'power2.out',
                 overwrite: 'auto',
-              })
+              }),
             );
           } else {
             hoverTweens.push(
@@ -371,14 +371,14 @@
                 ease: 'power2.out',
                 overwrite: 'auto',
               }),
-              gsap.to('#lips', { scaleX: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto' })
+              gsap.to('#lips', { scaleX: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto' }),
             );
           }
         }
 
         // ---- wire controls ----
-        const $ = id => document.getElementById(id);
-        const bind = (id, k, fmt = v => v) => {
+        const $ = (id) => document.getElementById(id);
+        const bind = (id, k, fmt = (v) => v) => {
           const el = $(id);
           const out = $('v-' + id.replace('breath-', 'breath-').replace('blink-', 'blink'));
           el.addEventListener('input', () => {
@@ -401,13 +401,13 @@
         const updateBlinkLabel = () => {
           $('v-blink').textContent = knob.blinkMin.toFixed(1) + ' – ' + knob.blinkMax.toFixed(1);
         };
-        $('blink-min').addEventListener('input', e => {
+        $('blink-min').addEventListener('input', (e) => {
           knob.blinkMin = parseFloat(e.target.value);
           if (knob.blinkMax < knob.blinkMin) knob.blinkMax = knob.blinkMin;
           updateBlinkLabel();
           build();
         });
-        $('blink-max').addEventListener('input', e => {
+        $('blink-max').addEventListener('input', (e) => {
           knob.blinkMax = parseFloat(e.target.value);
           if (knob.blinkMax < knob.blinkMin) knob.blinkMin = knob.blinkMax;
           updateBlinkLabel();

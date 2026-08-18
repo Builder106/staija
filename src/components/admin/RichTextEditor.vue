@@ -78,7 +78,7 @@ watch(
       emitUpdate: false,
     });
     suppressEmit = false;
-  }
+  },
 );
 
 onBeforeUnmount(() => {

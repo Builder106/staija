@@ -115,7 +115,7 @@ async function submitInvite() {
       expiresInDays: inviteExpiresInDays.value ?? undefined,
       count: inviteCount.value,
     });
-    inviteResults.value = res.data.invites.map(i => ({
+    inviteResults.value = res.data.invites.map((i) => ({
       url: i.url,
       expiresAt: i.expiresAt,
     }));
@@ -148,7 +148,7 @@ async function copyInviteLink(url: string) {
 async function copyAllInviteLinks() {
   if (inviteResults.value.length === 0) return;
   try {
-    await navigator.clipboard.writeText(inviteResults.value.map(i => i.url).join('\n'));
+    await navigator.clipboard.writeText(inviteResults.value.map((i) => i.url).join('\n'));
     copiedAll.value = true;
     setTimeout(() => {
       copiedAll.value = false;
@@ -183,7 +183,7 @@ async function loadMentorInvites() {
   try {
     const q = query(collection(db, 'mentorInvites'), orderBy('createdAt', 'desc'), fsLimit(50));
     const snap = await getDocs(q);
-    mentorInvites.value = snap.docs.map(d => {
+    mentorInvites.value = snap.docs.map((d) => {
       const data = d.data() as MentorInvite;
       return { ...data, id: d.id, status: inviteStatus(data) };
     });
@@ -203,7 +203,7 @@ async function revokeInvite(token: string) {
   try {
     const fn = httpsCallable<{ token: string }, { ok: true; changed: boolean }>(
       functions,
-      'revokeMentorInvite'
+      'revokeMentorInvite',
     );
     await fn({ token });
     await loadMentorInvites();
@@ -245,14 +245,14 @@ const allRoles: UserRole[] = ALL_ROLES;
 
 const filteredUsers = computed(() => {
   let list = users.value;
-  if (activeFilter.value) list = list.filter(u => u.role === activeFilter.value);
+  if (activeFilter.value) list = list.filter((u) => u.role === activeFilter.value);
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase();
     list = list.filter(
-      u =>
+      (u) =>
         u.displayName?.toLowerCase().includes(q) ||
         u.email?.toLowerCase().includes(q) ||
-        u.role?.toLowerCase().includes(q)
+        u.role?.toLowerCase().includes(q),
     );
   }
   return list;
@@ -264,13 +264,13 @@ const paginatedUsers = computed(() => {
 });
 
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage))
+  Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)),
 );
 
 const assignableRoles = computed(() =>
-  allRoles.filter(role =>
-    PermissionService.canAssignRole(userProfile.value?.role ?? 'applicant', role)
-  )
+  allRoles.filter((role) =>
+    PermissionService.canAssignRole(userProfile.value?.role ?? 'applicant', role),
+  ),
 );
 
 watch([activeFilter, searchQuery], () => {
@@ -283,7 +283,7 @@ async function loadUsers() {
   try {
     const callable = httpsCallable<Record<string, never>, { users: EnrichedUser[] }>(
       functions,
-      'adminListUsers'
+      'adminListUsers',
     );
     const result = await callable({});
     users.value = result.data.users;
@@ -297,14 +297,14 @@ async function loadUsers() {
 }
 
 function getRoleCount(role: UserRole) {
-  return users.value.filter(u => u.role === role).length;
+  return users.value.filter((u) => u.role === role).length;
 }
 
 function getInitials(name: string | null) {
   if (!name) return '?';
   return name
     .split(/\s+/)
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
@@ -390,7 +390,7 @@ async function confirmRoleChange() {
   roleChanging.value = true;
   try {
     await AuthService.assignRole(selectedUser.value.uid, newRole.value, changeReason.value);
-    const idx = users.value.findIndex(u => u.uid === selectedUser.value?.uid);
+    const idx = users.value.findIndex((u) => u.uid === selectedUser.value?.uid);
     if (idx !== -1) users.value[idx] = { ...users.value[idx], role: newRole.value };
     showMessage('success', `Role updated to ${newRole.value}.`);
     closeRoleModal();

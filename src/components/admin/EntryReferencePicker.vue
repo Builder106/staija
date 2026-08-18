@@ -41,13 +41,13 @@ const byId = computed(() => {
 });
 
 const selected = computed(() =>
-  props.modelValue.map(id => byId.value.get(id)).filter((e): e is EntrySummary => !!e)
+  props.modelValue.map((id) => byId.value.get(id)).filter((e): e is EntrySummary => !!e),
 );
 
 const candidates = computed(() => {
   const term = search.value.trim().toLowerCase();
   return all.value
-    .filter(e => {
+    .filter((e) => {
       if (props.modelValue.includes(e.id)) return false;
       if (props.excludeId && e.id === props.excludeId) return false;
       if (!term) return true;

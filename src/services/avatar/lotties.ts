@@ -15,7 +15,7 @@
 // `import.meta.glob` with no `eager: true` returns loaders, not
 // modules. Each loader is a `() => Promise<{ default: <json> }>`.
 const LOADERS = import.meta.glob<{ default: Record<string, unknown> }>(
-  '../../assets/avatar-lotties/slot-*.json'
+  '../../assets/avatar-lotties/slot-*.json',
 );
 
 const SLOT_FILE_PATTERN = /slot-(\d+)\.json$/;

@@ -60,7 +60,7 @@ export class AuditService {
       }
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as AuditLog);
+      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as AuditLog);
     } catch (error) {
       console.error('Failed to get audit logs:', error);
       throw error;

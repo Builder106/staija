@@ -38,7 +38,7 @@ const props = defineProps<{
 const referrerName = ref<string | null>(null);
 watch(
   () => props.referrerId,
-  async id => {
+  async (id) => {
     referrerName.value = null;
     if (!id) return;
     const name = await resolveReferrerDisplayName(id);
@@ -46,7 +46,7 @@ watch(
     // prop changed during the await, ignore this result.
     if (props.referrerId === id) referrerName.value = name;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const PROGRAM_LABELS: Record<string, string> = {

@@ -70,8 +70,8 @@ export class CourseService {
   static async getModulesForCourse(course: CmsCourse): Promise<CmsModule[]> {
     const refs = course.modules ?? [];
     if (refs.length === 0) return [];
-    const ids = refs.map(r => r?.sys?.id).filter(Boolean);
-    const docs = await Promise.all(ids.map(id => getDoc(doc(db, 'cms_modules', id))));
+    const ids = refs.map((r) => r?.sys?.id).filter(Boolean);
+    const docs = await Promise.all(ids.map((id) => getDoc(doc(db, 'cms_modules', id))));
     const out: CmsModule[] = [];
     for (const d of docs) {
       if (d.exists()) out.push(d.data() as CmsModule);
@@ -82,8 +82,8 @@ export class CourseService {
   static async getLessonsForModule(module: CmsModule): Promise<CmsLesson[]> {
     const refs = module.lessons ?? [];
     if (refs.length === 0) return [];
-    const ids = refs.map(r => r?.sys?.id).filter(Boolean);
-    const docs = await Promise.all(ids.map(id => getDoc(doc(db, 'cms_lessons', id))));
+    const ids = refs.map((r) => r?.sys?.id).filter(Boolean);
+    const docs = await Promise.all(ids.map((id) => getDoc(doc(db, 'cms_lessons', id))));
     const out: CmsLesson[] = [];
     for (const d of docs) {
       if (d.exists()) out.push(d.data() as CmsLesson);
@@ -94,8 +94,8 @@ export class CourseService {
   static async getAssignmentsForModule(module: CmsModule): Promise<CmsAssignmentSpec[]> {
     const refs = module.assignments ?? [];
     if (refs.length === 0) return [];
-    const ids = refs.map(r => r?.sys?.id).filter(Boolean);
-    const docs = await Promise.all(ids.map(id => getDoc(doc(db, 'cms_assignmentSpecs', id))));
+    const ids = refs.map((r) => r?.sys?.id).filter(Boolean);
+    const docs = await Promise.all(ids.map((id) => getDoc(doc(db, 'cms_assignmentSpecs', id))));
     const out: CmsAssignmentSpec[] = [];
     for (const d of docs) {
       if (d.exists()) out.push(d.data() as CmsAssignmentSpec);
@@ -138,12 +138,12 @@ export class CohortService {
     if (program) constraints.push(where('program', '==', program));
     constraints.push(orderBy('startDate', 'desc'));
     const snap = await getDocs(query(collection(db, 'cohorts'), ...constraints));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Cohort);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Cohort);
   }
 
   static async listAllCohorts(): Promise<Cohort[]> {
     const snap = await getDocs(query(collection(db, 'cohorts'), orderBy('startDate', 'desc')));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Cohort);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Cohort);
   }
 
   static async createCohort(data: Omit<Cohort, 'id' | 'createdAt'>): Promise<string> {
@@ -157,7 +157,7 @@ export class CohortService {
   static async updateCohort(cohortId: string, updates: Partial<Cohort>): Promise<void> {
     await updateDoc(
       doc(db, 'cohorts', cohortId),
-      updates as import('firebase/firestore').UpdateData<Cohort>
+      updates as import('firebase/firestore').UpdateData<Cohort>,
     );
   }
 
@@ -192,30 +192,30 @@ export class EnrollmentService {
     const q = query(
       collection(db, 'enrollments'),
       where('studentId', '==', studentId),
-      where('status', '==', 'active')
+      where('status', '==', 'active'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Enrollment);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Enrollment);
   }
 
   static async getForCohort(cohortId: string): Promise<Enrollment[]> {
     const q = query(
       collection(db, 'enrollments'),
       where('cohortId', '==', cohortId),
-      where('status', '==', 'active')
+      where('status', '==', 'active'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Enrollment);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Enrollment);
   }
 
   static async getForMentor(mentorId: string): Promise<Enrollment[]> {
     const q = query(
       collection(db, 'enrollments'),
       where('mentorId', '==', mentorId),
-      where('status', '==', 'active')
+      where('status', '==', 'active'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Enrollment);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Enrollment);
   }
 }
 
@@ -225,7 +225,7 @@ export class ProgressService {
   static async getProgressForEnrollment(enrollmentId: string): Promise<LessonProgress[]> {
     const q = query(collection(db, 'lesson_progress'), where('enrollmentId', '==', enrollmentId));
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as LessonProgress);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonProgress);
   }
 
   // Real-time listener — used by student dashboard / lesson views so
@@ -233,11 +233,11 @@ export class ProgressService {
   // refetching.
   static subscribeProgressForEnrollment(
     enrollmentId: string,
-    cb: (progress: LessonProgress[]) => void
+    cb: (progress: LessonProgress[]) => void,
   ): Unsubscribe {
     const q = query(collection(db, 'lesson_progress'), where('enrollmentId', '==', enrollmentId));
-    return onSnapshot(q, snap => {
-      cb(snap.docs.map(d => ({ id: d.id, ...d.data() }) as LessonProgress));
+    return onSnapshot(q, (snap) => {
+      cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonProgress));
     });
   }
 }
@@ -248,7 +248,7 @@ export class SubmissionService {
   static async getOwnSubmissions(
     studentId: string,
     pageSize = 20,
-    cursor?: DocumentSnapshot
+    cursor?: DocumentSnapshot,
   ): Promise<{ items: AssignmentSubmission[]; nextCursor?: DocumentSnapshot }> {
     const constraints: QueryConstraint[] = [
       where('studentId', '==', studentId),
@@ -257,7 +257,7 @@ export class SubmissionService {
     ];
     if (cursor) constraints.splice(2, 0, startAfter(cursor));
     const snap = await getDocs(query(collection(db, 'assignment_submissions'), ...constraints));
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
     const nextCursor = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined;
     return { items, nextCursor };
   }
@@ -272,46 +272,46 @@ export class SubmissionService {
   static subscribeMentorQueue(
     mentorId: string,
     cb: (subs: AssignmentSubmission[]) => void,
-    pageSize = 50
+    pageSize = 50,
   ): Unsubscribe {
     const q = query(
       collection(db, 'assignment_submissions'),
       where('mentorId', '==', mentorId),
       where('status', '==', 'submitted'),
       orderBy('submittedAt', 'desc'),
-      fsLimit(pageSize)
+      fsLimit(pageSize),
     );
-    return onSnapshot(q, snap => {
-      cb(snap.docs.map(d => ({ id: d.id, ...d.data() }) as AssignmentSubmission));
+    return onSnapshot(q, (snap) => {
+      cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission));
     });
   }
 
   static async getSubmissionsForEnrollmentAndAssignment(
     enrollmentId: string,
-    assignmentSlug: string
+    assignmentSlug: string,
   ): Promise<AssignmentSubmission[]> {
     const q = query(
       collection(db, 'assignment_submissions'),
       where('enrollmentId', '==', enrollmentId),
       where('assignmentSlug', '==', assignmentSlug),
-      orderBy('submittedAt', 'desc')
+      orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
   }
 
   // Every submission for a single enrollment, newest first. Used by the
   // mentor's per-student view to render the full submission timeline.
   static async getSubmissionsForEnrollmentAndAssignmentAll(
-    enrollmentId: string
+    enrollmentId: string,
   ): Promise<AssignmentSubmission[]> {
     const q = query(
       collection(db, 'assignment_submissions'),
       where('enrollmentId', '==', enrollmentId),
-      orderBy('submittedAt', 'desc')
+      orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
   }
 }
 
@@ -322,10 +322,10 @@ export class SessionService {
     const q = query(
       collection(db, 'live_sessions'),
       where('cohortId', '==', cohortId),
-      orderBy('startsAt', 'asc')
+      orderBy('startsAt', 'asc'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as LiveSession);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LiveSession);
   }
 
   static async getSession(sessionId: string): Promise<LiveSession | null> {
@@ -340,10 +340,10 @@ export class SessionService {
       where('cohortId', '==', cohortId),
       where('startsAt', '>=', now),
       orderBy('startsAt', 'asc'),
-      fsLimit(max)
+      fsLimit(max),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as LiveSession);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LiveSession);
   }
 
   static async getRsvp(sessionId: string, studentId: string): Promise<SessionRsvp | null> {
@@ -363,15 +363,18 @@ export interface EnrollPayload {
 export const enrollStudent = (data: EnrollPayload) =>
   httpsCallable<EnrollPayload, { ok: boolean; enrollmentId: string; mentorId: string }>(
     functions,
-    'enrollStudent'
-  )(data).then(r => r.data);
+    'enrollStudent',
+  )(data).then((r) => r.data);
 
 export const completeLesson = (data: {
   enrollmentId: string;
   lessonSlug: string;
   moduleSlug?: string;
 }) =>
-  httpsCallable<typeof data, { ok: boolean }>(functions, 'completeLesson')(data).then(r => r.data);
+  httpsCallable<typeof data, { ok: boolean }>(
+    functions,
+    'completeLesson',
+  )(data).then((r) => r.data);
 
 export interface SubmitAssignmentPayload {
   enrollmentId: string;
@@ -386,8 +389,8 @@ export interface SubmitAssignmentPayload {
 export const submitAssignment = (data: SubmitAssignmentPayload) =>
   httpsCallable<SubmitAssignmentPayload, { ok: boolean; submissionId: string }>(
     functions,
-    'submitAssignment'
-  )(data).then(r => r.data);
+    'submitAssignment',
+  )(data).then((r) => r.data);
 
 export const gradeSubmission = (data: {
   submissionId: string;
@@ -395,7 +398,10 @@ export const gradeSubmission = (data: {
   mentorComment?: string;
   status: 'returned' | 'graded';
 }) =>
-  httpsCallable<typeof data, { ok: boolean }>(functions, 'gradeSubmission')(data).then(r => r.data);
+  httpsCallable<typeof data, { ok: boolean }>(
+    functions,
+    'gradeSubmission',
+  )(data).then((r) => r.data);
 
 export interface ScheduleSessionPayload {
   cohortId: string;
@@ -410,11 +416,11 @@ export interface ScheduleSessionPayload {
 export const scheduleSession = (data: ScheduleSessionPayload) =>
   httpsCallable<ScheduleSessionPayload, { ok: boolean; sessionId: string }>(
     functions,
-    'scheduleSession'
-  )(data).then(r => r.data);
+    'scheduleSession',
+  )(data).then((r) => r.data);
 
 export const rsvpSession = (data: { sessionId: string; rsvped: 'yes' | 'no' | 'maybe' }) =>
-  httpsCallable<typeof data, { ok: boolean }>(functions, 'rsvpSession')(data).then(r => r.data);
+  httpsCallable<typeof data, { ok: boolean }>(functions, 'rsvpSession')(data).then((r) => r.data);
 
 export interface SubmitQuizPayload {
   enrollmentId: string;
@@ -440,8 +446,8 @@ export interface QuizSubmitResult {
 export const submitQuiz = (data: SubmitQuizPayload) =>
   httpsCallable<SubmitQuizPayload, QuizSubmitResult>(
     functions,
-    'submitQuiz'
-  )(data).then(r => r.data);
+    'submitQuiz',
+  )(data).then((r) => r.data);
 
 export class QuizService {
   static async getQuizById(id: string): Promise<CmsQuiz | null> {
@@ -457,16 +463,16 @@ export class QuizService {
 
   static async getAttemptsForStudent(
     enrollmentId: string,
-    lessonSlug: string
+    lessonSlug: string,
   ): Promise<QuizAttempt[]> {
     const q = query(
       collection(db, 'quiz_attempts'),
       where('enrollmentId', '==', enrollmentId),
       where('lessonSlug', '==', lessonSlug),
-      orderBy('submittedAt', 'desc')
+      orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as QuizAttempt);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as QuizAttempt);
   }
 }
 
@@ -492,8 +498,8 @@ export interface AskLmsTutorResult {
 export const askLmsTutor = (data: AskLmsTutorPayload) =>
   httpsCallable<AskLmsTutorPayload, AskLmsTutorResult>(
     functions,
-    'askLmsTutor'
-  )(data).then(r => r.data);
+    'askLmsTutor',
+  )(data).then((r) => r.data);
 
 // --- Helpers ----------------------------------------------------------
 
@@ -521,6 +527,6 @@ export function toMillis(value: unknown): number {
 // progress rows + the total lesson count.
 export function completionFraction(progress: LessonProgress[], totalLessons: number): number {
   if (totalLessons <= 0) return 0;
-  const completed = progress.filter(p => p.status === 'completed').length;
+  const completed = progress.filter((p) => p.status === 'completed').length;
   return Math.min(1, completed / totalLessons);
 }

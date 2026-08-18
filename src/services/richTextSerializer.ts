@@ -152,7 +152,7 @@ function convertChildren(content: Node[] | undefined): TipTapNode[] {
 }
 
 function convertCfText(node: Text): TipTapTextNode {
-  const marks = (node.marks ?? []).map(m => ({ type: m.type })) as TipTapMark[];
+  const marks = (node.marks ?? []).map((m) => ({ type: m.type })) as TipTapMark[];
   const tt: TipTapTextNode = { type: 'text', text: node.value };
   if (marks.length > 0) tt.marks = marks;
   return tt;
@@ -314,12 +314,12 @@ function convertInlineChildren(content: TipTapNode[] | undefined): (Text | Inlin
 // Convert a TipTap text node, splitting off the link mark into a
 // Contentful hyperlink wrapper if present.
 function convertTtTextWithLink(node: TipTapTextNode): (Text | Inline)[] {
-  const linkMark = node.marks?.find(m => m.type === 'link');
-  const otherMarks = (node.marks ?? []).filter(m => m.type !== 'link');
+  const linkMark = node.marks?.find((m) => m.type === 'link');
+  const otherMarks = (node.marks ?? []).filter((m) => m.type !== 'link');
   const cfMarks: Mark[] = otherMarks
-    .map(m => ({ type: mapMarkType(m.type) }))
-    .filter(m => !!m.type)
-    .map(m => ({ type: m.type as MARKS }));
+    .map((m) => ({ type: mapMarkType(m.type) }))
+    .filter((m) => !!m.type)
+    .map((m) => ({ type: m.type as MARKS }));
 
   const text: Text = {
     nodeType: 'text',

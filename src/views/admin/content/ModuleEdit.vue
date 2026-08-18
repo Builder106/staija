@@ -45,7 +45,9 @@ const { isDirty, markClean } = useFormDirty(form);
 
 function extractRefIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.map(v => (v as { sys?: { id?: string } })?.sys?.id).filter((v): v is string => !!v);
+  return value
+    .map((v) => (v as { sys?: { id?: string } })?.sys?.id)
+    .filter((v): v is string => !!v);
 }
 
 async function load() {
@@ -72,7 +74,7 @@ async function load() {
 }
 
 const canSave = computed(
-  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value
+  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value,
 );
 
 async function save() {

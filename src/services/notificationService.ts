@@ -28,7 +28,7 @@ export class NotificationService {
   private static notifsRef = collection(db, 'notifications');
 
   static async createNotification(
-    notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'>
+    notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'>,
   ): Promise<string> {
     const docRef = await addDoc(this.notifsRef, {
       ...notification,
@@ -43,10 +43,10 @@ export class NotificationService {
       this.notifsRef,
       where('uid', '==', uid),
       where('read', '==', false),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as AppNotification);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AppNotification);
   }
 
   static async getAllNotifications(uid: string, limitCount = 20): Promise<AppNotification[]> {
@@ -54,10 +54,10 @@ export class NotificationService {
       this.notifsRef,
       where('uid', '==', uid),
       orderBy('createdAt', 'desc'),
-      limit(limitCount)
+      limit(limitCount),
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as AppNotification);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AppNotification);
   }
 
   static async markAsRead(notificationId: string): Promise<void> {
@@ -67,7 +67,7 @@ export class NotificationService {
 
   static async markAllAsRead(uid: string): Promise<void> {
     const unread = await this.getUnreadNotifications(uid);
-    const promises = unread.map(n => (n.id ? this.markAsRead(n.id) : Promise.resolve()));
+    const promises = unread.map((n) => (n.id ? this.markAsRead(n.id) : Promise.resolve()));
     await Promise.all(promises);
   }
 }

@@ -9,7 +9,7 @@ withDefaults(
   }>(),
   {
     accent: false,
-  }
+  },
 );
 </script>
 

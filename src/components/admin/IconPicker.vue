@@ -83,11 +83,11 @@ const ICONS: { name: string; label: string }[] = [
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase();
   if (!q) return ICONS;
-  return ICONS.filter(i => i.name.toLowerCase().includes(q) || i.label.toLowerCase().includes(q));
+  return ICONS.filter((i) => i.name.toLowerCase().includes(q) || i.label.toLowerCase().includes(q));
 });
 
 const currentLabel = computed(() => {
-  const found = ICONS.find(i => i.name === props.modelValue);
+  const found = ICONS.find((i) => i.name === props.modelValue);
   return found?.label ?? props.modelValue;
 });
 

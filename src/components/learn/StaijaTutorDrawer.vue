@@ -58,12 +58,12 @@ function resetChat() {
 
 watch(
   () => props.open,
-  isOpen => {
+  (isOpen) => {
     if (isOpen && messages.value.length === 0) {
       resetChat();
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 async function scrollToBottom() {
@@ -92,8 +92,8 @@ async function sendQuestion(textToSend?: string) {
 
   try {
     const history = messages.value
-      .filter(m => m.id !== 'intro')
-      .map(m => ({ role: m.role, content: m.content }));
+      .filter((m) => m.id !== 'intro')
+      .map((m) => ({ role: m.role, content: m.content }));
 
     const res: AskLmsTutorResult = await askLmsTutor({
       lessonTitle: props.lessonTitle,
@@ -172,7 +172,7 @@ function formatFormattedText(text: string): string {
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(
       /`([^`]+)`/g,
-      '<code class="px-1 py-0.5 bg-ink/10 rounded text-brand-violet font-mono text-xs">$1</code>'
+      '<code class="px-1 py-0.5 bg-ink/10 rounded text-brand-violet font-mono text-xs">$1</code>',
     )
     .replace(/\n\n/g, '<br/><br/>')
     .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>');

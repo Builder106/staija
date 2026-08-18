@@ -304,10 +304,10 @@ const formStateForSave = computed(() => ({
 const persistedRef = ref(formStateForSave.value) as Ref<typeof formStateForSave.value>;
 watch(
   formStateForSave,
-  v => {
+  (v) => {
     persistedRef.value = v;
   },
-  { deep: true }
+  { deep: true },
 );
 
 const autoSave = ref<ReturnType<typeof useAutoSave> | null>(null);
@@ -361,7 +361,7 @@ async function initAutoSave() {
     try {
       window.localStorage.setItem(
         `staija.draft.${scopedKey}`,
-        JSON.stringify({ v: 1, savedAt: cloud.savedAt, data: cloud.payload })
+        JSON.stringify({ v: 1, savedAt: cloud.savedAt, data: cloud.payload }),
       );
       restoredFromCloud.value = true;
     } catch {
@@ -425,7 +425,7 @@ async function initAutoSave() {
           Object.entries(restored.audio).map(async ([k, entry]) => {
             const v = await verifyOne(entry as StagedFile);
             return v ? ([k, v] as const) : null;
-          })
+          }),
         );
         const audio: Record<string, StagedFile> = {};
         for (const pair of audioPairs) {
@@ -450,9 +450,9 @@ async function initAutoSave() {
       restoredLast &&
       restoredLast !== 'eligibility' &&
       currentStep.value?.id === 'eligibility' &&
-      stepsMeta.value.some(m => m.id === restoredLast)
+      stepsMeta.value.some((m) => m.id === restoredLast)
     ) {
-      const idx = stepsMeta.value.findIndex(m => m.id === restoredLast);
+      const idx = stepsMeta.value.findIndex((m) => m.id === restoredLast);
       if (idx > 0) goToStep(idx);
     }
   }
@@ -475,7 +475,7 @@ async function initAutoSave() {
   let cloudTimer: ReturnType<typeof setTimeout> | null = null;
   watch(
     formStateForSave,
-    v => {
+    (v) => {
       // Guard: don't write back to cloud until restoreComplete is
       // true. The verifyStagedFile pass above prunes dead
       // staged-file references; if the autosave fires BEFORE that
@@ -487,7 +487,7 @@ async function initAutoSave() {
         void saveCloudDraft(uid, slug as DraftProgramSlug, v);
       }, 30_000);
     },
-    { deep: true }
+    { deep: true },
   );
 
   // Step navigation is a separate, immediate cloud write — not
@@ -517,7 +517,7 @@ async function initAutoSave() {
   // deleted state when the wizard mounted), and not on a regular
   // save (false → false) or a self-undelete (true → false).
   let lastSeenDeleted: boolean | null = null;
-  unsubscribeDraftDoc = watchDraftDoc(uid, slug as DraftProgramSlug, doc => {
+  unsubscribeDraftDoc = watchDraftDoc(uid, slug as DraftProgramSlug, (doc) => {
     if (!doc) {
       lastSeenDeleted = null;
       return;
@@ -570,7 +570,7 @@ function handleCrossDeviceDiscardCancel() {
     void saveCloudDraft(
       user.value.uid,
       program.value.slug as DraftProgramSlug,
-      formStateForSave.value
+      formStateForSave.value,
     );
   }
 }
@@ -585,7 +585,7 @@ const stepsMeta = computed<StepMeta[]>(() => {
   if (!program.value) return [];
   return [
     { id: 'eligibility', label: 'Eligibility' },
-    ...program.value.steps.map(s => ({ id: s.id, label: s.label })),
+    ...program.value.steps.map((s) => ({ id: s.id, label: s.label })),
     { id: 'references', label: 'References' },
     { id: 'files', label: 'Files' },
     { id: 'review', label: 'Review' },
@@ -604,16 +604,16 @@ function stepHasDataInPayload(stepId: string, data: Record<string, unknown>): bo
   if (!program.value) return false;
   if (stepId === 'eligibility') {
     const e = data.eligibility as Record<string, unknown> | undefined;
-    return e ? Object.values(e).some(v => !!v) : false;
+    return e ? Object.values(e).some((v) => !!v) : false;
   }
   if (stepId === 'references') {
     const refs = (data.references as Array<Record<string, unknown>> | undefined) ?? [];
-    return refs.some(r => !!(r.name || r.email || r.institution || r.relationship));
+    return refs.some((r) => !!(r.name || r.email || r.institution || r.relationship));
   }
   // Files step isn't persisted; review step is a summary only.
   if (stepId === 'files' || stepId === 'review') return false;
   // Schema-driven step (personal, academic, motivation, ...).
-  const schemaStep = program.value.steps.find(s => s.id === stepId);
+  const schemaStep = program.value.steps.find((s) => s.id === stepId);
   if (!schemaStep) return false;
   const fields = (data.fields as Record<string, unknown> | undefined) ?? {};
   for (const f of schemaStep.fields) {
@@ -694,11 +694,11 @@ watch(
     // lastStep recorded yet.
     if (!slug) {
       const last = readLastStepFromLocal();
-      if (last && meta.some(m => m.id === last)) {
+      if (last && meta.some((m) => m.id === last)) {
         slug = last;
       }
     }
-    const idx = slug ? meta.findIndex(m => m.id === slug) : 0;
+    const idx = slug ? meta.findIndex((m) => m.id === slug) : 0;
     stepIndex.value = idx >= 0 ? idx : 0;
     // Persist the new position so a future visit resumes here.
     if (meta[stepIndex.value]) {
@@ -714,7 +714,7 @@ watch(
       if (route.fullPath !== target) router.replace(target);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // --- Validation per step --------------------------------------------
@@ -780,7 +780,7 @@ function validateCurrentStep(): string | null {
   }
 
   // Schema-driven step
-  const schemaStep = program.value.steps.find(s => s.id === step.id);
+  const schemaStep = program.value.steps.find((s) => s.id === step.id);
   if (!schemaStep) return null;
   for (const f of schemaStep.fields) {
     const err = validateField(f);
@@ -1010,8 +1010,8 @@ async function handleSubmit() {
     if (fallbackUploads.length > 0 || fallbackAudio.length > 0) {
       try {
         await Promise.all([
-          ...fallbackUploads.map(u => StorageService.uploadFile(u.file, u.finalPath)),
-          ...fallbackAudio.map(u => StorageService.uploadFile(u.file, u.finalPath)),
+          ...fallbackUploads.map((u) => StorageService.uploadFile(u.file, u.finalPath)),
+          ...fallbackAudio.map((u) => StorageService.uploadFile(u.file, u.finalPath)),
         ]);
         // Patch the documents field for the fallback paths so admin UI
         // can find them. Best-effort — uploads succeeding is the important
@@ -1120,7 +1120,7 @@ onMounted(() => {
   })();
 });
 
-watch(user, u => {
+watch(user, (u) => {
   if (!u && program.value) {
     router.replace({ path: '/signup', query: { redirect: route.fullPath } });
   }
@@ -1143,7 +1143,7 @@ onBeforeUnmount(() => {
 const restoredBannerDismissed = ref(false);
 const showRestoredBanner = computed(
   () =>
-    !!autoSave.value?.restored && !!autoSave.value?.lastSavedAt && !restoredBannerDismissed.value
+    !!autoSave.value?.restored && !!autoSave.value?.lastSavedAt && !restoredBannerDismissed.value,
 );
 
 function relativeTime(date: Date): string {
@@ -1198,7 +1198,7 @@ function setTagsValue(name: string, value: string) {
   tagsRaw.value[name] = value;
   fields.value[name] = value
     .split(',')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean);
 }
 
@@ -1228,7 +1228,7 @@ function dynamicOptions(field: FieldDef): string[] {
 // Schema gives us a flat string[]; the value and the display label are
 // the same string for every applicant-facing select today.
 function uiSelectOptions(field: FieldDef): { value: string; label: string }[] {
-  return dynamicOptions(field).map(o => ({ value: o, label: o }));
+  return dynamicOptions(field).map((o) => ({ value: o, label: o }));
 }
 
 function uiSelectPlaceholder(field: FieldDef): string {
@@ -1264,7 +1264,7 @@ watch(
       }
     }
   },
-  { deep: true }
+  { deep: true },
 );
 </script>
 
@@ -1471,7 +1471,7 @@ watch(
                 "
               >
                 <template
-                  v-for="schemaStep in [program.steps.find(s => s.id === currentStep.id)]"
+                  v-for="schemaStep in [program.steps.find((s) => s.id === currentStep.id)]"
                   :key="schemaStep?.id"
                 >
                   <div v-if="schemaStep" class="flex flex-col gap-6">
@@ -1510,7 +1510,7 @@ watch(
                           :placeholder="field.placeholder ?? 'Comma-separated'"
                           class="border hairline-ink rounded-xl px-4 py-3 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet transition-all text-sm bg-surface"
                           @input="
-                            e => setTagsValue(field.name, (e.target as HTMLInputElement).value)
+                            (e) => setTagsValue(field.name, (e.target as HTMLInputElement).value)
                           "
                         />
                         <UiSelect
@@ -1561,7 +1561,7 @@ watch(
                               : null
                           "
                           :uploading="stagingInFlight.has(`audio:${field.name}`)"
-                          @update:audio="v => setAudio(field.name, v)"
+                          @update:audio="(v) => setAudio(field.name, v)"
                           @clear-attached="handleStagedAudioClear(field.name)"
                         />
                       </div>
@@ -1681,9 +1681,9 @@ watch(
                       : null
                   "
                   :uploading="stagingInFlight.has('transcript')"
-                  @update:file="f => handleStagedFilePick('transcript', f)"
+                  @update:file="(f) => handleStagedFilePick('transcript', f)"
                   @clear-attached="handleStagedFileClear('transcript')"
-                  @error="m => (fileUploadError = m)"
+                  @error="(m) => (fileUploadError = m)"
                 />
                 <FileUpload
                   label="Government or school ID"
@@ -1698,9 +1698,9 @@ watch(
                       : null
                   "
                   :uploading="stagingInFlight.has('id')"
-                  @update:file="f => handleStagedFilePick('id', f)"
+                  @update:file="(f) => handleStagedFilePick('id', f)"
                   @clear-attached="handleStagedFileClear('id')"
-                  @error="m => (fileUploadError = m)"
+                  @error="(m) => (fileUploadError = m)"
                 />
 
                 <!-- Optional "show your work" — separated from the gated
@@ -1762,9 +1762,9 @@ watch(
                           : null
                       "
                       :uploading="stagingInFlight.has('showcase')"
-                      @update:file="f => handleStagedFilePick('showcase', f)"
+                      @update:file="(f) => handleStagedFilePick('showcase', f)"
                       @clear-attached="handleStagedFileClear('showcase')"
-                      @error="m => (fileUploadError = m)"
+                      @error="(m) => (fileUploadError = m)"
                     />
                   </div>
 

@@ -212,22 +212,22 @@ const sortBy = ref('createdAt');
 // program. Mirrors ApplicantDashboard's logic.
 const ALL_PROGRAMS: Application['program'][] = ['stepup_scholars', 'dynamerge'];
 const remainingProgram = computed<Application['program'] | null>(() => {
-  const covered = new Set(applications.value.map(a => a.program));
-  return ALL_PROGRAMS.find(p => !covered.has(p)) ?? null;
+  const covered = new Set(applications.value.map((a) => a.program));
+  return ALL_PROGRAMS.find((p) => !covered.has(p)) ?? null;
 });
 const remainingProgramSlug = computed(() =>
   remainingProgram.value === 'stepup_scholars'
     ? 'stepup-scholars'
     : remainingProgram.value === 'dynamerge'
       ? 'dynamerge'
-      : ''
+      : '',
 );
 const remainingProgramLabel = computed(() =>
   remainingProgram.value === 'stepup_scholars'
     ? 'StepUp Scholars'
     : remainingProgram.value === 'dynamerge'
       ? 'Dynamerge'
-      : ''
+      : '',
 );
 
 const filteredApplications = computed(() => {
@@ -237,22 +237,22 @@ const filteredApplications = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
-      app =>
+      (app) =>
         app.personalInfo.firstName.toLowerCase().includes(query) ||
         app.personalInfo.lastName.toLowerCase().includes(query) ||
         app.personalInfo.email.toLowerCase().includes(query) ||
-        app.researchInterests.some(interest => interest.toLowerCase().includes(query))
+        app.researchInterests.some((interest) => interest.toLowerCase().includes(query)),
     );
   }
 
   // Apply status filter
   if (statusFilter.value) {
-    filtered = filtered.filter(app => app.status === statusFilter.value);
+    filtered = filtered.filter((app) => app.status === statusFilter.value);
   }
 
   // Apply program filter
   if (programFilter.value) {
-    filtered = filtered.filter(app => app.program === programFilter.value);
+    filtered = filtered.filter((app) => app.program === programFilter.value);
   }
 
   // Apply sorting
@@ -283,21 +283,23 @@ const hasFilters = computed(() => {
 
 // Statistics
 const submittedCount = computed(
-  () => applications.value.filter(app => app.status === 'submitted').length
+  () => applications.value.filter((app) => app.status === 'submitted').length,
 );
 
-const draftCount = computed(() => applications.value.filter(app => app.status === 'draft').length);
+const draftCount = computed(
+  () => applications.value.filter((app) => app.status === 'draft').length,
+);
 
 const underReviewCount = computed(
-  () => applications.value.filter(app => app.status === 'under_review').length
+  () => applications.value.filter((app) => app.status === 'under_review').length,
 );
 
 const acceptedCount = computed(
-  () => applications.value.filter(app => app.status === 'accepted').length
+  () => applications.value.filter((app) => app.status === 'accepted').length,
 );
 
 const rejectedCount = computed(
-  () => applications.value.filter(app => app.status === 'rejected').length
+  () => applications.value.filter((app) => app.status === 'rejected').length,
 );
 
 // Methods

@@ -25,7 +25,7 @@ const allSlots = computed(() =>
   Array.from({ length: PORTRAIT_SLOT_COUNT }, (_, i) => ({
     slot: i,
     src: avatarThumbForSlot(i),
-  }))
+  })),
 );
 
 const states = ['idle', 'hero', 'static'] as const;
@@ -33,7 +33,7 @@ const states = ['idle', 'hero', 'static'] as const;
 // Discover which slots have Lottie animations attached. The
 // `hasLottieForSlot` lookup is sync (Map.has under the hood); the
 // JSON itself is loaded lazily once we know we want to render it.
-const lottieSlots = computed(() => allSlots.value.filter(entry => hasLottieForSlot(entry.slot)));
+const lottieSlots = computed(() => allSlots.value.filter((entry) => hasLottieForSlot(entry.slot)));
 
 const loadedLotties = ref<Record<number, Record<string, unknown> | null>>({});
 

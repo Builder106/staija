@@ -37,7 +37,9 @@ const progress = ref<LessonProgress[]>([]);
 const submissions = ref<AssignmentSubmission[]>([]);
 const feedback = ref<MentorFeedback[]>([]);
 
-const completedCount = computed(() => progress.value.filter(p => p.status === 'completed').length);
+const completedCount = computed(
+  () => progress.value.filter((p) => p.status === 'completed').length,
+);
 
 async function load() {
   if (!user.value) return;
@@ -62,7 +64,7 @@ async function load() {
 
     // Find the matching active enrollment.
     const studentEnrollments = await EnrollmentService.getActiveForStudent(studentId);
-    const own = studentEnrollments.find(e => e.mentorId === user.value!.uid);
+    const own = studentEnrollments.find((e) => e.mentorId === user.value!.uid);
     if (own) {
       enrollment.value = own;
       const enrollmentId = own.id ?? `${own.studentId}_${own.cohortId}`;

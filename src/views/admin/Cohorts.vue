@@ -39,7 +39,7 @@ const saving = ref(false);
 
 const canSave = computed(
   () =>
-    form.value.courseSlug && form.value.courseVersion && form.value.startDate && form.value.endDate
+    form.value.courseSlug && form.value.courseVersion && form.value.startDate && form.value.endDate,
 );
 
 async function load() {
@@ -150,7 +150,7 @@ async function save() {
       endDate: Timestamp.fromDate(new Date(form.value.endDate)).toDate(),
       mentorPool: form.value.mentorPool
         .split(',')
-        .map(s => s.trim())
+        .map((s) => s.trim())
         .filter(Boolean),
       status: form.value.status,
       createdBy: user.value.uid,
@@ -198,7 +198,7 @@ async function rearmDeferredsCron(c: Cohort) {
     !confirm(
       `Re-arm the deferred re-offer cron for "${c.name || c.courseSlug}"?\n\n` +
         `The next daily cron run will email every deferred applicant in this ` +
-        `program. They'll see the three-CTA handshake on their dashboard again.`
+        `program. They'll see the three-CTA handshake on their dashboard again.`,
     )
   )
     return;

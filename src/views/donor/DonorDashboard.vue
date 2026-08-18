@@ -38,7 +38,7 @@ async function cancel(d: Donation) {
   if (!d.paystackSubscriptionCode) return;
   if (
     !window.confirm(
-      "Cancel this monthly donation? Your support so far stays counted; you just won't be charged again."
+      "Cancel this monthly donation? Your support so far stays counted; you just won't be charged again.",
     )
   ) {
     return;

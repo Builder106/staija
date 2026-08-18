@@ -45,7 +45,7 @@ export function avatarSeedFor(user: { uid?: string; email?: string | null }): st
 export function avatarThumbForSlot(slot: number): string {
   if (slot < 0 || slot >= PORTRAIT_SLOT_COUNT) {
     throw new Error(
-      `avatarThumbForSlot: slot ${slot} is out of range (0–${PORTRAIT_SLOT_COUNT - 1})`
+      `avatarThumbForSlot: slot ${slot} is out of range (0–${PORTRAIT_SLOT_COUNT - 1})`,
     );
   }
   return `/avatars/portrait-${slot}.png`;

@@ -78,7 +78,7 @@ async function load() {
 }
 
 const canSave = computed(
-  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value
+  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value,
 );
 
 // Pure detection lives in lmsContent so it can be unit-tested and
@@ -147,7 +147,7 @@ function flattenBody(doc: Document | undefined): string {
   const walk = (node: { nodeType?: string; value?: string; content?: unknown[] }) => {
     if (node.nodeType === 'text' && typeof node.value === 'string') out.push(node.value);
     if (Array.isArray(node.content))
-      node.content.forEach(c => walk(c as Parameters<typeof walk>[0]));
+      node.content.forEach((c) => walk(c as Parameters<typeof walk>[0]));
   };
   walk(doc as Parameters<typeof walk>[0]);
   return out.join(' ').replace(/\s+/g, ' ').trim();
@@ -225,7 +225,7 @@ function bulletList(items: string[]): TopLevelBlock {
   return {
     nodeType: BLOCKS.UL_LIST,
     data: {},
-    content: items.map(value => ({
+    content: items.map((value) => ({
       nodeType: BLOCKS.LIST_ITEM,
       data: {},
       content: [
@@ -247,7 +247,7 @@ function appendBlocks(doc: Document | undefined, blocks: TopLevelBlock[]): Docum
     if (i !== 0) return true;
     if (b.nodeType !== BLOCKS.PARAGRAPH) return true;
     const text = (b.content ?? [])
-      .map(c => ('value' in c ? (c as { value: string }).value : ''))
+      .map((c) => ('value' in c ? (c as { value: string }).value : ''))
       .join('');
     return text.trim().length > 0;
   });
@@ -574,7 +574,7 @@ onMounted(load);
                         type="button"
                         class="text-xs font-semibold text-brand-violet hover:underline underline-offset-2 inline-flex items-center gap-1"
                         @click="
-                          copyText(aiResult.keyConcepts.map(k => '• ' + k).join('\n'), 'concepts')
+                          copyText(aiResult.keyConcepts.map((k) => '• ' + k).join('\n'), 'concepts')
                         "
                       >
                         <Icon

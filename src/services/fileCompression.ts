@@ -48,7 +48,7 @@ const DEFAULTS: Required<CompressOptions> = {
 
 export async function compressFile(
   file: File,
-  options: CompressOptions = {}
+  options: CompressOptions = {},
 ): Promise<CompressResult> {
   const opts = { ...DEFAULTS, ...options };
   const originalBytes = file.size;
@@ -143,7 +143,7 @@ function drawToBlob(
   source: CanvasImageSource,
   width: number,
   height: number,
-  quality: number
+  quality: number,
 ): Promise<Blob> {
   const canvas =
     typeof OffscreenCanvas === 'function'
@@ -157,9 +157,9 @@ function drawToBlob(
   if (canvas instanceof HTMLCanvasElement) {
     return new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
-        b => (b ? resolve(b) : reject(new Error('toBlob produced null'))),
+        (b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))),
         'image/jpeg',
-        quality
+        quality,
       );
     });
   }

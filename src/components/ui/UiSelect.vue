@@ -19,7 +19,7 @@ const props = withDefaults(
     /** Match the trigger's width on the popover. Defaults to true. */
     matchWidth?: boolean;
   }>(),
-  { placeholder: 'Select…', matchWidth: true }
+  { placeholder: 'Select…', matchWidth: true },
 );
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>();
@@ -30,7 +30,7 @@ const listEl = ref<HTMLUListElement | null>(null);
 const activeIndex = ref(-1);
 const popoverStyle = ref<Record<string, string>>({});
 
-const selectedIndex = computed(() => props.options.findIndex(o => o.value === props.modelValue));
+const selectedIndex = computed(() => props.options.findIndex((o) => o.value === props.modelValue));
 const selectedLabel = computed(() => props.options[selectedIndex.value]?.label ?? '');
 
 function reposition() {
@@ -185,7 +185,7 @@ function onDocumentPointerDown(e: PointerEvent) {
   closeMenu(false);
 }
 
-watch(open, isOpen => {
+watch(open, (isOpen) => {
   if (isOpen) {
     document.addEventListener('pointerdown', onDocumentPointerDown, true);
   } else {

@@ -49,7 +49,7 @@ export class DatabaseService {
         throw error;
       }
       // Retry-once branch.
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
       try {
         const docSnap = await getDoc(docRef);
         return docSnap.exists() ? (docSnap.data() as UserProfile) : null;
@@ -67,7 +67,7 @@ export class DatabaseService {
   static async getAllUsers(): Promise<UserProfile[]> {
     try {
       const snap = await getDocs(collection(db, 'users'));
-      return snap.docs.map(d => ({ uid: d.id, ...d.data() }) as UserProfile);
+      return snap.docs.map((d) => ({ uid: d.id, ...d.data() }) as UserProfile);
     } catch (error) {
       console.error('Get all users error:', error);
       throw error;
@@ -104,7 +104,7 @@ export class DatabaseService {
       const querySnapshot = await getDocs(q);
       const items: ContentItem[] = [];
 
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc) => {
         items.push({ id: doc.id, ...doc.data() } as ContentItem);
       });
 
@@ -116,7 +116,7 @@ export class DatabaseService {
   }
 
   static async createContentItem(
-    item: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>
+    item: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<string> {
     try {
       const docRef = await addDoc(collection(db, 'content'), {
@@ -157,9 +157,9 @@ export class DatabaseService {
   static onContentChanges(callback: (items: ContentItem[]) => void): () => void {
     const q = query(collection(db, 'content'), orderBy('createdAt', 'desc'));
 
-    return onSnapshot(q, querySnapshot => {
+    return onSnapshot(q, (querySnapshot) => {
       const items: ContentItem[] = [];
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc) => {
         items.push({ id: doc.id, ...doc.data() } as ContentItem);
       });
       callback(items);
@@ -171,11 +171,11 @@ export class DatabaseService {
       const q = query(
         collection(db, 'applications'),
         where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
       );
       const querySnapshot = await getDocs(q);
       const applications: Application[] = [];
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc) => {
         applications.push({ id: doc.id, ...doc.data() } as Application);
       });
       return applications;
@@ -201,7 +201,7 @@ export class DatabaseService {
   }
 
   static async createApplication(
-    application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>
+    application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<string> {
     try {
       const docRef = await addDoc(collection(db, 'applications'), {
@@ -218,7 +218,7 @@ export class DatabaseService {
 
   static async updateApplication(
     applicationId: string,
-    updates: Partial<Application>
+    updates: Partial<Application>,
   ): Promise<void> {
     try {
       const docRef = doc(db, 'applications', applicationId);
@@ -242,7 +242,7 @@ export class DatabaseService {
 
       const querySnapshot = await getDocs(q);
       const applications: Application[] = [];
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc) => {
         applications.push({ id: doc.id, ...doc.data() } as Application);
       });
       return applications;
@@ -272,7 +272,7 @@ export class DatabaseService {
       const q = query(collection(db, 'programs'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
 
-      return snapshot.docs.map(d => ({ id: d.id, ...d.data() }) as Program);
+      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as Program);
     } catch (error) {
       console.error('Get all programs error:', error);
       throw error;
@@ -280,7 +280,7 @@ export class DatabaseService {
   }
 
   static async createProgram(
-    program: Omit<Program, 'id' | 'createdAt' | 'updatedAt'>
+    program: Omit<Program, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<string> {
     try {
       const now = new Date();
@@ -319,7 +319,7 @@ export class DatabaseService {
   static async saveProgramWithHistory(
     id: string,
     updates: Partial<Program>,
-    savedBy: string
+    savedBy: string,
   ): Promise<void> {
     try {
       const programRef = doc(db, 'programs', id);
@@ -353,10 +353,10 @@ export class DatabaseService {
       const q = query(
         collection(db, 'programs', id, 'history'),
         orderBy('savedAt', 'desc'),
-        limit(max)
+        limit(max),
       );
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }) as ProgramHistorySnapshot);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ProgramHistorySnapshot);
     } catch (error) {
       console.error('Get program history error:', error);
       throw error;
@@ -377,11 +377,11 @@ export class DatabaseService {
       const q = query(
         collection(db, 'programs'),
         where('status', '==', 'active'),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
       );
       const snapshot = await getDocs(q);
 
-      return snapshot.docs.map(d => ({ id: d.id, ...d.data() }) as Program);
+      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as Program);
     } catch (error) {
       console.error('Get active programs error:', error);
       throw error;

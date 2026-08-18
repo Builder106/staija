@@ -91,7 +91,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 export const ALL_ROLES: UserRole[] = Object.keys(ROLE_PERMISSIONS) as UserRole[];
 
 export const ALL_PERMISSIONS: Permission[] = Array.from(
-  new Set(Object.values(ROLE_PERMISSIONS).flat())
+  new Set(Object.values(ROLE_PERMISSIONS).flat()),
 );
 
 export class PermissionService {
@@ -101,11 +101,11 @@ export class PermissionService {
   }
 
   static hasAnyPermission(userRole: UserRole, permissions: Permission[]): boolean {
-    return permissions.some(permission => this.hasPermission(userRole, permission));
+    return permissions.some((permission) => this.hasPermission(userRole, permission));
   }
 
   static hasAllPermissions(userRole: UserRole, permissions: Permission[]): boolean {
-    return permissions.every(permission => this.hasPermission(userRole, permission));
+    return permissions.every((permission) => this.hasPermission(userRole, permission));
   }
 
   static getRolePermissions(role: UserRole): Permission[] {

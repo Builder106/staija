@@ -47,21 +47,21 @@ fs.mkdirSync(OUT, { recursive: true });
         continue;
       }
 
-      const overflow = await page.evaluate(vw => {
+      const overflow = await page.evaluate((vw) => {
         const out = [];
         const docW = document.documentElement.scrollWidth;
         const clientW = document.documentElement.clientWidth;
         const horizontalScroll = docW > clientW + 1;
         // Find every element that overflows the viewport horizontally.
         const culprits = [];
-        document.querySelectorAll('*').forEach(el => {
+        document.querySelectorAll('*').forEach((el) => {
           const r = el.getBoundingClientRect();
           if (r.right > vw + 1 && r.width > 4) {
             culprits.push({
               tag: el.tagName.toLowerCase(),
               cls: (el.className && typeof el.className === 'string' ? el.className : '').slice(
                 0,
-                80
+                80,
               ),
               right: Math.round(r.right),
               width: Math.round(r.width),
@@ -113,7 +113,7 @@ fs.mkdirSync(OUT, { recursive: true });
       }
     }
   }
-})().catch(e => {
+})().catch((e) => {
   console.error(e);
   process.exit(1);
 });

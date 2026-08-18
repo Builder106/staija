@@ -94,11 +94,11 @@ function onKeydown(e: KeyboardEvent) {
 // Teleport hasn't mounted the node yet on the same microtask.
 watch(
   () => props.open,
-  isOpen => {
+  (isOpen) => {
     if (isOpen) {
       nextTick(() => confirmBtn.value?.focus());
     }
-  }
+  },
 );
 
 if (typeof window !== 'undefined') {

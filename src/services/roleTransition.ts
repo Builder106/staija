@@ -6,7 +6,7 @@ import type { Application, AuditLog, UserProfile, UserRole } from './types';
 export class RoleTransitionService {
   static async checkTransitionEligibility(
     userId: string,
-    targetRole: UserRole
+    targetRole: UserRole,
   ): Promise<{
     eligible: boolean;
     reason?: string;
@@ -47,7 +47,7 @@ export class RoleTransitionService {
 
     const userApplications = await DatabaseService.getUserApplications(userProfile.uid);
     const acceptedApplications = userApplications.filter(
-      app => app.status === 'accepted' && app.program
+      (app) => app.status === 'accepted' && app.program,
     );
 
     if (acceptedApplications.length === 0) {
@@ -75,7 +75,7 @@ export class RoleTransitionService {
 
     const userApplications = await DatabaseService.getUserApplications(userProfile.uid);
     const completedApplications = userApplications.filter(
-      app => app.status === 'accepted' && app.program && this.isProgramCompleted(app)
+      (app) => app.status === 'accepted' && app.program && this.isProgramCompleted(app),
     );
 
     if (completedApplications.length === 0) {
@@ -135,7 +135,7 @@ export class RoleTransitionService {
           await this.performTransition(
             applicant.uid,
             'alumni',
-            'Automatic transition based on program completion'
+            'Automatic transition based on program completion',
           );
         }
       }
@@ -150,7 +150,7 @@ export class RoleTransitionService {
     userId: string,
     targetRole: UserRole,
     reason: string,
-    _performedBy?: string
+    _performedBy?: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
       const eligibility = await this.checkTransitionEligibility(userId, targetRole);
@@ -181,7 +181,7 @@ export class RoleTransitionService {
   static async getTransitionHistory(userId: string): Promise<AuditLog[]> {
     try {
       const auditLogs = await AuditService.getAuditLogs(userId, 50);
-      return auditLogs.filter(log => log.type === 'role_change');
+      return auditLogs.filter((log) => log.type === 'role_change');
     } catch (error) {
       console.error('Error getting transition history:', error);
       return [];
@@ -201,7 +201,7 @@ export class RoleTransitionService {
   private static getApplicantsForTransition(): UserProfile[] {
     try {
       const allUsers: UserProfile[] = [];
-      return allUsers.filter(user => user.role === 'applicant');
+      return allUsers.filter((user) => user.role === 'applicant');
     } catch (error) {
       console.error('Error getting applicants for transition:', error);
       return [];

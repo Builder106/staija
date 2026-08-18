@@ -45,7 +45,7 @@ const allocation = [
 // Build a single conic-gradient string from the allocation percentages.
 const donutGradient = computed(() => {
   let acc = 0;
-  const stops = allocation.map(seg => {
+  const stops = allocation.map((seg) => {
     const start = acc;
     acc += seg.value;
     return `${seg.color} ${start}% ${acc}%`;
@@ -278,7 +278,7 @@ async function handleDonateClick() {
                   ? 'border-brand-violet shadow-[0_0_0_2px_rgba(139,85,255,0.2)]'
                   : 'border-ink/10 focus:border-brand-violet'
               "
-              @input="e => pickCustom((e.target as HTMLInputElement).value)"
+              @input="(e) => pickCustom((e.target as HTMLInputElement).value)"
             />
           </div>
         </div>

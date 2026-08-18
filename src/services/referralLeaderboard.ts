@@ -58,14 +58,14 @@ export async function fetchReferralLeaderboard(topN = 25): Promise<ReferralLeade
   const statsQuery = query(
     collection(db, 'referralStats'),
     orderBy('signupCount', 'desc'),
-    limit(topN)
+    limit(topN),
   );
   const snap = await getDocs(statsQuery);
   if (snap.empty) return [];
 
   // Pre-build the rows in fetched order so we can paste display names
   // in afterwards without re-sorting.
-  const rows: ReferralLeaderboardRow[] = snap.docs.map(d => {
+  const rows: ReferralLeaderboardRow[] = snap.docs.map((d) => {
     const data = d.data() as { signupCount?: number; lastSignupAt?: Timestamp | Date };
     const id = d.id;
     const isUserRow = id.startsWith('u-');
@@ -89,7 +89,7 @@ export async function fetchReferralLeaderboard(topN = 25): Promise<ReferralLeade
   // 30 items, which sits comfortably above our default top-25, so a
   // single batched query covers the join for the standard call. For
   // larger N we chunk into 30-item batches.
-  const userUids = rows.map(r => r.uid).filter((u): u is string => Boolean(u));
+  const userUids = rows.map((r) => r.uid).filter((u): u is string => Boolean(u));
   if (userUids.length === 0) return rows;
 
   const CHUNK = 30;
@@ -100,7 +100,7 @@ export async function fetchReferralLeaderboard(topN = 25): Promise<ReferralLeade
     if (chunk.length === 0) continue;
     try {
       const userSnap = await getDocs(
-        query(collection(db, 'users'), where(documentId(), 'in', chunk))
+        query(collection(db, 'users'), where(documentId(), 'in', chunk)),
       );
       for (const userDoc of userSnap.docs) {
         const data = userDoc.data() as { displayName?: string; email?: string };

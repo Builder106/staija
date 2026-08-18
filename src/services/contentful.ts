@@ -13,7 +13,7 @@ export type ContentfulClientConfig = {
 
 function buildEndpoint(
   { spaceId, environmentId, host = 'cdn.contentful.com' }: ContentfulClientConfig,
-  path: string
+  path: string,
 ): string {
   return `https://${host}/spaces/${spaceId}/environments/${environmentId}${path}`;
 }

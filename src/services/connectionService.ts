@@ -49,9 +49,9 @@ export class ConnectionService {
         where('status', '==', 'pending'),
         or(
           and(where('fromUid', '==', fromUid), where('toUid', '==', toUid)),
-          and(where('fromUid', '==', toUid), where('toUid', '==', fromUid))
-        )
-      )
+          and(where('fromUid', '==', toUid), where('toUid', '==', fromUid)),
+        ),
+      ),
     );
     const pendingSnap = await getDocs(pendingQuery);
     if (!pendingSnap.empty) throw new Error('Pending request already exists');
@@ -93,18 +93,18 @@ export class ConnectionService {
   static async getPendingRequests(uid: string): Promise<ConnectionRequest[]> {
     const q = query(this.requestsRef, where('toUid', '==', uid), where('status', '==', 'pending'));
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as ConnectionRequest);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ConnectionRequest);
   }
 
   static async getConnections(uid: string): Promise<Connection[]> {
     const q = query(this.connectionsRef, where('users', 'array-contains', uid));
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Connection);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Connection);
   }
 
   static async getConnectionStatus(
     uid1: string,
-    uid2: string
+    uid2: string,
   ): Promise<'connected' | 'pending_sent' | 'pending_received' | 'none'> {
     const users = [uid1, uid2].sort();
     const connQuery = query(this.connectionsRef, where('users', '==', users));
@@ -114,7 +114,7 @@ export class ConnectionService {
       this.requestsRef,
       where('fromUid', '==', uid1),
       where('toUid', '==', uid2),
-      where('status', '==', 'pending')
+      where('status', '==', 'pending'),
     );
     if (!(await getDocs(sentQuery)).empty) return 'pending_sent';
 
@@ -122,7 +122,7 @@ export class ConnectionService {
       this.requestsRef,
       where('fromUid', '==', uid2),
       where('toUid', '==', uid1),
-      where('status', '==', 'pending')
+      where('status', '==', 'pending'),
     );
     if (!(await getDocs(receivedQuery)).empty) return 'pending_received';
 

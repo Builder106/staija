@@ -84,7 +84,7 @@ const completeSignIn = async () => {
       await AuthService.createUserProfile(
         result.user,
         displayName,
-        role as 'applicant' | 'staff' | 'alumni'
+        role as 'applicant' | 'staff' | 'alumni',
       );
     }
 

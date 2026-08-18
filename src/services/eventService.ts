@@ -54,7 +54,7 @@ export class EventService {
     eventData: Omit<
       AppEvent,
       'id' | 'createdAt' | 'updatedAt' | 'registeredCount' | 'waitlistCount'
-    >
+    >,
   ): Promise<string> {
     const docRef = await addDoc(this.eventsRef, {
       ...eventData,
@@ -75,7 +75,7 @@ export class EventService {
   }
 
   static async getEvents(
-    filters: { publishedOnly?: boolean; tags?: string[] } = {}
+    filters: { publishedOnly?: boolean; tags?: string[] } = {},
   ): Promise<AppEvent[]> {
     const constraints: QueryConstraint[] = [orderBy('start', 'asc')];
 
@@ -89,7 +89,7 @@ export class EventService {
 
     const q = query(this.eventsRef, ...constraints);
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }) as AppEvent);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AppEvent);
   }
 
   static async getEvent(eventId: string): Promise<AppEvent | null> {
@@ -100,7 +100,7 @@ export class EventService {
   }
 
   static async registerForEvent(eventId: string, uid: string): Promise<string> {
-    return await runTransaction(db, async transaction => {
+    return await runTransaction(db, async (transaction) => {
       const eventRef = doc(this.eventsRef, eventId);
       const eventSnap = await transaction.get(eventRef);
 
@@ -112,7 +112,7 @@ export class EventService {
         this.registrationsRef,
         where('eventId', '==', eventId),
         where('uid', '==', uid),
-        where('status', 'in', ['registered', 'waitlisted'])
+        where('status', 'in', ['registered', 'waitlisted']),
       );
       const regSnap = await getDocs(regQuery);
       if (!regSnap.empty) throw new Error('Already registered');
@@ -139,12 +139,12 @@ export class EventService {
   }
 
   static async cancelRegistration(eventId: string, uid: string): Promise<void> {
-    await runTransaction(db, async transaction => {
+    await runTransaction(db, async (transaction) => {
       const q = query(
         this.registrationsRef,
         where('eventId', '==', eventId),
         where('uid', '==', uid),
-        where('status', 'in', ['registered', 'waitlisted'])
+        where('status', 'in', ['registered', 'waitlisted']),
       );
       const snap = await getDocs(q);
       if (snap.empty) throw new Error('Registration not found');
@@ -176,13 +176,13 @@ export class EventService {
 
   static async getUserRegistration(
     eventId: string,
-    uid: string
+    uid: string,
   ): Promise<EventRegistration | null> {
     const q = query(
       this.registrationsRef,
       where('eventId', '==', eventId),
       where('uid', '==', uid),
-      where('status', 'in', ['registered', 'waitlisted'])
+      where('status', 'in', ['registered', 'waitlisted']),
     );
     const snap = await getDocs(q);
     if (snap.empty) return null;

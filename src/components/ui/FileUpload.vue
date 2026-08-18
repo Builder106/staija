@@ -31,7 +31,7 @@ const props = withDefaults(
     skipCompress: false,
     attachedFile: null,
     uploading: false,
-  }
+  },
 );
 
 const emit = defineEmits<{
@@ -88,7 +88,7 @@ async function onChange(event: Event) {
     if (raw.size > props.maxSizeBytes) {
       emit(
         'error',
-        `${raw.name} is ${formatBytes(raw.size)} — bigger than the ${formatBytes(props.maxSizeBytes)} limit. Compress it externally and try again.`
+        `${raw.name} is ${formatBytes(raw.size)} — bigger than the ${formatBytes(props.maxSizeBytes)} limit. Compress it externally and try again.`,
       );
       input.value = '';
       return;
@@ -105,7 +105,7 @@ async function onChange(event: Event) {
     if (result.outputBytes > props.maxSizeBytes) {
       emit(
         'error',
-        `Couldn't shrink ${raw.name} below ${formatBytes(props.maxSizeBytes)} — current ${formatBytes(result.outputBytes)}. Try a smaller / lower-resolution photo.`
+        `Couldn't shrink ${raw.name} below ${formatBytes(props.maxSizeBytes)} — current ${formatBytes(result.outputBytes)}. Try a smaller / lower-resolution photo.`,
       );
       input.value = '';
       return;

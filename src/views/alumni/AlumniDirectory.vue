@@ -15,7 +15,7 @@
           placeholder="All Skills"
           :options="[
             { value: '', label: 'All Skills' },
-            ...availableSkills.map(s => ({ value: s, label: s })),
+            ...availableSkills.map((s) => ({ value: s, label: s })),
           ]"
         />
         <UiSelect
@@ -24,7 +24,7 @@
           placeholder="All Locations"
           :options="[
             { value: '', label: 'All Locations' },
-            ...availableLocations.map(l => ({ value: l, label: l })),
+            ...availableLocations.map((l) => ({ value: l, label: l })),
           ]"
         />
       </div>
@@ -104,18 +104,18 @@ const filters = ref({
 
 const availableSkills = computed(() => {
   const set = new Set<string>();
-  profiles.value.forEach(p => p.skills?.forEach(s => set.add(s)));
+  profiles.value.forEach((p) => p.skills?.forEach((s) => set.add(s)));
   return Array.from(set).sort();
 });
 
 const availableLocations = computed(() => {
   const set = new Set<string>();
-  profiles.value.forEach(p => p.location && set.add(p.location));
+  profiles.value.forEach((p) => p.location && set.add(p.location));
   return Array.from(set).sort();
 });
 
 const filteredProfiles = computed(() => {
-  return profiles.value.filter(p => {
+  return profiles.value.filter((p) => {
     const q = filters.value.query.toLowerCase();
     const matchQuery =
       !q || p.displayName.toLowerCase().includes(q) || p.headline?.toLowerCase().includes(q);
@@ -139,8 +139,8 @@ const loadProfiles = async () => {
     // would also exclude every existing doc that hasn't been touched
     // since the field was introduced.
     profiles.value = snap.docs
-      .map(d => ({ uid: d.id, ...d.data() }) as AlumniProfile & { directoryHidden?: boolean })
-      .filter(p => !p.directoryHidden);
+      .map((d) => ({ uid: d.id, ...d.data() }) as AlumniProfile & { directoryHidden?: boolean })
+      .filter((p) => !p.directoryHidden);
   } catch (e) {
     console.error('Failed to load directory', e);
   } finally {

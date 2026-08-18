@@ -38,7 +38,7 @@ const canSubmit = computed(
     form.value.title.trim() &&
     form.value.startsAt &&
     form.value.endsAt &&
-    form.value.meetingUrl.trim()
+    form.value.meetingUrl.trim(),
 );
 
 async function load() {
@@ -47,7 +47,7 @@ async function load() {
   try {
     const all = await CohortService.listAllCohorts();
     cohorts.value = all.filter(
-      c => (c.mentorPool ?? []).includes(user.value!.uid) && c.status !== 'completed'
+      (c) => (c.mentorPool ?? []).includes(user.value!.uid) && c.status !== 'completed',
     );
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Failed to load cohorts.';
@@ -123,7 +123,7 @@ onMounted(load);
                 v-model="form.cohortId"
                 placeholder="Select a cohort…"
                 :options="
-                  cohorts.map(c => ({
+                  cohorts.map((c) => ({
                     value: c.id ?? '',
                     label: `${c.name || c.courseSlug} (${c.program.replace('_', ' ')})`,
                   }))

@@ -95,7 +95,7 @@ function consumeRecentDiscardIfApplicable(slug: LocalDraft['slug']): boolean {
 }
 
 function dismissRestoredAfterDiscard(slug: LocalDraft['slug']) {
-  restoredAfterDiscard.value = restoredAfterDiscard.value.filter(r => r.slug !== slug);
+  restoredAfterDiscard.value = restoredAfterDiscard.value.filter((r) => r.slug !== slug);
 }
 
 async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[]) {
@@ -156,8 +156,8 @@ async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[])
       // on the cross-device discard modal. Surface a banner so the
       // user knows why a draft they just deleted reappeared.
       if (consumeRecentDiscardIfApplicable(doc.program)) {
-        const name = PROGRAM_SLUGS.find(p => p.slug === doc.program)?.name ?? '';
-        if (!restoredAfterDiscard.value.some(r => r.slug === doc.program)) {
+        const name = PROGRAM_SLUGS.find((p) => p.slug === doc.program)?.name ?? '';
+        if (!restoredAfterDiscard.value.some((r) => r.slug === doc.program)) {
           restoredAfterDiscard.value = [
             ...restoredAfterDiscard.value,
             { slug: doc.program, programName: name },
@@ -208,7 +208,7 @@ async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[])
       syncTargets.map(async ([slug, { savedAt, payload }]) => {
         const ok = await saveCloudDraft(uid, slug, payload);
         return { slug, savedAt, ok };
-      })
+      }),
     );
     for (const { slug, savedAt, ok } of results) {
       if (ok) cloud.set(slug, { savedAt });
@@ -271,7 +271,7 @@ async function confirmDiscard() {
   // Cloud delete is best-effort; the localStorage wipe is the primary
   // affordance the user can observe immediately.
   await deleteCloudDraft(uid, d.slug);
-  localDrafts.value = localDrafts.value.filter(x => x.slug !== d.slug);
+  localDrafts.value = localDrafts.value.filter((x) => x.slug !== d.slug);
 }
 
 const firstName = computed(() => {
@@ -284,7 +284,7 @@ const sortedApplications = computed(() =>
     const aDate = toDate(a.updatedAt ?? a.createdAt).getTime();
     const bDate = toDate(b.updatedAt ?? b.createdAt).getTime();
     return bDate - aDate;
-  })
+  }),
 );
 
 const hasApplications = computed(() => applications.value.length > 0);
@@ -301,8 +301,8 @@ const ALL_PROGRAMS: Application['program'][] = ['stepup_scholars', 'dynamerge'];
  *  When all programs are covered, returns null and the "Apply to…"
  *  button hides entirely. */
 const remainingProgram = computed<Application['program'] | null>(() => {
-  const covered = new Set(applications.value.map(a => a.program));
-  return ALL_PROGRAMS.find(p => !covered.has(p)) ?? null;
+  const covered = new Set(applications.value.map((a) => a.program));
+  return ALL_PROGRAMS.find((p) => !covered.has(p)) ?? null;
 });
 
 /** Hyphenated slug for the /apply/:program route (the apply collection
@@ -312,7 +312,7 @@ const remainingProgramSlug = computed(() =>
     ? 'stepup-scholars'
     : remainingProgram.value === 'dynamerge'
       ? 'dynamerge'
-      : ''
+      : '',
 );
 
 /** Map the `applications` collection's underscored program key to the
@@ -346,7 +346,7 @@ const submittedSlugs = computed(() => {
  *  applicant looking at both a "Drafts in progress" card AND a
  *  matching "Submitted" application card for the same program. */
 const visibleDrafts = computed(() =>
-  localDrafts.value.filter(d => !submittedSlugs.value.has(d.slug))
+  localDrafts.value.filter((d) => !submittedSlugs.value.has(d.slug)),
 );
 
 /** When submittedSlugs grows, evict the matching local cache entry
@@ -356,7 +356,7 @@ const visibleDrafts = computed(() =>
  *  "draft-and-submitted-at-the-same-time" UI in the first place.
  *  Best-effort: failures here are caught by the next reconcile (and
  *  next session's mount), not user-visible. */
-watch(submittedSlugs, next => {
+watch(submittedSlugs, (next) => {
   if (next.size === 0) return;
   const uid = AuthService.getCurrentUser()?.uid;
   if (!uid) return;
@@ -458,7 +458,7 @@ async function loadData() {
     // resolves; draft updates continue reconciling in the background.
     didInitialDraftSync = false;
     if (unsubscribeDrafts) unsubscribeDrafts();
-    unsubscribeDrafts = watchUserDrafts(currentUser.uid, async cloudDocs => {
+    unsubscribeDrafts = watchUserDrafts(currentUser.uid, async (cloudDocs) => {
       await reconcileDrafts(currentUser.uid, cloudDocs);
       didInitialDraftSync = true;
     });

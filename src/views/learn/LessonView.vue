@@ -37,7 +37,8 @@ const lessonBodyPlain = computed(() => {
   try {
     const doc = lesson.value.body as { content?: Array<{ content?: Array<{ value?: string }> }> };
     return (
-      doc.content?.flatMap(c => c.content?.map(inner => inner.value || '') || []).join(' ') || ''
+      doc.content?.flatMap((c) => c.content?.map((inner) => inner.value || '') || []).join(' ') ||
+      ''
     );
   } catch {
     return '';
@@ -47,7 +48,7 @@ const lessonBodyPlain = computed(() => {
 let progressUnsub: (() => void) | null = null;
 
 const completed = computed(() =>
-  progress.value.some(p => p.lessonSlug === lesson.value?.slug && p.status === 'completed')
+  progress.value.some((p) => p.lessonSlug === lesson.value?.slug && p.status === 'completed'),
 );
 
 const quizId = computed(() => {
@@ -102,7 +103,7 @@ async function load() {
       enrollment.value = enrollments[0];
       progressUnsub = ProgressService.subscribeProgressForEnrollment(
         enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`,
-        p => (progress.value = p)
+        (p) => (progress.value = p),
       );
     }
   } catch (err) {
@@ -131,7 +132,7 @@ async function markComplete() {
 
 watch(
   () => route.params.slug,
-  () => load()
+  () => load(),
 );
 
 onMounted(load);

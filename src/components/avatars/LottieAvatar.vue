@@ -39,7 +39,7 @@ const props = withDefaults(
     size: 80,
     loop: true,
     autoplay: true,
-  }
+  },
 );
 
 const container = ref<HTMLDivElement | null>(null);
@@ -87,7 +87,7 @@ onBeforeUnmount(destroyInstance);
 // dynamic-imported a new file.
 watch(
   () => props.animationData,
-  () => loadInstance()
+  () => loadInstance(),
 );
 </script>
 

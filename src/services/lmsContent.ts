@@ -125,7 +125,7 @@ async function callAdmin<T>(request: AdminRequest): Promise<T> {
   const envId = cfg.contentful?.environmentId;
   const fn = httpsCallable<{ env?: string; request: AdminRequest }, T>(
     functions,
-    'lmsContentAdmin'
+    'lmsContentAdmin',
   );
   const result = await fn({ env: envId, request });
   return result.data;
@@ -135,7 +135,7 @@ async function callAdmin<T>(request: AdminRequest): Promise<T> {
 
 export async function listEntries(
   type: LmsContentType,
-  opts?: { limit?: number; skip?: number; query?: string }
+  opts?: { limit?: number; skip?: number; query?: string },
 ): Promise<EntrySummary[]> {
   return callAdmin<EntrySummary[]>({
     action: 'list',
@@ -294,11 +294,11 @@ export async function computeCourseEstimatedHours(moduleIds: string[]): Promise<
     ids: moduleIds,
     limit: 100,
   });
-  const lessonIds = modules.flatMap(m => {
+  const lessonIds = modules.flatMap((m) => {
     const lessonsField = (m.fields as Record<string, unknown>).lessons;
     if (!Array.isArray(lessonsField)) return [];
     return lessonsField
-      .map(l => (l as { sys?: { id?: string } })?.sys?.id)
+      .map((l) => (l as { sys?: { id?: string } })?.sys?.id)
       .filter((v): v is string => !!v);
   });
   if (!lessonIds.length) {
@@ -328,7 +328,7 @@ export async function computeCourseEstimatedHours(moduleIds: string[]): Promise<
  * editors reuse existing tracks instead of inventing new ones.
  */
 export async function listTracksForProgram(
-  program: 'stepup_scholars' | 'dynamerge'
+  program: 'stepup_scholars' | 'dynamerge',
 ): Promise<string[]> {
   const courses = await callAdmin<EntrySummary[]>({
     action: 'list',
@@ -371,7 +371,9 @@ export async function buildDuplicateCourseFields(sourceId: string): Promise<Cour
 
 function extractRefIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.map(v => (v as { sys?: { id?: string } })?.sys?.id).filter((v): v is string => !!v);
+  return value
+    .map((v) => (v as { sys?: { id?: string } })?.sys?.id)
+    .filter((v): v is string => !!v);
 }
 function extractRefId(value: unknown): string | undefined {
   return (value as { sys?: { id?: string } })?.sys?.id;

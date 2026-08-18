@@ -627,7 +627,7 @@ const router = createRouter({
 // Resolves once Firebase Auth emits its first event — created once at
 // module load and reused across all navigations instead of recreating a
 // listener on every beforeEach call.
-const authReady = new Promise<void>(resolve => {
+const authReady = new Promise<void>((resolve) => {
   const unsub = auth.onAuthStateChanged(() => {
     unsub();
     resolve();
@@ -651,7 +651,7 @@ export function primeProfileCache(uid: string, role: UserRole | null) {
   _cachedRole = role;
 }
 
-router.afterEach(to => {
+router.afterEach((to) => {
   if (to.meta && typeof to.meta.title === 'string' && typeof document !== 'undefined') {
     document.title = to.meta.title;
   }

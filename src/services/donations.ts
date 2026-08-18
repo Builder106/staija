@@ -135,7 +135,7 @@ export async function donate(params: DonateParams): Promise<DonateResult> {
   const config = getAppConfig();
   if (!config.paystack) {
     throw new Error(
-      'Paystack public key is not configured. Set VITE_PAYSTACK_PUBLIC_KEY in your .env file.'
+      'Paystack public key is not configured. Set VITE_PAYSTACK_PUBLIC_KEY in your .env file.',
     );
   }
   if (params.amountKobo <= 0) {
@@ -164,7 +164,7 @@ export async function donate(params: DonateParams): Promise<DonateResult> {
           full_name: params.fullName ?? null,
           source: 'website',
         },
-        callback: resp => {
+        callback: (resp) => {
           trackDonateComplete({
             amount_kobo: params.amountKobo,
             frequency: params.frequency,
@@ -216,9 +216,14 @@ export async function getMyDonations(maxResults = 50): Promise<Donation[]> {
   const results: Donation[] = [];
 
   const byUid = await getDocs(
-    query(col, where('donorUid', '==', user.uid), orderBy('createdAt', 'desc'), fsLimit(maxResults))
+    query(
+      col,
+      where('donorUid', '==', user.uid),
+      orderBy('createdAt', 'desc'),
+      fsLimit(maxResults),
+    ),
   );
-  byUid.forEach(d => results.push(donationFromDoc(d.data(), d.id)));
+  byUid.forEach((d) => results.push(donationFromDoc(d.data(), d.id)));
 
   if (results.length === 0 && user.email) {
     const byEmail = await getDocs(
@@ -226,10 +231,10 @@ export async function getMyDonations(maxResults = 50): Promise<Donation[]> {
         col,
         where('donorEmail', '==', user.email),
         orderBy('createdAt', 'desc'),
-        fsLimit(maxResults)
-      )
+        fsLimit(maxResults),
+      ),
     );
-    byEmail.forEach(d => results.push(donationFromDoc(d.data(), d.id)));
+    byEmail.forEach((d) => results.push(donationFromDoc(d.data(), d.id)));
   }
 
   return results;
@@ -255,7 +260,7 @@ export function formatNaira(amountKobo: number): string {
 export async function cancelMyDonation(subscriptionCode: string): Promise<void> {
   const callable = httpsCallable<{ subscriptionCode: string }, { ok: boolean }>(
     functions,
-    'cancelSubscription'
+    'cancelSubscription',
   );
   const result = await callable({ subscriptionCode });
   if (!result.data?.ok) throw new Error('Cancellation rejected');

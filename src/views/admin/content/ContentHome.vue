@@ -93,7 +93,7 @@ function onDragStart(
   parent: EntrySummary,
   field: DragField,
   childId: string,
-  fromIndex: number
+  fromIndex: number,
 ) {
   drag.value = {
     parentId: parent.id,
@@ -134,7 +134,7 @@ async function onDrop(e: DragEvent, parentId: string, field: DragField, slotInde
 
   const parent =
     field === 'modules'
-      ? courses.value.find(c => c.id === parentId)
+      ? courses.value.find((c) => c.id === parentId)
       : modulesById.value.get(parentId);
   if (!parent) return;
 
@@ -216,7 +216,7 @@ const drawerParent = computed<EntrySummary | null>(() => {
   const e = drawerEntry.value;
   if (!e) return null;
   if (e.contentType === 'module') {
-    return courses.value.find(c => extractRefIds(readField(c, 'modules')).includes(e.id)) ?? null;
+    return courses.value.find((c) => extractRefIds(readField(c, 'modules')).includes(e.id)) ?? null;
   }
   if (e.contentType === 'lesson') {
     for (const mod of modulesById.value.values()) {
@@ -336,7 +336,7 @@ async function drawerDelete() {
           : e.contentType === 'lesson'
             ? 'lessons'
             : 'assignments';
-      const order = extractRefIds(readField(parent, field)).filter(id => id !== e.id);
+      const order = extractRefIds(readField(parent, field)).filter((id) => id !== e.id);
       if (parent.contentType === 'course') {
         await updateEntry(parent.id, {
           type: 'course',
@@ -420,9 +420,9 @@ async function load() {
     ]);
 
     courses.value = c;
-    modulesById.value = new Map(m.map(e => [e.id, e]));
-    lessonsById.value = new Map(l.map(e => [e.id, e]));
-    assignmentsById.value = new Map(a.map(e => [e.id, e]));
+    modulesById.value = new Map(m.map((e) => [e.id, e]));
+    lessonsById.value = new Map(l.map((e) => [e.id, e]));
+    assignmentsById.value = new Map(a.map((e) => [e.id, e]));
     quizzes.value = q;
 
     const refMods = new Set<string>();
@@ -451,19 +451,19 @@ async function load() {
 
 function modulesOf(course: EntrySummary): EntrySummary[] {
   return extractRefIds(readField(course, 'modules'))
-    .map(id => modulesById.value.get(id))
+    .map((id) => modulesById.value.get(id))
     .filter((m): m is EntrySummary => !!m);
 }
 
 function lessonsOf(mod: EntrySummary): EntrySummary[] {
   return extractRefIds(readField(mod, 'lessons'))
-    .map(id => lessonsById.value.get(id))
+    .map((id) => lessonsById.value.get(id))
     .filter((l): l is EntrySummary => !!l);
 }
 
 function assignmentsOf(mod: EntrySummary): EntrySummary[] {
   return extractRefIds(readField(mod, 'assignments'))
-    .map(id => assignmentsById.value.get(id))
+    .map((id) => assignmentsById.value.get(id))
     .filter((a): a is EntrySummary => !!a);
 }
 
@@ -492,7 +492,7 @@ function courseHasMatch(course: EntrySummary): boolean {
   return modulesOf(course).some(moduleHasMatch);
 }
 const visibleCourses = computed(() =>
-  searchActive.value ? courses.value.filter(courseHasMatch) : courses.value
+  searchActive.value ? courses.value.filter(courseHasMatch) : courses.value,
 );
 
 // When search is active we want ancestors of matches expanded
@@ -504,10 +504,10 @@ function isOpen(nodeId: string): boolean {
 }
 
 const orphans = computed(() => ({
-  modules: [...modulesById.value.values()].filter(e => !referencedModuleIds.value.has(e.id)),
-  lessons: [...lessonsById.value.values()].filter(e => !referencedLessonIds.value.has(e.id)),
+  modules: [...modulesById.value.values()].filter((e) => !referencedModuleIds.value.has(e.id)),
+  lessons: [...lessonsById.value.values()].filter((e) => !referencedLessonIds.value.has(e.id)),
   assignments: [...assignmentsById.value.values()].filter(
-    e => !referencedAssignmentIds.value.has(e.id)
+    (e) => !referencedAssignmentIds.value.has(e.id),
   ),
 }));
 
@@ -515,7 +515,7 @@ const hasAnyOrphans = computed(
   () =>
     orphans.value.modules.length > 0 ||
     orphans.value.lessons.length > 0 ||
-    orphans.value.assignments.length > 0
+    orphans.value.assignments.length > 0,
 );
 
 // ---- Add-child flow --------------------------------------------------
@@ -706,7 +706,7 @@ async function unpublishSubtree(start: EntrySummary) {
     !confirm(
       `Unpublish "${entryTitle(start)}" and ${targets.length - 1} child entr${
         targets.length - 1 === 1 ? 'y' : 'ies'
-      }? Students won't see this content until you republish.`
+      }? Students won't see this content until you republish.`,
     )
   ) {
     return;
@@ -1208,7 +1208,7 @@ onMounted(load);
                         endDropIndicatorClass(
                           mod.id,
                           'assignments',
-                          visibleAssignments(mod).length
+                          visibleAssignments(mod).length,
                         ) || 'border-ink/15'
                       "
                       @dragover="

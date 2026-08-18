@@ -172,10 +172,10 @@ const program = ref<ProgramView | null>(FALLBACKS[props.slug] ?? null);
 const applicationStatus = ref<'open' | 'closed' | 'upcoming' | null>(null);
 
 const isApplyOpen = computed(
-  () => applicationStatus.value === null || applicationStatus.value === 'open'
+  () => applicationStatus.value === null || applicationStatus.value === 'open',
 );
 const closedReason = computed(() =>
-  applicationStatus.value === 'upcoming' ? 'upcoming' : 'closed'
+  applicationStatus.value === 'upcoming' ? 'upcoming' : 'closed',
 );
 
 async function loadProgram() {

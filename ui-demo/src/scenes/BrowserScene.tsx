@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   AbsoluteFill,
   Easing,
@@ -8,7 +8,7 @@ import {
   staticFile,
   useCurrentFrame,
   useVideoConfig,
-} from "remotion";
+} from 'remotion';
 
 export type BrowserSceneProps = {
   src: string;
@@ -45,25 +45,17 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
     frame,
     [0, 10, durationInFrames - 12, durationInFrames],
     [0, 1, 1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
   const displayedH = (CHROME_W / imgWidth) * imgHeight;
   const maxScroll = Math.max(0, displayedH - VIEWPORT_H);
-  const panDistance = Math.min(
-    maxScroll,
-    PAN_PX_PER_FRAME * (durationInFrames - 40),
-  );
-  const pan = interpolate(
-    frame,
-    [15, durationInFrames - 25],
-    [0, panDistance],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.inOut(Easing.cubic),
-    },
-  );
+  const panDistance = Math.min(maxScroll, PAN_PX_PER_FRAME * (durationInFrames - 40));
+  const pan = interpolate(frame, [15, durationInFrames - 25], [0, panDistance], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.inOut(Easing.cubic),
+  });
 
   const copyY = spring({
     frame,
@@ -81,11 +73,8 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
   });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "var(--color-ink)" }}>
-      <div
-        className="absolute inset-0 flex items-center"
-        style={{ opacity: contentOp }}
-      >
+    <AbsoluteFill style={{ backgroundColor: 'var(--color-ink)' }}>
+      <div className="absolute inset-0 flex items-center" style={{ opacity: contentOp }}>
         {/* Soft brand glow behind the chrome card */}
         <div
           className="absolute"
@@ -95,8 +84,8 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
             width: 1200,
             height: 960,
             background:
-              "radial-gradient(50% 50% at 60% 40%, rgba(139, 85, 255, 0.28) 0%, rgba(94, 219, 231, 0.12) 55%, transparent 75%)",
-            filter: "blur(20px)",
+              'radial-gradient(50% 50% at 60% 40%, rgba(139, 85, 255, 0.28) 0%, rgba(94, 219, 231, 0.12) 55%, transparent 75%)',
+            filter: 'blur(20px)',
           }}
         />
 
@@ -111,23 +100,23 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
           <p
             className="text-sm font-medium tracking-[0.3em] mb-6"
             style={{
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-brand-sky)",
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-brand-sky)',
             }}
           >
             {eyebrow}
           </p>
           <h2
             className="text-7xl font-bold tracking-tight text-white leading-[1.05]"
-            style={{ fontFamily: "var(--font-display)" }}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {heading}
           </h2>
           <p
             className="text-2xl mt-8 leading-relaxed"
             style={{
-              color: "rgba(241, 245, 249, 0.72)",
-              fontFamily: "var(--font-sans)",
+              color: 'rgba(241, 245, 249, 0.72)',
+              fontFamily: 'var(--font-sans)',
             }}
           >
             {blurb}
@@ -139,13 +128,13 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
           className="absolute shadow-2xl"
           style={{
             right: 96,
-            top: "50%",
+            top: '50%',
             transform: `translateY(-50%) translateY(${chromeY}px)`,
             width: CHROME_W,
             borderRadius: 18,
-            overflow: "hidden",
-            border: "1px solid rgba(241, 245, 249, 0.14)",
-            backgroundColor: "#161B22",
+            overflow: 'hidden',
+            border: '1px solid rgba(241, 245, 249, 0.14)',
+            backgroundColor: '#161B22',
           }}
         >
           <div
@@ -154,7 +143,7 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
               height: 52,
               paddingLeft: 20,
               paddingRight: 20,
-              borderBottom: "1px solid rgba(241, 245, 249, 0.1)",
+              borderBottom: '1px solid rgba(241, 245, 249, 0.1)',
             }}
           >
             <div className="flex gap-2">
@@ -163,7 +152,7 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
                   width: 12,
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: "#FF5F57",
+                  backgroundColor: '#FF5F57',
                 }}
               />
               <div
@@ -171,7 +160,7 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
                   width: 12,
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: "#FEBC2E",
+                  backgroundColor: '#FEBC2E',
                 }}
               />
               <div
@@ -179,16 +168,16 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
                   width: 12,
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: "#28C840",
+                  backgroundColor: '#28C840',
                 }}
               />
             </div>
             <div
               className="flex-1 text-center text-sm"
               style={{
-                fontFamily: "var(--font-mono)",
-                color: "rgba(241, 245, 249, 0.6)",
-                backgroundColor: "rgba(241, 245, 249, 0.07)",
+                fontFamily: 'var(--font-mono)',
+                color: 'rgba(241, 245, 249, 0.6)',
+                backgroundColor: 'rgba(241, 245, 249, 0.07)',
                 borderRadius: 8,
                 paddingTop: 5,
                 paddingBottom: 5,
@@ -199,12 +188,12 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
               staija.org{urlPath}
             </div>
           </div>
-          <div style={{ height: VIEWPORT_H, overflow: "hidden" }}>
+          <div style={{ height: VIEWPORT_H, overflow: 'hidden' }}>
             <Img
               src={staticFile(src)}
               style={{
                 width: CHROME_W,
-                display: "block",
+                display: 'block',
                 transform: `translateY(-${pan}px)`,
               }}
             />

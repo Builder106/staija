@@ -37,7 +37,7 @@ export class StorageService {
     try {
       const storageRef = ref(storage, path);
       const result = await listAll(storageRef);
-      return result.items.map(item => item.fullPath);
+      return result.items.map((item) => item.fullPath);
     } catch (error) {
       console.error('List files error:', error);
       throw error;

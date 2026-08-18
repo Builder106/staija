@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --color-paper: #f1f5f9;
@@ -7,9 +7,9 @@
   --color-brand-violet: #8b55ff;
   --color-brand-sky: #5edbe7;
 
-  --font-display: "IBM Plex Sans", sans-serif;
-  --font-sans: "Inter", sans-serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-display: 'IBM Plex Sans', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 
   --radius-xl: 12px;
   --radius-2xl: 16px;
@@ -25,17 +25,8 @@
 
 @utility bg-gradient-hero {
   background-image:
-    radial-gradient(
-      60% 80% at 80% 30%,
-      rgba(94, 219, 231, 0.55) 0%,
-      transparent 60%
-    ),
-    linear-gradient(
-      135deg,
-      #6b3fe0 0%,
-      var(--color-brand-violet) 45%,
-      var(--color-brand-sky) 100%
-    );
+    radial-gradient(60% 80% at 80% 30%, rgba(94, 219, 231, 0.55) 0%, transparent 60%),
+    linear-gradient(135deg, #6b3fe0 0%, var(--color-brand-violet) 45%, var(--color-brand-sky) 100%);
 }
 
 @utility text-gradient-brand {

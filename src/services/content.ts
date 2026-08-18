@@ -109,10 +109,10 @@ interface CategoryFields {
 
 function resolveAssetUrl(
   assetRef: { sys: { id: string } } | undefined,
-  includes: ContentfulCollection<unknown>['includes']
+  includes: ContentfulCollection<unknown>['includes'],
 ): string | undefined {
   if (!assetRef || !includes?.Asset) return undefined;
-  const asset = includes.Asset.find(a => a.sys.id === assetRef.sys.id);
+  const asset = includes.Asset.find((a) => a.sys.id === assetRef.sys.id);
   if (!asset) return undefined;
   const url = asset.fields.file.url;
   return url.startsWith('//') ? `https:${url}` : url;
@@ -120,10 +120,10 @@ function resolveAssetUrl(
 
 function resolveLinkedEntry<F>(
   entryRef: { sys: { id: string } } | undefined,
-  includes: ContentfulCollection<unknown>['includes']
+  includes: ContentfulCollection<unknown>['includes'],
 ): F | null {
   if (!entryRef || !includes?.Entry) return null;
-  const entry = includes.Entry.find(e => e.sys.id === entryRef.sys.id);
+  const entry = includes.Entry.find((e) => e.sys.id === entryRef.sys.id);
   return (entry?.fields as F | undefined) ?? null;
 }
 
@@ -140,7 +140,7 @@ function programFromCategorySlug(slug: string | undefined): BlogProgram {
 // Same for BlogTopic, derived from the post's tags array.
 function topicFromTags(tags: string[] | undefined): BlogTopic {
   if (!tags || tags.length === 0) return 'stories';
-  const norm = tags.map(t => t.toLowerCase());
+  const norm = tags.map((t) => t.toLowerCase());
   if (norm.includes('research')) return 'research';
   if (norm.includes('news')) return 'news';
   return 'stories';
@@ -157,7 +157,7 @@ function inferIsVirtual(location: string | undefined): boolean {
 
 function mapBlogPost(
   entry: ContentfulEntry<BlogPostFields>,
-  includes: ContentfulCollection<unknown>['includes']
+  includes: ContentfulCollection<unknown>['includes'],
 ): BlogPost {
   const f = entry.fields;
   const author = resolveLinkedEntry<AuthorFields>(f.author, includes);
@@ -177,7 +177,7 @@ function mapBlogPost(
 
 function mapEvent(
   entry: ContentfulEntry<EventFields>,
-  includes: ContentfulCollection<unknown>['includes']
+  includes: ContentfulCollection<unknown>['includes'],
 ): EventItem {
   const f = entry.fields;
   const location = f.location ?? 'TBD';
@@ -209,7 +209,7 @@ export interface BlogQuery {
 }
 
 export async function getBlogPosts(
-  q: BlogQuery = {}
+  q: BlogQuery = {},
 ): Promise<{ items: BlogPost[]; total: number }> {
   if (!isContentfulConfigured()) {
     return mockBlogResults(q);
@@ -238,10 +238,10 @@ export async function getBlogPosts(
 
   try {
     const res = await client.getEntries<ContentfulCollection<BlogPostFields>>(query);
-    let items = res.items.map(e => mapBlogPost(e, res.includes));
+    let items = res.items.map((e) => mapBlogPost(e, res.includes));
     let total = res.total;
     if (programFilterActive) {
-      items = items.filter(p => p.program === q.program);
+      items = items.filter((p) => p.program === q.program);
       total = items.length;
       items = items.slice(skip, skip + limit);
     }
@@ -257,7 +257,7 @@ export async function getBlogPosts(
 
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   if (!isContentfulConfigured()) {
-    return mockBlogPosts.find(p => p.slug === slug) ?? null;
+    return mockBlogPosts.find((p) => p.slug === slug) ?? null;
   }
 
   const client = new ContentfulClient();
@@ -273,18 +273,18 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   } catch (err) {
     if (isUnknownFieldOrType(err)) {
       console.warn('[content] Contentful blogPost model not ready — using mock data.', err);
-      return mockBlogPosts.find(p => p.slug === slug) ?? null;
+      return mockBlogPosts.find((p) => p.slug === slug) ?? null;
     }
     throw err;
   }
 }
 
 export async function getEvents(
-  opts: { upcoming?: boolean; limit?: number } = {}
+  opts: { upcoming?: boolean; limit?: number } = {},
 ): Promise<EventItem[]> {
   if (!isContentfulConfigured()) {
     return mockEvents
-      .filter(e => isUpcoming(e) === (opts.upcoming ?? true))
+      .filter((e) => isUpcoming(e) === (opts.upcoming ?? true))
       .slice(0, opts.limit ?? 20);
   }
 
@@ -301,12 +301,12 @@ export async function getEvents(
 
   try {
     const res = await client.getEntries<ContentfulCollection<EventFields>>(query);
-    return res.items.map(e => mapEvent(e, res.includes));
+    return res.items.map((e) => mapEvent(e, res.includes));
   } catch (err) {
     if (isUnknownFieldOrType(err)) {
       console.warn('[content] Contentful event model not ready — using mock data.', err);
       return mockEvents
-        .filter(e => isUpcoming(e) === (opts.upcoming ?? true))
+        .filter((e) => isUpcoming(e) === (opts.upcoming ?? true))
         .slice(0, opts.limit ?? 20);
     }
     throw err;
@@ -315,7 +315,7 @@ export async function getEvents(
 
 export async function getEvent(slug: string): Promise<EventItem | null> {
   if (!isContentfulConfigured()) {
-    return mockEvents.find(e => e.slug === slug) ?? null;
+    return mockEvents.find((e) => e.slug === slug) ?? null;
   }
 
   const client = new ContentfulClient();
@@ -331,7 +331,7 @@ export async function getEvent(slug: string): Promise<EventItem | null> {
   } catch (err) {
     if (isUnknownFieldOrType(err)) {
       console.warn('[content] Contentful event model not ready — using mock data.', err);
-      return mockEvents.find(e => e.slug === slug) ?? null;
+      return mockEvents.find((e) => e.slug === slug) ?? null;
     }
     throw err;
   }
@@ -445,15 +445,15 @@ const mockEvents: EventItem[] = [
 
 function mockBlogResults(q: BlogQuery): { items: BlogPost[]; total: number } {
   let items = mockBlogPosts;
-  if (q.program && q.program !== 'all') items = items.filter(p => p.program === q.program);
-  if (q.topic && q.topic !== 'all') items = items.filter(p => p.topic === q.topic);
+  if (q.program && q.program !== 'all') items = items.filter((p) => p.program === q.program);
+  if (q.topic && q.topic !== 'all') items = items.filter((p) => p.topic === q.topic);
   if (q.search) {
     const needle = q.search.toLowerCase();
     items = items.filter(
-      p =>
+      (p) =>
         p.title.toLowerCase().includes(needle) ||
         p.dek.toLowerCase().includes(needle) ||
-        p.author.toLowerCase().includes(needle)
+        p.author.toLowerCase().includes(needle),
     );
   }
   const total = items.length;

@@ -41,7 +41,7 @@ async function load() {
   try {
     const callable = httpsCallable<{ token: string }, ReferenceContext>(
       functions,
-      'validateReferenceToken'
+      'validateReferenceToken',
     );
     const result = await callable({ token: token.value });
     context.value = result.data;
@@ -187,8 +187,8 @@ onMounted(load);
                 label="Recommendation letter"
                 accept="image/*,application/pdf"
                 :max-size-bytes="5 * 1024 * 1024"
-                @update:file="f => (file = f)"
-                @error="m => (fileError = m)"
+                @update:file="(f) => (file = f)"
+                @error="(m) => (fileError = m)"
               />
               <p v-if="fileError" role="alert" class="mt-3 text-sm text-red-600 m-0">
                 {{ fileError }}

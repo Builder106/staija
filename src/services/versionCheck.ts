@@ -99,7 +99,7 @@ export function startVersionWatcher(): void {
   // pageshow handles the case where the browser restores the page
   // from the back-forward cache — visibilitychange doesn't always
   // fire for bfcache restores.
-  window.addEventListener('pageshow', e => {
+  window.addEventListener('pageshow', (e) => {
     if (e.persisted) void checkForUpdate();
   });
 }

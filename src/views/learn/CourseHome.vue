@@ -44,7 +44,7 @@ let progressUnsub: (() => void) | null = null;
 const totalLessons = computed(() => modules.value.reduce((acc, m) => acc + m.lessons.length, 0));
 const fraction = computed(() => completionFraction(progress.value, totalLessons.value));
 const completedSlugs = computed(
-  () => new Set(progress.value.filter(p => p.status === 'completed').map(p => p.lessonSlug))
+  () => new Set(progress.value.filter((p) => p.status === 'completed').map((p) => p.lessonSlug)),
 );
 
 function lessonStatus(lesson: CmsLesson) {
@@ -81,7 +81,7 @@ async function load() {
 
     const mods = await CourseService.getModulesForCourse(c);
     const hydrated = await Promise.all(
-      mods.map(async m => ({ module: m, lessons: await CourseService.getLessonsForModule(m) }))
+      mods.map(async (m) => ({ module: m, lessons: await CourseService.getLessonsForModule(m) })),
     );
     modules.value = hydrated;
 
@@ -91,7 +91,7 @@ async function load() {
 
     progressUnsub = ProgressService.subscribeProgressForEnrollment(
       enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`,
-      p => (progress.value = p)
+      (p) => (progress.value = p),
     );
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Failed to load course.';

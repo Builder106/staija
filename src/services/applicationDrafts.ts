@@ -102,7 +102,7 @@ function draftId(userId: string, program: DraftProgramSlug): string {
 
 export async function getDraft(
   userId: string,
-  program: DraftProgramSlug
+  program: DraftProgramSlug,
 ): Promise<ApplicationDraftDoc | null> {
   try {
     const ref = doc(db, 'applicationDrafts', draftId(userId, program));
@@ -120,7 +120,7 @@ export async function getDraft(
 export async function saveDraft(
   userId: string,
   program: DraftProgramSlug,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): Promise<boolean> {
   try {
     const ref = doc(db, 'applicationDrafts', draftId(userId, program));
@@ -138,7 +138,7 @@ export async function saveDraft(
         // now active again.
         __deleted: false,
       },
-      { merge: true }
+      { merge: true },
     );
     return true;
   } catch (err) {
@@ -172,11 +172,11 @@ export async function deleteDraft(userId: string, program: DraftProgramSlug): Pr
     const stagedPaths = collectStagedPaths(await readPayload(userId, program));
     if (stagedPaths.length > 0) {
       await Promise.allSettled(
-        stagedPaths.map(path =>
-          deleteObject(storageRef(storage, path)).catch(err => {
+        stagedPaths.map((path) =>
+          deleteObject(storageRef(storage, path)).catch((err) => {
             console.warn('[applicationDrafts] deleteDraft staged-file cleanup failed', path, err);
-          })
-        )
+          }),
+        ),
       );
     }
     await setDoc(
@@ -190,7 +190,7 @@ export async function deleteDraft(userId: string, program: DraftProgramSlug): Pr
         __deleted: true,
         deletedAt: Date.now(),
       },
-      { merge: true }
+      { merge: true },
     );
   } catch (err) {
     console.warn('[applicationDrafts] deleteDraft failed', err);
@@ -202,7 +202,7 @@ export async function deleteDraft(userId: string, program: DraftProgramSlug): Pr
  *  to clean up", and the orphan cron sweeps stragglers regardless. */
 async function readPayload(
   userId: string,
-  program: DraftProgramSlug
+  program: DraftProgramSlug,
 ): Promise<Record<string, unknown>> {
   try {
     const snap = await getDoc(doc(db, 'applicationDrafts', draftId(userId, program)));
@@ -239,7 +239,7 @@ export async function listUserDrafts(userId: string): Promise<ApplicationDraftDo
   try {
     const q = query(collection(db, 'applicationDrafts'), where('userId', '==', userId));
     const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as ApplicationDraftDoc);
+    return snap.docs.map((d) => d.data() as ApplicationDraftDoc);
   } catch (err) {
     console.warn('[applicationDrafts] listUserDrafts failed', err);
     return [];
@@ -258,18 +258,18 @@ export async function listUserDrafts(userId: string): Promise<ApplicationDraftDo
 export function watchDraftDoc(
   userId: string,
   program: DraftProgramSlug,
-  onChange: (draft: ApplicationDraftDoc | null) => void
+  onChange: (draft: ApplicationDraftDoc | null) => void,
 ): Unsubscribe {
   const ref = doc(db, 'applicationDrafts', draftId(userId, program));
   return onSnapshot(
     ref,
-    snap => {
+    (snap) => {
       onChange(snap.exists() ? (snap.data() as ApplicationDraftDoc) : null);
     },
-    err => {
+    (err) => {
       console.warn('[applicationDrafts] watchDraftDoc stream error', err);
       onChange(null);
-    }
+    },
   );
 }
 
@@ -292,17 +292,17 @@ export function watchDraftDoc(
  */
 export function watchUserDrafts(
   userId: string,
-  onChange: (drafts: ApplicationDraftDoc[]) => void
+  onChange: (drafts: ApplicationDraftDoc[]) => void,
 ): Unsubscribe {
   const q = query(collection(db, 'applicationDrafts'), where('userId', '==', userId));
   return onSnapshot(
     q,
-    snap => {
-      onChange(snap.docs.map(d => d.data() as ApplicationDraftDoc));
+    (snap) => {
+      onChange(snap.docs.map((d) => d.data() as ApplicationDraftDoc));
     },
-    err => {
+    (err) => {
       console.warn('[applicationDrafts] watchUserDrafts stream error', err);
       onChange([]);
-    }
+    },
   );
 }

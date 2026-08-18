@@ -70,7 +70,7 @@ function format(sec: number) {
  *  beats idle controls. Once the applicant hits "Start recording" or
  *  has a recorded clip, the attached card is shadowed. */
 const showAttached = computed(
-  () => state.value === 'idle' && !audioUrl.value && props.attachedAudio !== null
+  () => state.value === 'idle' && !audioUrl.value && props.attachedAudio !== null,
 );
 
 function pickReplace() {
@@ -84,7 +84,7 @@ function removeAttached() {
 
 function teardownStream() {
   if (stream) {
-    stream.getTracks().forEach(t => t.stop());
+    stream.getTracks().forEach((t) => t.stop());
     stream = null;
   }
 }
@@ -110,7 +110,7 @@ async function start() {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     chunks = [];
     recorder = new MediaRecorder(stream);
-    recorder.ondataavailable = e => {
+    recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };
     recorder.onstop = () => {

@@ -42,7 +42,7 @@ async function load() {
   try {
     const q = query(collection(db, 'users'), where('role', '==', 'mentor'), orderBy('displayName'));
     const snap = await getDocs(q);
-    mentors.value = snap.docs.map(d => d.data() as UserProfile);
+    mentors.value = snap.docs.map((d) => d.data() as UserProfile);
   } catch (err) {
     // The `orderBy('displayName')` query needs an index for some
     // Firestore setups; if it errors, fall back to an unordered
@@ -51,7 +51,7 @@ async function load() {
     try {
       const snap = await getDocs(query(collection(db, 'users'), where('role', '==', 'mentor')));
       mentors.value = snap.docs
-        .map(d => d.data() as UserProfile)
+        .map((d) => d.data() as UserProfile)
         .sort((a, b) => (a.displayName ?? '').localeCompare(b.displayName ?? ''));
     } catch (inner) {
       error.value =
@@ -73,7 +73,7 @@ async function load() {
 const filtered = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q) return mentors.value;
-  return mentors.value.filter(m => {
+  return mentors.value.filter((m) => {
     const haystack = [
       m.displayName ?? '',
       m.email ?? '',

@@ -37,7 +37,7 @@ function ease(t: number) {
   return 1 - Math.pow(1 - t, 3);
 }
 
-watch(inView, visible => {
+watch(inView, (visible) => {
   if (!visible) return;
   if (reduce.value) {
     display.value = format(value);

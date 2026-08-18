@@ -89,7 +89,9 @@ async function loadCounts() {
     // exact counts. Four parallel HEAD-like requests instead of a full
     // listing keeps the dashboard snappy.
     const types: LmsContentType[] = ['course', 'module', 'lesson', 'assignmentSpec'];
-    const results = await Promise.all(types.map(t => listEntries(t, { limit: 1 }).catch(() => [])));
+    const results = await Promise.all(
+      types.map((t) => listEntries(t, { limit: 1 }).catch(() => [])),
+    );
     types.forEach((t, i) => {
       counts.value[t] = results[i].length;
     });
@@ -99,13 +101,13 @@ async function loadCounts() {
 }
 
 const completedCount = computed(() => {
-  return STEPS.filter(s => (counts.value[s.key] ?? 0) > 0).length;
+  return STEPS.filter((s) => (counts.value[s.key] ?? 0) > 0).length;
 });
 
 const allDone = computed(() => completedCount.value === STEPS.length);
 
 const nextStepKey = computed(() => {
-  const next = STEPS.find(s => (counts.value[s.key] ?? 0) === 0);
+  const next = STEPS.find((s) => (counts.value[s.key] ?? 0) === 0);
   return next?.key ?? null;
 });
 

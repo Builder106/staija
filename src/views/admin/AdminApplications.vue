@@ -137,25 +137,25 @@ const filteredApplications = computed(() => {
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
-      app =>
+      (app) =>
         app.personalInfo.firstName.toLowerCase().includes(q) ||
         app.personalInfo.lastName.toLowerCase().includes(q) ||
         app.personalInfo.email.toLowerCase().includes(q) ||
-        app.researchInterests.some(i => i.toLowerCase().includes(q))
+        app.researchInterests.some((i) => i.toLowerCase().includes(q)),
     );
   }
   if (statusFilter.value) {
-    filtered = filtered.filter(app => app.status === statusFilter.value);
+    filtered = filtered.filter((app) => app.status === statusFilter.value);
   }
   if (programFilter.value) {
-    filtered = filtered.filter(app => app.program === programFilter.value);
+    filtered = filtered.filter((app) => app.program === programFilter.value);
   }
   if (responseFilter.value === 'awaiting') {
     // "Awaiting response" = accepted but no spotResponse yet.
     // Useful for chasing applicants who haven't confirmed.
-    filtered = filtered.filter(app => app.status === 'accepted' && !app.spotResponse);
+    filtered = filtered.filter((app) => app.status === 'accepted' && !app.spotResponse);
   } else if (responseFilter.value) {
-    filtered = filtered.filter(app => app.spotResponse === responseFilter.value);
+    filtered = filtered.filter((app) => app.spotResponse === responseFilter.value);
   }
 
   // Sort. Out-of-the-list null timestamps go to the bottom so the
@@ -188,7 +188,7 @@ const filteredApplications = computed(() => {
 });
 
 const hasFilters = computed(
-  () => !!(searchQuery.value || statusFilter.value || programFilter.value || responseFilter.value)
+  () => !!(searchQuery.value || statusFilter.value || programFilter.value || responseFilter.value),
 );
 
 // Seed the response filter from the URL on mount + keep it synced.
@@ -201,7 +201,7 @@ onMounted(() => {
     responseFilter.value = r;
   }
 });
-watch(responseFilter, v => {
+watch(responseFilter, (v) => {
   // Replace, not push — staff cycling through filters shouldn't
   // bloat the back-button history.
   void router.replace({ query: { ...route.query, response: v || undefined } });
@@ -210,20 +210,20 @@ watch(responseFilter, v => {
 const allSelected = computed(
   () =>
     filteredApplications.value.length > 0 &&
-    filteredApplications.value.every(app => selectedApplications.value.includes(app.id!))
+    filteredApplications.value.every((app) => selectedApplications.value.includes(app.id!)),
 );
 
 const submittedCount = computed(
-  () => applications.value.filter(a => a.status === 'submitted').length
+  () => applications.value.filter((a) => a.status === 'submitted').length,
 );
 const underReviewCount = computed(
-  () => applications.value.filter(a => a.status === 'under_review').length
+  () => applications.value.filter((a) => a.status === 'under_review').length,
 );
 const acceptedCount = computed(
-  () => applications.value.filter(a => a.status === 'accepted').length
+  () => applications.value.filter((a) => a.status === 'accepted').length,
 );
 const rejectedCount = computed(
-  () => applications.value.filter(a => a.status === 'rejected').length
+  () => applications.value.filter((a) => a.status === 'rejected').length,
 );
 
 /** Sorted snapshot of researchInterests for the cell. The legacy view
@@ -261,7 +261,7 @@ function toggleSelection(applicationId: string) {
 
 function toggleSelectAll() {
   if (allSelected.value) selectedApplications.value = [];
-  else selectedApplications.value = filteredApplications.value.map(a => a.id!);
+  else selectedApplications.value = filteredApplications.value.map((a) => a.id!);
 }
 
 function clearSelection() {
@@ -279,13 +279,13 @@ async function bulkUpdateStatus(status: Application['status']) {
   try {
     const reviewer = AuthService.getCurrentUser()?.email || 'Unknown';
     await Promise.all(
-      selectedApplications.value.map(id =>
+      selectedApplications.value.map((id) =>
         DatabaseService.updateApplication(id, {
           status,
           reviewedAt: new Date(),
           reviewedBy: reviewer,
-        })
-      )
+        }),
+      ),
     );
     await loadApplications();
     selectedApplications.value = [];
@@ -323,7 +323,7 @@ async function reOfferDeferred(applicationId: string) {
   try {
     const fn = httpsCallable<{ applicationId: string }, { ok: true; changed: boolean }>(
       functions,
-      'reOfferToDeferredApplicant'
+      'reOfferToDeferredApplicant',
     );
     await fn({ applicationId });
     // Refresh so the row's spotResponse drops + the chip indicator +
@@ -347,11 +347,11 @@ const bulkReOfferEligible = computed(() => {
   if (selectedApplications.value.length === 0) return false;
   const selectedSet = new Set(selectedApplications.value);
   return applications.value.some(
-    app =>
+    (app) =>
       app.id !== undefined &&
       selectedSet.has(app.id) &&
       app.status === 'accepted' &&
-      app.spotResponse === 'deferred'
+      app.spotResponse === 'deferred',
   );
 });
 
@@ -361,22 +361,22 @@ async function bulkReOffer() {
   try {
     const selectedSet = new Set(selectedApplications.value);
     const eligible = applications.value.filter(
-      app =>
+      (app) =>
         app.id !== undefined &&
         selectedSet.has(app.id) &&
         app.status === 'accepted' &&
-        app.spotResponse === 'deferred'
+        app.spotResponse === 'deferred',
     );
     const fn = httpsCallable<{ applicationId: string }, { ok: true; changed: boolean }>(
       functions,
-      'reOfferToDeferredApplicant'
+      'reOfferToDeferredApplicant',
     );
     // Settled (not all) so a failure on one row doesn't strand the
     // others mid-batch — the callable is per-application and each
     // call fires its own email. Log partial failures and let the
     // reload reveal the surviving deferred rows.
-    const results = await Promise.allSettled(eligible.map(app => fn({ applicationId: app.id! })));
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const results = await Promise.allSettled(eligible.map((app) => fn({ applicationId: app.id! })));
+    const failed = results.filter((r) => r.status === 'rejected').length;
     if (failed > 0) {
       error.value = `${failed} of ${eligible.length} re-offers failed. Try again or open the row to see the error.`;
     }
@@ -397,7 +397,7 @@ function exportApplications() {
   const cell = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const rows = [
     ['Name', 'Email', 'Program', 'Status', 'Submitted', 'Research Interests'].map(cell).join(','),
-    ...filteredApplications.value.map(app =>
+    ...filteredApplications.value.map((app) =>
       [
         `${app.personalInfo.firstName} ${app.personalInfo.lastName}`,
         app.personalInfo.email,
@@ -407,7 +407,7 @@ function exportApplications() {
         (app.researchInterests || []).join('; '),
       ]
         .map(cell)
-        .join(',')
+        .join(','),
     ),
   ];
   const csv = rows.join('\n');

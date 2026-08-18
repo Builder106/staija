@@ -49,10 +49,10 @@ const maxBytes = computed(() => (spec.value?.maxFileSizeMb ?? 10) * 1024 * 1024)
 
 const submissionType = computed(() => spec.value?.submissionType ?? 'text');
 const allowsText = computed(
-  () => submissionType.value === 'text' || submissionType.value === 'text_or_file'
+  () => submissionType.value === 'text' || submissionType.value === 'text_or_file',
 );
 const allowsFile = computed(
-  () => submissionType.value === 'file' || submissionType.value === 'text_or_file'
+  () => submissionType.value === 'file' || submissionType.value === 'text_or_file',
 );
 const allowsLink = computed(() => submissionType.value === 'link');
 
@@ -88,7 +88,7 @@ async function load() {
       enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`;
     previousSubmissions.value = await SubmissionService.getSubmissionsForEnrollmentAndAssignment(
       enrollmentId,
-      slug
+      slug,
     );
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Failed to load assignment.';

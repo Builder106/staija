@@ -166,7 +166,7 @@ export function getCapturedReferrerId(): string | null {
  * falls back to generic hero copy on null.
  */
 export async function resolveReferrerDisplayName(
-  referrerId: string | null
+  referrerId: string | null,
 ): Promise<string | null> {
   if (!referrerId || !referrerId.startsWith('u-')) return null;
   const uid = referrerId.slice(2);

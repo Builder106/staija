@@ -1,9 +1,9 @@
-import { Audio, Sequence, interpolate, staticFile } from "remotion";
-import { BrowserScene } from "./scenes/BrowserScene";
-import { UITitle } from "./scenes/UITitle";
-import { UIMontage } from "./scenes/UIMontage";
-import { UIOutro } from "./scenes/UIOutro";
-import "./index.css";
+import { Audio, Sequence, interpolate, staticFile } from 'remotion';
+import { BrowserScene } from './scenes/BrowserScene';
+import { UITitle } from './scenes/UITitle';
+import { UIMontage } from './scenes/UIMontage';
+import { UIOutro } from './scenes/UIOutro';
+import './index.css';
 
 // Scene layout (30 fps):
 //   0– 90  Title card
@@ -19,11 +19,11 @@ export const UIDemoComposition = () => {
     <>
       {/* Music bed: Kevin MacLeod — "Wholesome" (incompetech.com), CC BY 4.0 */}
       <Audio
-        src={staticFile("audio.mp3")}
+        src={staticFile('audio.mp3')}
         volume={(f) =>
           interpolate(f, [0, 30, 1280, 1345], [0, 0.55, 0.55, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
           })
         }
       />
@@ -31,11 +31,11 @@ export const UIDemoComposition = () => {
       {/* Whoosh at every scene cut, chime as the outro card lands */}
       {[90, 330, 540, 750, 990].map((f) => (
         <Sequence key={f} from={f}>
-          <Audio src={staticFile("sfx_whoosh.wav")} volume={0.45} />
+          <Audio src={staticFile('sfx_whoosh.wav')} volume={0.45} />
         </Sequence>
       ))}
       <Sequence from={1190}>
-        <Audio src={staticFile("sfx_chime.wav")} volume={0.45} />
+        <Audio src={staticFile('sfx_chime.wav')} volume={0.45} />
       </Sequence>
 
       <Sequence from={0} durationInFrames={90}>

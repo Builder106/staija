@@ -56,13 +56,13 @@ const error = ref<string | null>(null);
 
 watch(
   () => props.from,
-  next => {
+  (next) => {
     // Only override when the user hasn't touched the dropdown yet
     // (i.e. status is still idle and the current value matches what a
     // prior `from` would've defaulted to).
     if (status.value !== 'idle') return;
     interestTag.value = defaultTag(next);
-  }
+  },
 );
 
 async function handleSubmit(e: Event) {

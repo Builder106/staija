@@ -46,7 +46,7 @@ const handleClick = async () => {
     } else if (status.value === 'pending_received') {
       // Find the request ID - this is inefficient, in real app we might pass requestId if known
       const requests = await ConnectionService.getPendingRequests(currentUser.uid);
-      const req = requests.find(r => r.fromUid === targetUid.value);
+      const req = requests.find((r) => r.fromUid === targetUid.value);
       if (req && req.id) {
         await ConnectionService.respondToRequest(req.id, 'accepted');
         status.value = 'connected';

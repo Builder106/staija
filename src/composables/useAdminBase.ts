@@ -21,7 +21,7 @@ import { useRoute } from 'vue-router';
 export function useAdminBase() {
   const route = useRoute();
   const adminBase = computed<'/admin' | '/staff'>(() =>
-    route.path.startsWith('/staff') ? '/staff' : '/admin'
+    route.path.startsWith('/staff') ? '/staff' : '/admin',
   );
   return { adminBase };
 }

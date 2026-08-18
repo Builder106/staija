@@ -31,7 +31,7 @@ import type {
 export class AuthService {
   static async signIn(
     email: string,
-    password: string
+    password: string,
   ): Promise<{ credential: UserCredential; role: UserRole | null }> {
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
@@ -47,7 +47,7 @@ export class AuthService {
     email: string,
     password: string,
     displayName: string,
-    role: PublicAssignableRole = 'applicant'
+    role: PublicAssignableRole = 'applicant',
   ): Promise<UserCredential> {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -171,7 +171,7 @@ export class AuthService {
   static async assignRole(
     userId: string,
     role: AdminAssignableRole,
-    reason?: string
+    reason?: string,
   ): Promise<void> {
     try {
       const currentUser = auth.currentUser;
@@ -235,7 +235,7 @@ export class AuthService {
   static async createUserProfile(
     user: User,
     displayName: string,
-    role: AdminAssignableRole = 'applicant'
+    role: AdminAssignableRole = 'applicant',
   ): Promise<void> {
     const userProfile: UserProfile = {
       uid: user.uid,

@@ -285,7 +285,7 @@ watch(
   () => route.params.id,
   (newId, oldId) => {
     if (newId && newId !== oldId) loadApplication();
-  }
+  },
 );
 
 onMounted(() => {

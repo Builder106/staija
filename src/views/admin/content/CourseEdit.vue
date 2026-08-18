@@ -139,7 +139,9 @@ async function load() {
 
 function extractRefIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.map(v => (v as { sys?: { id?: string } })?.sys?.id).filter((v): v is string => !!v);
+  return value
+    .map((v) => (v as { sys?: { id?: string } })?.sys?.id)
+    .filter((v): v is string => !!v);
 }
 function extractRefId(value: unknown): string | undefined {
   return (value as { sys?: { id?: string } })?.sys?.id;
@@ -150,10 +152,10 @@ function extractRefId(value: unknown): string | undefined {
 // stable regardless of title edits (load() sets slugTouched=true).
 watch(
   () => form.value.title,
-  newTitle => {
+  (newTitle) => {
     if (slugTouched.value) return;
     form.value.slug = slugify(newTitle ?? '');
-  }
+  },
 );
 
 function onVersionBlur() {
@@ -167,7 +169,7 @@ const computingHours = ref(false);
 
 watch(
   () => form.value.modules?.slice(),
-  async modules => {
+  async (modules) => {
     if (!modules || modules.length === 0) {
       computedHours.value = null;
       return;
@@ -181,11 +183,11 @@ watch(
       computingHours.value = false;
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 );
 
 const showComputedHours = computed(
-  () => !!computedHours.value && computedHours.value.lessonCount > 0
+  () => !!computedHours.value && computedHours.value.lessonCount > 0,
 );
 
 // ---- Track chip-autocomplete ----
@@ -210,7 +212,7 @@ const canSave = computed(
     !!form.value.slug.trim() &&
     !!form.value.title.trim() &&
     !!form.value.version.trim() &&
-    !saving.value
+    !saving.value,
 );
 
 function buildPayload(): { type: 'course'; fields: CourseFields } {
@@ -461,7 +463,7 @@ onMounted(async () => {
                      doesn't sit redundantly below its own input. -->
                 <div v-if="availableTracks.length > 0" class="flex flex-wrap gap-1.5 mt-0.5">
                   <button
-                    v-for="t in availableTracks.filter(x => x !== form.track)"
+                    v-for="t in availableTracks.filter((x) => x !== form.track)"
                     :key="t"
                     type="button"
                     class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-ink/5 text-ink/70 hover:bg-brand-violet/10 hover:text-brand-violet transition-colors"
@@ -524,7 +526,7 @@ onMounted(async () => {
               :max-size-bytes="10_000_000"
               label="Choose a cover image"
               @update:file="onCoverImagePick"
-              @error="m => (coverError = m)"
+              @error="(m) => (coverError = m)"
             />
             <p
               v-if="coverUploading"

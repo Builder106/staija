@@ -41,7 +41,7 @@ const canSubmit = computed(
     weeks.value >= 1 &&
     weeks.value <= 16 &&
     lessonsPerModule.value >= 1 &&
-    lessonsPerModule.value <= 10
+    lessonsPerModule.value <= 10,
 );
 
 async function handleSubmit() {

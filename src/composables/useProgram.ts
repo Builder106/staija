@@ -47,13 +47,13 @@ export function useProgram(slug: ProgramSlug): UseProgramResult {
   const isStatusResolved = ref(false);
 
   const isApplyOpen = computed(
-    () => applicationStatus.value === null || applicationStatus.value === 'open'
+    () => applicationStatus.value === null || applicationStatus.value === 'open',
   );
   // 'upcoming' / 'closed' both swap the Apply CTA's target to
   // /stay-connected so visitors get an honest destination instead of a
   // dead form.
   const closedReason = computed<'upcoming' | 'closed'>(() =>
-    applicationStatus.value === 'upcoming' ? 'upcoming' : 'closed'
+    applicationStatus.value === 'upcoming' ? 'upcoming' : 'closed',
   );
 
   async function loadProgram(): Promise<void> {

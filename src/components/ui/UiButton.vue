@@ -21,7 +21,7 @@ const props = withDefaults(
     type?: 'button' | 'submit' | 'reset';
     disabled?: boolean;
   }>(),
-  { variant: 'primary', type: 'button' }
+  { variant: 'primary', type: 'button' },
 );
 
 defineEmits<{ (e: 'click', payload: MouseEvent): void }>();

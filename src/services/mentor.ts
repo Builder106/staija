@@ -21,7 +21,7 @@ export class MentorService {
     const q = query(collection(db, 'mentor_assignments'), where('mentorId', '==', mentorId));
     const snap = await getDocs(q);
     const assignments: MentorAssignment[] = [];
-    snap.forEach(d => {
+    snap.forEach((d) => {
       const data = d.data() as Omit<MentorAssignment, 'id'>;
       if (data.status === 'active') {
         assignments.push({ id: d.id, ...data });
@@ -29,7 +29,7 @@ export class MentorService {
     });
 
     return Promise.all(
-      assignments.map(async a => {
+      assignments.map(async (a) => {
         try {
           const userSnap = await getDoc(doc(db, 'users', a.studentId));
           return {
@@ -39,18 +39,18 @@ export class MentorService {
         } catch {
           return { ...a, student: null };
         }
-      })
+      }),
     );
   }
 
   static async getAssignment(
     mentorId: string,
-    studentId: string
+    studentId: string,
   ): Promise<MentorAssignment | null> {
     const q = query(collection(db, 'mentor_assignments'), where('mentorId', '==', mentorId));
     const snap = await getDocs(q);
     let result: MentorAssignment | null = null;
-    snap.forEach(d => {
+    snap.forEach((d) => {
       if (result) return;
       const data = d.data() as Omit<MentorAssignment, 'id'>;
       if (data.studentId === studentId && data.status === 'active') {
@@ -62,12 +62,12 @@ export class MentorService {
 
   static async getFeedbackForStudent(
     mentorId: string,
-    studentId: string
+    studentId: string,
   ): Promise<MentorFeedback[]> {
     const q = query(collection(db, 'mentor_feedback'), where('mentorId', '==', mentorId));
     const snap = await getDocs(q);
     const items: MentorFeedback[] = [];
-    snap.forEach(d => {
+    snap.forEach((d) => {
       const data = d.data() as Omit<MentorFeedback, 'id'>;
       if (data.studentId === studentId) {
         items.push({ id: d.id, ...data });

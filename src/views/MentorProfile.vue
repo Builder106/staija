@@ -97,7 +97,7 @@ const avatarSrc = computed(() => {
 });
 
 const displayName = computed(
-  () => profile.value?.displayName?.trim() || profile.value?.email || 'Mentor'
+  () => profile.value?.displayName?.trim() || profile.value?.email || 'Mentor',
 );
 
 onMounted(load);

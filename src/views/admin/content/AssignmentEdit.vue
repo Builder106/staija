@@ -74,13 +74,13 @@ async function load() {
 }
 
 const canSave = computed(
-  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value
+  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value,
 );
 
 function syncAcceptedFileTypes() {
   form.value.acceptedFileTypes = acceptedFileTypesRaw.value
     .split(',')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean);
 }
 

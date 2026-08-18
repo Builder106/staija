@@ -20,7 +20,7 @@ const html = computed(() => {
   try {
     return documentToHtmlString(props.body as Document, {
       renderMark: {
-        [MARKS.CODE]: text =>
+        [MARKS.CODE]: (text) =>
           `<code class="font-mono text-[0.9em] bg-ink/[0.06] px-1.5 py-0.5 rounded">${text}</code>`,
       },
       renderNode: {
@@ -39,7 +39,7 @@ const html = computed(() => {
         [BLOCKS.QUOTE]: (_node, next) =>
           `<blockquote class="border-l-4 border-brand-violet pl-4 my-5 italic text-ink/70">${next(_node.content)}</blockquote>`,
         [BLOCKS.HR]: () => `<hr class="my-8 border-t hairline-ink" />`,
-        [BLOCKS.EMBEDDED_ASSET]: node => {
+        [BLOCKS.EMBEDDED_ASSET]: (node) => {
           // The asset reference resolves to fields.file.url after
           // Contentful's link resolution. The mirror leaves links
           // unresolved, so callers passing raw entries may get

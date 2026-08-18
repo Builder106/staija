@@ -40,11 +40,11 @@ const DEFAULT_LOCALE: LocaleCode = 'en';
 function detectInitialLocale(): LocaleCode {
   if (typeof window === 'undefined') return DEFAULT_LOCALE;
   const stored = window.localStorage.getItem(STORAGE_KEY) as LocaleCode | null;
-  if (stored && SUPPORTED_LOCALES.some(l => l.code === stored)) return stored;
+  if (stored && SUPPORTED_LOCALES.some((l) => l.code === stored)) return stored;
 
   // Honor browser language if it matches a supported locale.
   const browser = navigator.language.split('-')[0];
-  if (SUPPORTED_LOCALES.some(l => l.code === browser)) return browser as LocaleCode;
+  if (SUPPORTED_LOCALES.some((l) => l.code === browser)) return browser as LocaleCode;
 
   return DEFAULT_LOCALE;
 }
@@ -67,7 +67,7 @@ const options: I18nOptions = {
 export const i18n = createI18n(options);
 
 export function setLocale(code: LocaleCode): void {
-  if (!SUPPORTED_LOCALES.some(l => l.code === code)) return;
+  if (!SUPPORTED_LOCALES.some((l) => l.code === code)) return;
   const loc = i18n.global.locale as string | { value: string };
   if (typeof loc === 'object' && loc !== null && 'value' in loc) {
     loc.value = code;

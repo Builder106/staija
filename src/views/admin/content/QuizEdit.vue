@@ -63,7 +63,7 @@ async function load() {
 }
 
 const canSave = computed(
-  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value
+  () => !!form.value.slug.trim() && !!form.value.title.trim() && !saving.value,
 );
 
 function addQuestion() {

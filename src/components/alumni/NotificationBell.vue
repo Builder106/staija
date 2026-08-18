@@ -76,7 +76,7 @@ const markAllRead = async () => {
   if (!user) return;
   await NotificationService.markAllAsRead(user.uid);
   unreadCount.value = 0;
-  notifications.value.forEach(n => (n.read = true));
+  notifications.value.forEach((n) => (n.read = true));
 };
 
 const handleNotificationClick = async (n: AppNotification) => {

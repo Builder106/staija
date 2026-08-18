@@ -65,7 +65,7 @@ const shareMessage = computed(() => {
 const fullShareText = computed(() => `${shareMessage.value} ${shareUrl.value}`);
 
 const whatsappHref = computed(
-  () => `https://wa.me/?text=${encodeURIComponent(fullShareText.value)}`
+  () => `https://wa.me/?text=${encodeURIComponent(fullShareText.value)}`,
 );
 const emailHref = computed(() => {
   const subject = encodeURIComponent('Thought of you — STAIJA');
@@ -73,7 +73,7 @@ const emailHref = computed(() => {
   return `mailto:?subject=${subject}&body=${body}`;
 });
 const threadsHref = computed(
-  () => `https://threads.net/intent/post?text=${encodeURIComponent(fullShareText.value)}`
+  () => `https://threads.net/intent/post?text=${encodeURIComponent(fullShareText.value)}`,
 );
 
 const copied = ref(false);

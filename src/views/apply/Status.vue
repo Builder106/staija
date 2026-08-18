@@ -264,7 +264,7 @@ interface ReferenceWithStatus {
 
 const referenceList = computed<ReferenceWithStatus[]>(() => {
   const refs = application.value?.references ?? [];
-  return refs.map(r => ({ ...r, status: (r as ReferenceWithStatus).status ?? 'pending' }));
+  return refs.map((r) => ({ ...r, status: (r as ReferenceWithStatus).status ?? 'pending' }));
 });
 
 function refStatusLabel(s: ReferenceWithStatus['status']) {

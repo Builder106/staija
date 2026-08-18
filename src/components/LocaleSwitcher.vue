@@ -9,7 +9,7 @@ const open = ref(false);
 const root = ref<HTMLElement | null>(null);
 
 const current = computed(
-  () => SUPPORTED_LOCALES.find(l => l.code === locale.value) ?? SUPPORTED_LOCALES[0]
+  () => SUPPORTED_LOCALES.find((l) => l.code === locale.value) ?? SUPPORTED_LOCALES[0],
 );
 
 function pick(code: LocaleCode) {

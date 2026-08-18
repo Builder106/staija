@@ -29,7 +29,7 @@ async function onSubmit(e: Event) {
     const cred = await AuthService.signUp(
       email.value,
       password.value,
-      displayName.value || email.value
+      displayName.value || email.value,
     );
     // New sign-ups always land as applicant.
     primeProfileCache(cred.user.uid, 'applicant');

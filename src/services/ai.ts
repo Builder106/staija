@@ -26,8 +26,8 @@ export interface OutlineCourseResult {
 export const outlineCourse = (data: OutlineCoursePayload) =>
   httpsCallable<OutlineCoursePayload, OutlineCourseResult>(
     functions,
-    'outlineCourse'
-  )(data).then(r => r.data);
+    'outlineCourse',
+  )(data).then((r) => r.data);
 
 export interface LessonMediaPayload {
   title: string;
@@ -47,5 +47,5 @@ export interface LessonMediaResult {
 export const lessonMediaAssist = (data: LessonMediaPayload) =>
   httpsCallable<LessonMediaPayload, LessonMediaResult>(
     functions,
-    'lessonMediaAssist'
-  )(data).then(r => r.data);
+    'lessonMediaAssist',
+  )(data).then((r) => r.data);

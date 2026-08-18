@@ -39,7 +39,7 @@ const selectedCohortId = ref('');
 const selectedMentorId = ref('');
 const submitting = ref(false);
 
-const selectedCohort = computed(() => cohorts.value.find(c => c.id === selectedCohortId.value));
+const selectedCohort = computed(() => cohorts.value.find((c) => c.id === selectedCohortId.value));
 
 /** The selected applicant's own applications, fetched on selection
  *  change. Drives the cohort filter so staff can't accidentally
@@ -72,7 +72,7 @@ const eligiblePrograms = computed<Set<string>>(() => {
  *  re-run the application gate (matches the enrollStudent callable's
  *  role-flip skip). For them, every active cohort is fair game. */
 const selectedCandidate = computed(() =>
-  candidates.value.find(u => u.uid === selectedStudentId.value)
+  candidates.value.find((u) => u.uid === selectedStudentId.value),
 );
 const candidateIsExistingStudent = computed(() => selectedCandidate.value?.role === 'student');
 
@@ -83,7 +83,7 @@ const eligibleCohorts = computed<Cohort[]>(() => {
   if (!selectedStudentId.value) return cohorts.value;
   if (candidateIsExistingStudent.value) return cohorts.value;
   if (!applicantApplications.value) return []; // still loading
-  return cohorts.value.filter(c => eligiblePrograms.value.has(c.program));
+  return cohorts.value.filter((c) => eligiblePrograms.value.has(c.program));
 });
 
 /** Tracks why eligibleCohorts is empty so the picker can render an
@@ -98,7 +98,7 @@ const cohortEmptyReason = computed<string | null>(() => {
     if (apps.length === 0) {
       return 'No applications on file for this person.';
     }
-    const hasAccepted = apps.some(a => a.status === 'accepted');
+    const hasAccepted = apps.some((a) => a.status === 'accepted');
     if (!hasAccepted) {
       return "No accepted applications yet. Decide on this applicant's submission first.";
     }
@@ -111,7 +111,7 @@ const cohortEmptyReason = computed<string | null>(() => {
 });
 
 const canSubmit = computed(
-  () => selectedStudentId.value && selectedCohortId.value && !submitting.value
+  () => selectedStudentId.value && selectedCohortId.value && !submitting.value,
 );
 
 /** Mentor pool resolved to display-friendly options with active load
@@ -133,7 +133,7 @@ const mentorOptions = computed<{ value: string; label: string }[]>(() => {
   if (pool.length === 0) {
     return [{ value: '', label: 'No mentor pool on this cohort — add one first' }];
   }
-  const userByUid = new Map(allUsers.value.map(u => [u.uid, u]));
+  const userByUid = new Map(allUsers.value.map((u) => [u.uid, u]));
   const loadByUid = new Map<string, number>();
   for (const e of cohortEnrollments.value) {
     if (e.mentorId) loadByUid.set(e.mentorId, (loadByUid.get(e.mentorId) ?? 0) + 1);
@@ -143,7 +143,7 @@ const mentorOptions = computed<{ value: string; label: string }[]>(() => {
     const name = user?.displayName?.trim() || user?.email || `${uid.slice(0, 8)}…`;
     return { name, load: loadByUid.get(uid) ?? 0 };
   };
-  const entries = pool.map(uid => ({ uid, ...labelFor(uid) })).sort((a, b) => a.load - b.load);
+  const entries = pool.map((uid) => ({ uid, ...labelFor(uid) })).sort((a, b) => a.load - b.load);
   const studentWord = (n: number) => (n === 1 ? 'student' : 'students');
   const autoPick = entries[0];
   const autoLabel = cohortEnrollmentsLoading.value
@@ -151,7 +151,7 @@ const mentorOptions = computed<{ value: string; label: string }[]>(() => {
     : `Auto | would pick ${autoPick.name} (${autoPick.load} ${studentWord(autoPick.load)})`;
   return [
     { value: '', label: autoLabel },
-    ...entries.map(e => ({
+    ...entries.map((e) => ({
       value: e.uid,
       label: `${e.name} | ${e.load} ${studentWord(e.load)}`,
     })),
@@ -162,11 +162,11 @@ const mentorOptions = computed<{ value: string; label: string }[]>(() => {
  *  student picker changes. Powers the cohort filter; clears any
  *  prior selection so a stale Dynamerge cohort doesn't carry over
  *  when staff switches to a StepUp-accepted applicant. */
-watch(selectedStudentId, async uid => {
+watch(selectedStudentId, async (uid) => {
   selectedCohortId.value = '';
   applicantApplications.value = null;
   if (!uid) return;
-  const candidate = candidates.value.find(u => u.uid === uid);
+  const candidate = candidates.value.find((u) => u.uid === uid);
   // Existing students don't go through the application gate (second-
   // cohort enrollment), so skip the fetch entirely.
   if (candidate?.role === 'student') {
@@ -186,7 +186,7 @@ watch(selectedStudentId, async uid => {
 
 /** Fetch the cohort's active enrollments whenever the selected cohort
  *  changes. Safe to re-run; getForCohort is a single query. */
-watch(selectedCohortId, async cohortId => {
+watch(selectedCohortId, async (cohortId) => {
   // Reset the manual mentor pick whenever the cohort changes — a
   // mentor from cohort A isn't necessarily in cohort B's pool.
   selectedMentorId.value = '';
@@ -215,12 +215,12 @@ async function load() {
       CohortService.listAllCohorts(),
       DatabaseService.getAllUsers(),
     ]);
-    cohorts.value = cs.filter(c => c.status !== 'completed');
+    cohorts.value = cs.filter((c) => c.status !== 'completed');
     allUsers.value = users;
     // Phase 1: enroll any applicant or student. The applicant role is the
     // common case (just got accepted); already-students may need a second
     // course.
-    candidates.value = users.filter(u => u.role === 'applicant' || u.role === 'student');
+    candidates.value = users.filter((u) => u.role === 'applicant' || u.role === 'student');
     // Pre-fill from ?applicant=<uid> on the URL. AdminApplications'
     // "Place in cohort" button hands the student off via this query
     // param so staff don't have to scroll through the whole candidate
@@ -231,7 +231,7 @@ async function load() {
     const presetApplicant = route.query.applicant;
     if (
       typeof presetApplicant === 'string' &&
-      candidates.value.some(u => u.uid === presetApplicant)
+      candidates.value.some((u) => u.uid === presetApplicant)
     ) {
       selectedStudentId.value = presetApplicant;
     }
@@ -257,7 +257,7 @@ async function submit() {
     // already-loaded users list. Falls back to email, then to the
     // short uid prefix so a staff race (mentor added between page
     // load and submit) still produces a readable message.
-    const mentor = allUsers.value.find(u => u.uid === result.mentorId);
+    const mentor = allUsers.value.find((u) => u.uid === result.mentorId);
     const mentorLabel =
       mentor?.displayName?.trim() || mentor?.email || `${result.mentorId.slice(0, 8)}…`;
     success.value = `Enrolled — assigned to ${mentorLabel}.`;
@@ -303,7 +303,7 @@ onMounted(load);
                 v-model="selectedStudentId"
                 placeholder="Select a student…"
                 :options="
-                  candidates.map(u => ({
+                  candidates.map((u) => ({
                     value: u.uid,
                     label: `${u.displayName || u.email} — ${u.role}`,
                   }))
@@ -321,7 +321,7 @@ onMounted(load);
                 placeholder="Select a cohort…"
                 :disabled="!!cohortEmptyReason"
                 :options="
-                  eligibleCohorts.map(c => ({
+                  eligibleCohorts.map((c) => ({
                     value: c.id ?? '',
                     label: `${c.name || c.courseSlug} (${c.program.replace('_', ' ')}, ${c.status})`,
                   }))

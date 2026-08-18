@@ -21,7 +21,7 @@ const avatarSrc = computed(() =>
     photoURL: userProfile.value?.photoURL,
     avatarSlot: userProfile.value?.avatarSlot,
     seed: user.value?.uid ?? '',
-  })
+  }),
 );
 const { isAdmin, isStaff, isMentor, isStudent, isAlumni } = usePermissions();
 
@@ -86,7 +86,7 @@ watch(
   () => route.fullPath,
   () => {
     mobileOpen.value = false;
-  }
+  },
 );
 </script>
 

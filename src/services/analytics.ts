@@ -85,7 +85,7 @@ export function trackInquirySubmit(params: {
  * every successful navigation. Idempotent — safe to call once at app boot.
  */
 export function installAnalyticsRouter(router: Router): void {
-  router.afterEach(to => {
+  router.afterEach((to) => {
     // Use the document title once vue-router has set it (next tick).
     setTimeout(() => {
       trackPageView(to.fullPath, document.title);

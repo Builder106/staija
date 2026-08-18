@@ -242,7 +242,7 @@ export const PROGRAMS: Record<string, ProgramSchema> = {
       personalInfoStep(),
       academicInfoStep,
       motivationStep(
-        'What scientific questions excite you? E.g. "soil microbiomes", "low-cost diagnostics".'
+        'What scientific questions excite you? E.g. "soil microbiomes", "low-cost diagnostics".',
       ),
     ],
     referenceCount: { min: 2, max: 3 },
@@ -304,7 +304,7 @@ export const PROGRAMS: Record<string, ProgramSchema> = {
       ]),
       academicInfoStep,
       motivationStep(
-        'Pick technical areas you want to dive into. E.g. "machine learning", "biotech", "clean energy".'
+        'Pick technical areas you want to dive into. E.g. "machine learning", "biotech", "clean energy".',
       ),
     ],
     referenceCount: { min: 1, max: 2 },

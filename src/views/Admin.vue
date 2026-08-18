@@ -51,13 +51,13 @@ const firstName = computed(() => {
 });
 
 const submittedCount = computed(
-  () => applications.value.filter(a => a.status === 'submitted').length
+  () => applications.value.filter((a) => a.status === 'submitted').length,
 );
 const underReviewCount = computed(
-  () => applications.value.filter(a => a.status === 'under_review').length
+  () => applications.value.filter((a) => a.status === 'under_review').length,
 );
 const acceptedCount = computed(
-  () => applications.value.filter(a => a.status === 'accepted').length
+  () => applications.value.filter((a) => a.status === 'accepted').length,
 );
 // Accepted applicants who deferred their spot. Surfaces the cycle-
 // change re-offer queue at first paint of /admin so staff doesn't
@@ -65,17 +65,18 @@ const acceptedCount = computed(
 // cohort opens".
 const deferredCount = computed(
   () =>
-    applications.value.filter(a => a.status === 'accepted' && a.spotResponse === 'deferred').length
+    applications.value.filter((a) => a.status === 'accepted' && a.spotResponse === 'deferred')
+      .length,
 );
 
 const pendingReview = computed(() =>
-  applications.value.filter(a => a.status === 'submitted').slice(0, 5)
+  applications.value.filter((a) => a.status === 'submitted').slice(0, 5),
 );
 
 const deferredApplicants = computed(() =>
   applications.value
-    .filter(a => a.status === 'accepted' && a.spotResponse === 'deferred')
-    .slice(0, 5)
+    .filter((a) => a.status === 'accepted' && a.spotResponse === 'deferred')
+    .slice(0, 5),
 );
 
 async function loadData() {

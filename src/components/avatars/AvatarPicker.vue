@@ -34,14 +34,14 @@ watch(
   () => [props.open, props.current] as const,
   ([open, current]) => {
     if (open) draft.value = current;
-  }
+  },
 );
 
 const slots = computed(() =>
   Array.from({ length: PORTRAIT_SLOT_COUNT }, (_, i) => ({
     slot: i,
     src: avatarThumbForSlot(i),
-  }))
+  })),
 );
 
 const seededSrc = computed(() => avatarThumbForSeed(props.seed));
