@@ -17,6 +17,9 @@ updates:
         patterns: ["@vercel/*"]
       contentful:
         patterns: ["@contentful/*", "contentful*"]
+    ignore:
+      - dependency-name: "typescript"
+        versions: [">= 7.0.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -25,6 +28,3 @@ updates:
     groups:
       actions:
         patterns: ["*"]
-    ignore:
-      - dependency-name: "typescript"
-        versions: [">= 7.0.0"]
