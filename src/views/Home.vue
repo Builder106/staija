@@ -4,7 +4,25 @@ import { Motion } from 'motion-v';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
-import HeroLottie from '../components/HeroLottie.vue';
+import { defineAsyncComponent } from 'vue';
+
+const HeroLottie = defineAsyncComponent(() => import('../components/HeroLottie.vue'));
+
+const showHeroLottie = ref(false);
+
+onMounted(() => {
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(() => {
+      showHeroLottie.value = true;
+    });
+  } else {
+    // Fallback for browsers without requestIdleCallback (e.g., Safari)
+    setTimeout(() => {
+      showHeroLottie.value = true;
+    }, 0);
+  }
+});
+
 import CountUp from '../components/motion/CountUp.vue';
 import Hairline from '../components/motion/Hairline.vue';
 import Body from '../components/ui/Body.vue';
@@ -250,7 +268,7 @@ onMounted(async () => {
             :transition="{ duration: 0.5, delay: 0.2 }"
             class="relative w-full aspect-[1080/950] lg:aspect-square flex items-center justify-center lg:max-h-none"
           >
-            <HeroLottie class="w-full h-full max-w-[560px] relative" />
+            <HeroLottie v-if="showHeroLottie" class="w-full h-full max-w-[560px] relative" />
           </Motion>
         </div>
       </Container>

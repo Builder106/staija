@@ -9,8 +9,9 @@
 /* Self-hosted web fonts + metric-matched fallbacks. Moved out of this
    file (which Tailwind processes) into a standalone CSS that ships the
    raw @font-face declarations Google would have served, but pointing
-   to /public/fonts/ on our own origin instead of fonts.gstatic.com. */
-@import './styles/fonts.css';
+   to /public/fonts/ on our own origin instead of fonts.gstatic.com.
+   Deferred via preload+onload in index.html to avoid render-blocking. */
+/* @import './styles/fonts.css'; */
 
 /* Enable a `dark:` variant that activates when [data-theme="dark"] is
    set on <html>. We prefer a data attribute over a class so:
