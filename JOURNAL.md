@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-08-21 — Rebuilt the STAIJA videos in HyperFrames #milestone #decision
+
+The Tier 2 demo is now a 28-second vertical social cut and the Tier 3 trailer remains a 36-second landscape piece. Both use the existing site captures and plain HTML, CSS, and GSAP. The trailer now draws its phone directly from the tracked mobile capture, so a clean checkout no longer depends on the old untracked Blender frames. HyperFrames lint and strict renders pass for both videos. The old Remotion source, unused captures, and scratch assets were removed after review.
+
 ## 2026-08-07 — Dropped `@dicebear/core` entirely instead of migrating to v10 #decision
 
 Dependabot PR #29 bumped `@dicebear/core`from v9 to v10, which broke the build (same failure that happened silently in the`7e3c874`bulk bump documented on 2026-07-14 and was rolled back then). v10 replaced the programmatic`StyleCreate`callback +`prng.pick()`API with a JSON-definition model where style variants are declared as individual SVG elements. STAIJA's portraits are 2 MB pre-generated SVG fragments that can't be expressed in that format, so a straightforward migration wasn't viable. Stepped back and asked what DiceBear was actually providing: the entire dependency existed to do`hash(seed) % PORTRAITS.length`. Replaced it with a 10-line djb2 hash function in `style.ts`, rewired `svg.ts`to call the new`pickPortrait(seed)`directly with a shared SVG envelope constant, removed the`vi.mock('@dicebear/core')`scaffolding from`avatar.test.ts`, dropped the `inline: ['@dicebear/core']`vitest workaround from`vite.config.ts`, and removed the dependency from `package.json`. Seed-to-portrait mapping changed (djb2 distributes differently from DiceBear's internal PRNG), but that's harmless since the seeded SVG path has zero runtime consumers (layered-avatar feature is still paused, all production UI uses slot-based PNGs via `index.ts`). Build and all 212 tests pass.

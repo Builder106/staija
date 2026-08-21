@@ -1,30 +1,21 @@
-# STAIJA Tier 2 UI demo
+# STAIJA Tier 2 social cut
 
-The screen-by-screen walkthrough: 45s, 1920×1080@30fps, composition id
-`StaijaUIDemo`. Split out on 2026-07-19 from a combined project that used to
-also hold the Tier 3 trailer, which now lives at `../trailer/`. Beat structure
-is in `STORYBOARD.md`.
+This 28-second, 1080×1920 social video is the Tier 2 STAIJA demo. It uses
+real captures from staija.org and lives alongside the Tier 3 trailer in
+`../trailer/`.
 
-## Build
+## Render
 
-```console
-npm i
-```
-
-## Preview and render
+Run this on `ampere-dev`:
 
 ```console
-npm run dev
-npm run render
+npx --yes hyperframes@0.8.3 lint
+npx --yes hyperframes@0.8.3 render --strict -o renders/staija-ui-demo.mp4
 ```
 
-The render lands at `out/staija-ui-demo.mp4` (gitignored). The pre-split final
-render was backed up to `~/Documents/staija-tier2-ui-demo-BACKUP.mp4` before
-this project was split out.
+The render output is transient and should not be committed.
 
 ## Music
 
-`public/audio.mp3` is Kevin MacLeod's "Wholesome" (CC BY 4.0) — the credit
-line in `public/CREDITS.md` must ship with any publish. It's a separate trim
-of the same source track used by the Tier 3 trailer
-(`../trailer/scratch/wholesome.mp3`).
+`public/audio.mp3` is Kevin MacLeod's "Wholesome" (CC BY 4.0). Keep the credit
+in `public/CREDITS.md` with any published video.

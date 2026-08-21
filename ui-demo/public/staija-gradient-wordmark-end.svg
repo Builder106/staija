@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2126 506" width="2126" height="506">
+  <defs>
+    <linearGradient id="staijaGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8B55FF" />
+      <stop offset="100%" stop-color="#5EDBE7" />
+    </linearGradient>
+  </defs>
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="570.0px" fill="url(#staijaGrad)">STAIJA</text>
+</svg>

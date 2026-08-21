@@ -1,45 +1,21 @@
 # STAIJA Tier 3 trailer
 
-The concept-first marketing trailer: 36s, 1920×1080@30fps, composition id
-`StaijaTrailer`. Split out on 2026-07-19 from a combined project that used to
-also hold the Tier 2 UI demo, which now lives at `../ui-demo/`. Beat structure
-is in `STORYBOARD.md`.
+This 36-second, 1920×1080 concept trailer is the Tier 3 STAIJA video. It uses
+HyperFrames and the tracked mobile/program captures, rather than an untracked
+Blender frame sequence.
 
-## Build
+## Render
 
-```console
-npm i
-```
-
-## Preview and render
+Run this on `ampere-dev`:
 
 ```console
-npm run dev
-npm run render
+npx --yes hyperframes@0.8.3 lint
+npx --yes hyperframes@0.8.3 render --strict -o renders/staija-trailer.mp4
 ```
 
-The render lands at `out/staija-trailer.mp4` (gitignored). The pre-split final
-render was backed up to `~/Documents/staija-tier3-trailer-BACKUP.mp4` before
-this project was split out.
-
-## Assets
-
-`public/staija_phone_0001–0060.png` (the device sway loop) is gitignored: it's
-78 MB of deterministic Blender output from `tools/device-render/phone.py`, so
-the script is what we keep and a clean checkout needs a render before this
-project will build. See that directory's README for the command. The screen
-texture it renders is `public/staija_mobile.png`, captured by
-`scratch/capture_mobile.js`.
-
-`public/staija_stepup.png` and
-`public/staija_dynamerge.png`are captured by`scratch/capture_programs.js`
-(Puppeteer; `npm i`inside`scratch/` first).
-
-See `STORYBOARD.md` for the "known unused assets" carried into
-`scratch/unused-assets/` during the split — nothing was deleted, just parked.
+The render output is transient and should not be committed.
 
 ## Music
 
-`public/audio.mp3` is Kevin MacLeod's "Wholesome" (CC BY 4.0) — the credit
-line in `public/CREDITS.md` must ship with any publish. Raw download sits at
-`scratch/wholesome.mp3`.
+`public/audio.mp3` is Kevin MacLeod's "Wholesome" (CC BY 4.0). Keep the credit
+in `public/CREDITS.md` with any published video.
