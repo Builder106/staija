@@ -11,7 +11,7 @@ High-level roadmap and feature development goals for STAIJA.
 ## v1.2 — Interactive Studio & Showcase
 
 - **Component Showcase**: Live demo playground for design tokens and interactive marketing components.
-- **Remotion Video Trailer Integration**: Programmatic video teasers generated via Remotion CLI and asset bundles.
+- **HyperFrames video production**: Maintain the Tier 2 social cut and Tier 3 trailer as HTML, CSS, and GSAP compositions.
 
 ## Out of Scope
 

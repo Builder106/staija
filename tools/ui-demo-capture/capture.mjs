@@ -1,7 +1,6 @@
-// Recaptures the static screenshots that ui-demo/ (Tier 2 Remotion demo)
-// pans/zooms over. Run this after any UI change to a page listed below,
-// then compare dimensions against ui-demo/src/Composition.tsx's
-// imgWidth/imgHeight props — update those if they drifted.
+// Recaptures the static screenshots used by the ui-demo/ Tier 2 HyperFrames
+// social cut. Run this after a UI change to one of the pages below, then check
+// the browser-card framing in ui-demo/index.html.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -12,21 +11,11 @@ const outDir = path.resolve(__dirname, '../../ui-demo/public');
 
 const baseUrl = process.env.CAPTURE_BASE_URL ?? 'https://staija.org';
 
-// Keep this list in sync with the Sequence entries in
-// ui-demo/src/Composition.tsx and ui-demo/src/scenes/UIMontage.tsx.
+// Keep this list in sync with the image references in ui-demo/index.html.
 const pages = [
   { path: '/', out: 'staija_ui_home.png' },
   { path: '/programs/stepup-scholars', out: 'staija_ui_programs_stepup_scholars.png' },
   { path: '/programs/dynamerge', out: 'staija_ui_programs_dynamerge.png' },
-  { path: '/about', out: 'staija_ui_about.png' },
-  { path: '/get-involved', out: 'staija_ui_get_involved.png' },
-  { path: '/stay-connected', out: 'staija_ui_stay_connected.png' },
-  { path: '/signup', out: 'staija_ui_signup.png' },
-  { path: '/login', out: 'staija_ui_login.png' },
-  { path: '/contact', out: 'staija_ui_contact.png' },
-  { path: '/press', out: 'staija_ui_press.png' },
-  { path: '/events', out: 'staija_ui_events.png' },
-  { path: '/blog', out: 'staija_ui_blog.png' },
 ];
 
 // The site's scroll-reveal sections (Vue `<Motion whileInView>`, e.g. the
@@ -85,12 +74,11 @@ async function main() {
   const browser = await chromium.launch();
   // A narrower viewport than desktop-ultrawide (2560) so the captured UI
   // reads at a readable size once scaled down into the browser-chrome
-  // mockup in the Remotion composition — at 2560 the mockup crushed
+  // mockup in the HyperFrames composition. At 2560 the mockup crushed
   // everything down to near-illegible text. deviceScaleFactor:2 captures
-  // at retina pixel density — the screenshot is still displayed at the
-  // same CSS width in the composition (BrowserScene sets an explicit
-  // style.width), so this is pure supersampling: sharper text/edges after
-  // the downscale, no layout changes needed anywhere else.
+  // at retina pixel density. The composition still displays the capture at a
+  // fixed CSS width, so this is pure supersampling: sharper text and edges
+  // after downscaling without changing the layout.
   const page = await browser.newPage({
     viewport: { width: 1600, height: 1000 },
     deviceScaleFactor: 2,

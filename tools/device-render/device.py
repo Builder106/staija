@@ -16,8 +16,8 @@ Environment contract, read by `settings()`:
 
 Conventions that are deliberate, not incidental: emission screen at strength
 1.0 so the UI reads at its authored brightness, Standard view transform rather
-than AgX so screenshot colours survive, transparent film so Remotion can
-composite, and 2x the display size so the device holds up under a push-in.
+than AgX so screenshot colours survive, transparent film for alpha compositing,
+and 2x the display size so the device holds up under a push-in.
 """
 
 import glob

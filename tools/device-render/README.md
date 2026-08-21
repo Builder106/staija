@@ -1,14 +1,14 @@
 # Device renders
 
 Headless Blender product shots of a handset or a laptop with a STAIJA
-screenshot glowing on the screen. Remotion plays the resulting 60-frame
-sequence back as a slow sway. Only the phone is wired into a composition
-today — `laptop.py` is here so the two repos stay in step.
+screenshot on the screen. The current HyperFrames trailer uses a CSS phone
+frame and `trailer/public/staija_mobile.png`, so this tool is not part of the
+active STAIJA video pipeline. Keep it for future standalone device assets.
 
-`device.py` holds everything that has to match across projects — render
-settings, materials, lighting, camera, the sway loop. `laptop.py` and
-`phone.py` add geometry and framing. All three files are kept byte-identical
-with the copy in the MicroMatch repo; only this README differs.
+`device.py` holds the shared render settings, materials, lighting, camera, and
+sway loop. `laptop.py` and `phone.py` add geometry and framing. All three
+files are kept byte-identical with the copy in the MicroMatch repo; only this
+README differs.
 
 ## Rendering
 
@@ -46,8 +46,8 @@ are not.
 
 ## Frames are not committed
 
-`staija_phone_*.png` is gitignored: 78 MB of deterministic output. A clean
-checkout needs a render before `trailer/` will build.
+`staija_phone_*.png` is gitignored: 78 MB of deterministic output. The current
+HyperFrames trailer does not need the sequence.
 
 This replaced a hand-built `phone.blend` that used to live in
 `trailer/public/`. It was untracked rather than deleted, and backed up to
