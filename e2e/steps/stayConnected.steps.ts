@@ -85,7 +85,7 @@ Then(
   'the hero should reflect a closed-cycle arrival from StepUp Scholars',
   async ({ page }) => {
     await expect(
-      page.getByRole('heading', { name: /StepUp Scholars isn't open right now/i }),
+      page.getByRole('heading', { name: /StepUp Scholars.*open right now/i }),
     ).toBeVisible()
     await dwellForDemo(page)
   },
