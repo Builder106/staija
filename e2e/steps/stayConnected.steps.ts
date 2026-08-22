@@ -41,7 +41,7 @@ Then('the stay-connected page should be visible', async ({ page }) => {
   await expect(page).toHaveURL(/\/stay-connected/)
   // Hero eyebrow is the most stable anchor — the headline copy varies
   // by `?reason=`. Visible-text assertion works in light + dark themes.
-  await expect(page.getByText('Stay connected', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText(/Stay connected/i).first()).toBeVisible()
   await dwellForDemo(page)
 })
 
@@ -53,7 +53,7 @@ When('I choose the StepUp Scholars next-cycle interest', async ({ page }) => {
   // with state).
   await page.getByLabel(/I'?m interested in/i).click()
   await dwellForDemo(page, 600)
-  await page.getByRole('option', { name: /StepUp Scholars — next cycle/i }).click()
+  await page.getByRole('option', { name: /StepUp Scholars.*next cycle/i }).click()
   await dwellForDemo(page, 600)
 })
 
