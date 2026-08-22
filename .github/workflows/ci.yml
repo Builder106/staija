@@ -125,7 +125,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Run Demo E2E & a11y suite
-        run: npm run demo || true
+        run: npm run demo
       - name: Upload Playwright artifacts on failure
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
