@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { Motion } from 'motion-v';
-import { computed, onMounted, ref } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
-import { defineAsyncComponent } from 'vue';
 
 const HeroLottie = defineAsyncComponent(() => import('../components/HeroLottie.vue'));
 
@@ -12,7 +11,7 @@ const showHeroLottie = ref(false);
 
 onMounted(() => {
   if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => {
+    window.requestIdleCallback(() => {
       showHeroLottie.value = true;
     });
   } else {

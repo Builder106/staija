@@ -12,6 +12,10 @@ tl.to('#hook .signal', { rotation: 90, scale: 1.12, duration: 4.4, ease: 'none' 
   .to('#home .browser img', { y: -280, duration: 5.4, ease: 'sine.inOut' }, 4.1)
   .to('#stepup .browser img', { y: -440, duration: 5.4, ease: 'sine.inOut' }, 9.3)
   .to('#dynamerge .browser img', { y: -400, duration: 5.4, ease: 'sine.inOut' }, 14.5)
-  .from('#pathway article', { x: (i) => i % 2 ? 45 : -45, duration: 0.38, stagger: 0.18, ease: 'power3.out' }, 19.8)
+  .from(
+    '#pathway article',
+    { x: (i) => (i % 2 ? 45 : -45), duration: 0.38, stagger: 0.18, ease: 'power3.out' },
+    19.8,
+  )
   .from('#pathway h2', { y: 34, duration: 0.52, ease: 'power3.out' }, 20.45)
   .to('#end-mark', { y: -16, duration: 1.7, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 24.25);
