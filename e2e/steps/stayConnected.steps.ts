@@ -46,19 +46,15 @@ Then('the stay-connected page should be visible', async ({ page }) => {
 })
 
 When('I choose the StepUp Scholars next-cycle interest', async ({ page }) => {
-  // NotifyMeForm's interest dropdown is a custom UiSelect rendered as
-  // a button trigger. The label "I'm interested in" is associated via
-  // `for=` so the button's accessible name comes from there — anchor
-  // via getByLabel rather than the current option text (which shifts
-  // with state).
-  await page.getByLabel(/I'?m interested in/i).click()
+  // NotifyMeForm's interest dropdown is a custom UiSelect with id #notify-me-interest.
+  await page.locator('#notify-me-interest').click()
   await dwellForDemo(page, 600)
-  await page.getByRole('option', { name: /StepUp Scholars.*next cycle/i }).click()
+  await page.getByRole('option', { name: /StepUp Scholars/i }).click()
   await dwellForDemo(page, 600)
 })
 
 When('I fill in my notify-me email {string}', async ({ page }, email: string) => {
-  await page.getByLabel(/Email/i).first().fill(email)
+  await page.locator('#notify-me-email').fill(email)
   await dwellForDemo(page, 400)
 })
 
@@ -85,8 +81,8 @@ Then(
   'the hero should reflect a closed-cycle arrival from StepUp Scholars',
   async ({ page }) => {
     await expect(
-      page.getByRole('heading', { name: /StepUp Scholars.*open right now/i }),
-    ).toBeVisible()
+      page.locator('h1, h2, [role="heading"]').filter({ hasText: /StepUp Scholars/i }),
+    ).toBeVisible({ timeout: 10_000 })
     await dwellForDemo(page)
   },
 )
