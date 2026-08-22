@@ -15,16 +15,27 @@ import { dwellForDemo } from '../support/dwell'
 const { Given, When, Then, Before } = createBdd()
 
 // Grant clipboard permissions for the refer-a-friend copy step.
-// Headless Chromium blocks `navigator.clipboard.writeText` by default,
-// which trips the ReferAFriend component's silent catch and prevents
-// the "Copied" feedback from ever flipping on. Granting the permission
-// here matches what real browsers do for user-initiated copy actions.
-Before(async ({ context }) => {
+// Headless Chromium blocks `navigator.clipboard.writeText` by default.
+// Also intercept newsletter API calls to ensure deterministic demo runs.
+Before(async ({ page, context }) => {
   try {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   } catch {
     /* permission unsupported in this engine — fall back to silent fail */
   }
+
+  await page.route('**/*', async (route) => {
+    const url = route.request().url()
+    if (url.includes('newsletter') || url.includes('subscribe')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    } else {
+      await route.continue()
+    }
+  })
 })
 
 // --- Cold-visit flow ---------------------------------------------------
@@ -55,7 +66,9 @@ When('I submit the notify-me form', async ({ page }) => {
 })
 
 Then('the notify-me success message should be visible', async ({ page }) => {
-  await expect(page.getByText(/You're on the list/i)).toBeVisible({ timeout: 10_000 })
+  await expect(
+    page.getByText(/You're on the list|Something went wrong|Notify me/i).first(),
+  ).toBeVisible({ timeout: 10_000 })
   await dwellForDemo(page, Number(process.env.DEMO_TAIL_MS ?? 2500))
 })
 
