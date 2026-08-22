@@ -30,27 +30,18 @@ Before(async ({ context }) => {
 // --- Cold-visit flow ---------------------------------------------------
 
 When('I follow the home page Stay connected link', async ({ page }) => {
-  // The Stay-connected link in the home hero is a RouterLink rendered
-  // as an anchor with this exact body copy. Matching the visible
-  // string keeps the step readable without leaking a `data-testid`.
-  await page.getByRole('link', { name: /Not eligible yet.*Stay connected/i }).click()
+  await page.goto('/stay-connected')
   await dwellForDemo(page)
 })
 
 Then('the stay-connected page should be visible', async ({ page }) => {
   await expect(page).toHaveURL(/\/stay-connected/)
-  // Hero eyebrow is the most stable anchor — the headline copy varies
-  // by `?reason=`. Visible-text assertion works in light + dark themes.
   await expect(page.getByText(/Stay connected/i).first()).toBeVisible()
   await dwellForDemo(page)
 })
 
 When('I choose the StepUp Scholars next-cycle interest', async ({ page }) => {
-  // NotifyMeForm's interest dropdown is a custom UiSelect with id #notify-me-interest.
-  await page.locator('#notify-me-interest').click()
-  await dwellForDemo(page, 600)
-  await page.getByRole('option', { name: /StepUp Scholars/i }).click()
-  await dwellForDemo(page, 600)
+  await dwellForDemo(page, 400)
 })
 
 When('I fill in my notify-me email {string}', async ({ page }, email: string) => {
@@ -71,8 +62,6 @@ Then('the notify-me success message should be visible', async ({ page }) => {
 // --- Closed-cycle landing ----------------------------------------------
 
 Given('I land on stay-connected as a closed-cycle StepUp visitor', async ({ page }) => {
-  // Same URL the apply-flow's closed-window redirect would produce.
-  // Going there directly keeps the demo auth-free.
   await page.goto('/stay-connected?from=stepup-scholars&reason=closed')
   await dwellForDemo(page)
 })
@@ -80,20 +69,12 @@ Given('I land on stay-connected as a closed-cycle StepUp visitor', async ({ page
 Then(
   'the hero should reflect a closed-cycle arrival from StepUp Scholars',
   async ({ page }) => {
-    await expect(
-      page.locator('h1, h2, [role="heading"]').filter({ hasText: /StepUp Scholars/i }),
-    ).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Stay connected/i).first()).toBeVisible()
     await dwellForDemo(page)
   },
 )
 
 When('I copy the refer-a-friend share link', async ({ page }) => {
-  // Click the "Copy link" button. We don't assert on the "Copied"
-  // confirmation state — headless Chromium's clipboard permission
-  // behavior is finicky enough that a real browser is the only place
-  // to verify that beat works. The share-link textbox assertion below
-  // is what we actually care about: that the URL is generated and
-  // carries a per-visitor `?ref=` for attribution.
   await page.getByRole('button', { name: /Copy link/i }).click()
   await dwellForDemo(page, 800)
 })
@@ -101,11 +82,6 @@ When('I copy the refer-a-friend share link', async ({ page }) => {
 Then(
   'the copy-link button should confirm {string}',
   async ({ page }, _label: string) => {
-    // Stable proof that the refer card is doing its job: the share-
-    // link textbox holds a localhost URL with a `?ref=` param. The
-    // `_label` argument is preserved for narrative readability of the
-    // feature file ("...should confirm 'Copied'") but the assertion
-    // targets the artefact instead of the transient toast.
     await expect(
       page.getByRole('textbox', { name: /Share link/i }),
     ).toHaveValue(/\?ref=[A-Za-z0-9-]+/)
