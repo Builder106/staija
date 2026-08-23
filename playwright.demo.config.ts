@@ -6,12 +6,12 @@ const testDir = defineBddConfig({
   steps: ['e2e/steps/**/*.ts'],
 })
 
-const SLOWMO = Number(process.env.DEMO_SLOWMO ?? 1200)
+const SLOWMO = Number(process.env.DEMO_SLOWMO ?? (process.env.CI ? 500 : 1200))
 const VIEWPORT = { width: 2560, height: 1600 }
 
 export default defineConfig({
   testDir,
-  timeout: 180_000,
+  timeout: 300_000,
   fullyParallel: false,
   workers: 1,
   retries: 0,
