@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-08-22 — Scoped STAIJA's explicit `any` suppression to zero app usage #decision
+
+The global `@typescript-eslint/no-explicit-any` exemption covered one Vue module shim in `src/vite-env.d.ts`, not the `potrace` avatar tool. Replaced `DefineComponent<{}, {}, any>` with Vue's `Component` type and removed both `no-explicit-any` and `no-empty-object-type` from ESLint. The `potrace` import keeps its local `@ts-expect-error` because the package ships no declarations; the tool directory is outside the app's lint and `vue-tsc` projects. Ampere-dev lint and the production build pass, as do all 212 Vitest tests. The build still reports the existing `lottie-web` `eval` and large-chunk warnings, and the test run still prints expected Happy DOM and Firebase App Check noise.
+
 ## 2026-08-21 — Rebuilt the STAIJA videos in HyperFrames #milestone #decision
 
 The Tier 2 demo is now a 28-second vertical social cut and the Tier 3 trailer remains a 36-second landscape piece. Both use the existing site captures and plain HTML, CSS, and GSAP. The trailer now draws its phone directly from the tracked mobile capture, so a clean checkout no longer depends on the old untracked Blender frames. HyperFrames lint and strict renders pass for both videos. The old Remotion source, unused captures, and scratch assets were removed after review.
