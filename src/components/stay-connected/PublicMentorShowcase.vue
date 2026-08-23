@@ -13,7 +13,6 @@
  */
 import { Icon } from '@iconify/vue';
 import { onMounted, ref } from 'vue';
-import { resolveAvatarSrc } from '../../services/avatar/index';
 import { fetchPublicMentors, type PublicMentor } from '../../services/publicMentors';
 import Body from '../ui/Body.vue';
 import Heading from '../ui/Heading.vue';
