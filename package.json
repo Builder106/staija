@@ -73,7 +73,7 @@
     "eslint-plugin-vue": "^10.10.0",
     "firebase-tools": "^15.27.0",
     "globals": "^17.11.0",
-    "happy-dom": "^20.11.2",
+    "happy-dom": "^20.11.6",
     "jimp": "^1.6.1",
     "playwright": "^1.62.1",
     "playwright-bdd": "^9.2.0",
