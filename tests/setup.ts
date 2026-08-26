@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 /**
  * Test setup. Runs once before any test file loads.
  *
@@ -9,6 +11,23 @@
  * `globalThis`) before any test file's imports execute, so modules
  * that read localStorage at top-level (e.g. useTheme) see the shim.
  */
+
+// Most service tests replace Firebase modules with focused mocks. Keep the
+// shared config mocked as well so pure helpers can import a service module
+// without constructing a real Firebase app. The VM verifier deliberately
+// excludes `.env.*`, and these tests do not exercise Firebase's network
+// behavior, so a test-only mock is safer than dummy credentials or an
+// emulator dependency.
+vi.mock('../src/config/firebase.ts', () => ({
+  auth: { currentUser: null },
+  db: {},
+  functions: {},
+  storage: {},
+  publicStorage: {},
+  analytics: null,
+  performance: null,
+  getAppCheckToken: vi.fn(async () => null),
+}))
 
 const memory = new Map<string, string>()
 
@@ -55,4 +74,3 @@ if (typeof globalThis !== 'undefined') {
     configurable: true,
   })
 }
-
