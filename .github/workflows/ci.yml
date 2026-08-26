@@ -9,6 +9,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   secrets:
     name: Secret scan
@@ -81,6 +84,7 @@ jobs:
 
   build:
     name: Build & Bundle Budget
+    needs: [lint, format, check, test]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -110,7 +114,7 @@ jobs:
 
   e2e:
     name: E2E & Accessibility
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, format, check, test]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
