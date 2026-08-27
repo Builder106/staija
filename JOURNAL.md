@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-08-27 — Fast-forwarded staging with verified multi-viewport CI #milestone #decision
+
+Merged the current `origin/main` dependency updates and the latest `origin/staging` cleanup into the local `staging` branch, then pushed the result as a fast-forward update; `main` was not changed. CI now runs on pushes to `staging`, pins every external action to a full release SHA, and limits Dependabot write permissions to its own job. The demo suite replays five scenarios in Desktop Chrome and Pixel 7 mobile emulation, with recordings kept to the desktop run so each scenario has one stable artifact. Public routes now render in source-only checkouts without Firebase credentials, while protected routes remain signed out until configuration is supplied. Replaced swallowed demo locators with accessible assertions after the missing test environment had allowed a blank app shell to pass URL-only checks. Ampere-dev verification passed lint, format, the production dependency audit, license compliance, type-checking, unit tests, the production build, and all 10 desktop/mobile demo scenarios.
+
 ## 2026-08-22 — Scoped STAIJA's explicit `any` suppression to zero app usage #decision
 
 The global `@typescript-eslint/no-explicit-any` exemption covered one Vue module shim in `src/vite-env.d.ts`, not the `potrace` avatar tool. Replaced `DefineComponent<{}, {}, any>` with Vue's `Component` type and removed both `no-explicit-any` and `no-empty-object-type` from ESLint. The `potrace` import keeps its local `@ts-expect-error` because the package ships no declarations; the tool directory is outside the app's lint and `vue-tsc` projects. Ampere-dev lint and the production build pass, as do all 212 Vitest tests. The build still reports the existing `lottie-web` `eval` and large-chunk warnings, and the test run still prints expected Happy DOM and Firebase App Check noise.
