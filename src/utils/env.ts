@@ -48,6 +48,16 @@ const REQUIRED_ENV_VARS = [
 ] as const;
 
 /**
+ * Returns whether the browser has enough Firebase configuration to start
+ * authenticated services. Public pages can still run without Firebase in
+ * local development and in source-only CI checkouts; protected pages will
+ * behave as signed-out until credentials are supplied.
+ */
+export function isFirebaseConfigured(): boolean {
+  return REQUIRED_ENV_VARS.every((varName) => Boolean(import.meta.env[varName]));
+}
+
+/**
  * Validates that all required environment variables are present
  */
 export function validateEnvironment(): void {

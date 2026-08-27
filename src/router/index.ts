@@ -5,6 +5,7 @@ import { auth } from '../config/firebase.ts';
 import { DatabaseService, PermissionService, type Permission } from '../services/firebase.ts';
 import { postLoginRoute } from '../services/postLoginRedirect';
 import type { UserRole } from '../services/types';
+import { isFirebaseConfigured } from '../utils/env.ts';
 
 // Extend the RouteMeta interface to include our custom properties
 declare module 'vue-router' {
@@ -628,6 +629,11 @@ const router = createRouter({
 // module load and reused across all navigations instead of recreating a
 // listener on every beforeEach call.
 const authReady = new Promise<void>((resolve) => {
+  if (!isFirebaseConfigured()) {
+    resolve();
+    return;
+  }
+
   const unsub = auth.onAuthStateChanged(() => {
     unsub();
     resolve();

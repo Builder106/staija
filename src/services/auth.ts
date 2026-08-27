@@ -17,6 +17,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase.ts';
+import { isFirebaseConfigured } from '../utils/env.ts';
 import { AuditService } from './audit';
 import { DatabaseService } from './database';
 import { PermissionService } from './permissions';
@@ -225,8 +226,8 @@ export class AuthService {
   }
 
   static onAuthStateChanged(callback: (user: User | null) => void): () => void {
-    if (!auth) {
-      console.warn('Firebase auth not available');
+    if (!isFirebaseConfigured()) {
+      queueMicrotask(() => callback(null));
       return () => {};
     }
     return onAuthStateChanged(auth, callback);
