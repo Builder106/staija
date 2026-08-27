@@ -6,7 +6,7 @@ import {
   ReCaptchaEnterpriseProvider,
   type AppCheck,
 } from 'firebase/app-check';
-import { getAuth } from 'firebase/auth';
+import { getAuth, type Auth } from 'firebase/auth';
 import {
   initializeFirestore,
   persistentLocalCache,
@@ -16,7 +16,7 @@ import { getFunctions } from 'firebase/functions';
 import { getPerformance, type FirebasePerformance } from 'firebase/performance';
 import { getStorage } from 'firebase/storage';
 
-import { getFirebaseConfig } from '../utils/env.ts';
+import { getFirebaseConfig, isFirebaseConfigured } from '../utils/env.ts';
 
 // Get Firebase configuration from environment variables
 const firebaseConfig = getFirebaseConfig();
@@ -84,7 +84,19 @@ export async function getAppCheckToken(): Promise<string | null> {
   }
 }
 
-export const auth = getAuth(app);
+// `getAuth` validates the API key immediately. Keep public pages usable in
+// source-only development and CI checkouts where Firebase credentials are
+// intentionally absent; authenticated environments still receive the real
+// SDK instance.
+export const auth: Auth = isFirebaseConfigured()
+  ? getAuth(app)
+  : ({
+      currentUser: null,
+      onAuthStateChanged(callback: (user: null) => void) {
+        queueMicrotask(() => callback(null));
+        return () => {};
+      },
+    } as unknown as Auth);
 // initializeFirestore (not getFirestore) so we can pass transport options.
 // experimentalAutoDetectLongPolling probes the default WebChannel streaming
 // transport at startup, and on failure transparently falls back to plain
