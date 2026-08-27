@@ -7,6 +7,8 @@ const testDir = defineBddConfig({
 })
 
 const SLOWMO = Number(process.env.DEMO_SLOWMO ?? (process.env.CI ? 500 : 1200))
+const DEMO_PORT = Number(process.env.DEMO_PORT ?? 5190)
+const DEMO_ORIGIN = `http://localhost:${DEMO_PORT}`
 const VIEWPORT = { width: 2560, height: 1600 }
 const MOBILE_VIEWPORT = { width: 412, height: 915 }
 
@@ -22,7 +24,7 @@ export default defineConfig({
     viewport: VIEWPORT,
     video: { mode: 'on', size: VIEWPORT },
     launchOptions: { slowMo: SLOWMO },
-    baseURL: 'http://localhost:5190',
+    baseURL: DEMO_ORIGIN,
   },
   projects: [
     {
@@ -46,8 +48,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5190',
+    command: `npm run dev -- --port ${DEMO_PORT}`,
+    url: DEMO_ORIGIN,
     reuseExistingServer: true,
     timeout: 120_000,
   },

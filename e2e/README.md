@@ -52,12 +52,19 @@ e2e/
 | `DEMO_SLOWMO` | `1200` | Per-action pause in ms |
 | `DEMO_DWELL_MS` | `1500` | Default dwell duration |
 | `DEMO_TAIL_MS` | `2500` | Hold-final-frame duration |
+| `DEMO_PORT` | `5190` | Local dev-server port and clipboard permission origin |
 
 ```bash
 
 # Faster pace for quick iteration
 
 DEMO_SLOWMO=600 DEMO_DWELL_MS=800 npm run demo
+```
+
+To run the demo on another port, set `DEMO_PORT`; the dev server, Playwright base URL, and clipboard permission scope use the same value.
+
+```bash
+DEMO_PORT=5300 npm run demo
 ```
 
 ## Known quirks

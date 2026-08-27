@@ -7,7 +7,7 @@ import { expect } from '@playwright/test'
 import { dwellForDemo } from '../support/dwell'
 
 const { Given, When, Then, Before } = createBdd()
-const DEMO_ORIGIN = 'http://localhost:5190'
+const DEMO_ORIGIN = `http://localhost:${process.env.DEMO_PORT ?? 5190}`
 
 Before(async ({ context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
