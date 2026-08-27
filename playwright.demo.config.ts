@@ -8,6 +8,7 @@ const testDir = defineBddConfig({
 
 const SLOWMO = Number(process.env.DEMO_SLOWMO ?? (process.env.CI ? 500 : 1200))
 const VIEWPORT = { width: 2560, height: 1600 }
+const MOBILE_VIEWPORT = { width: 412, height: 915 }
 
 export default defineConfig({
   testDir,
@@ -30,6 +31,14 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         viewport: VIEWPORT,
         video: { mode: 'on', size: VIEWPORT },
+      },
+    },
+    {
+      name: 'mobile-chrome',
+      use: {
+        ...devices['Pixel 7'],
+        viewport: MOBILE_VIEWPORT,
+        video: { mode: 'on', size: MOBILE_VIEWPORT },
       },
     },
   ],

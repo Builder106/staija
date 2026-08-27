@@ -14,8 +14,9 @@ npm run demo
 ```
 
 The dev server is started automatically (`npm run dev` via Playwright's
-`webServer` config). Recording is single-worker, headless, with
-`slowMo: 1200` so the videos are watchable at 1× speed.
+`webServer` config). Recording is single-worker, headless, and runs in both
+Desktop Chrome and Pixel 7 mobile emulation. It uses `slowMo: 1200` so the
+videos are watchable at 1× speed.
 
 ## Structure
 
