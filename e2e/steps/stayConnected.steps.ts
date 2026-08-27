@@ -35,7 +35,7 @@ Then('the stay-connected page should be visible', async ({ page }) => {
 })
 
 When('I choose the StepUp Scholars next-cycle interest', async ({ page }) => {
-  await page.getByRole('button', { name: 'Just general STAIJA updates', exact: true }).click()
+  await page.getByLabel(/interested in/i).click()
   await page
     .getByRole('option', { name: 'StepUp Scholars — next cycle', exact: true })
     .click()
@@ -48,7 +48,7 @@ When('I fill in my notify-me email {string}', async ({ page }, email: string) =>
 })
 
 When('I submit the notify-me form', async ({ page }) => {
-  await page.getByRole('button', { name: 'Notify me', exact: true }).click()
+  await page.getByRole('button', { name: /Notify me/i }).click()
   await expect(page.getByText("You're on the list.", { exact: true })).toBeVisible()
   await dwellForDemo(page)
 })
@@ -76,15 +76,15 @@ Then(
 )
 
 When('I copy the refer-a-friend share link', async ({ page }) => {
-  await page.getByRole('button', { name: 'Copy link', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Copied', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: /Copy link/i }).click()
+  await expect(page.getByRole('button', { name: /Copied/i })).toBeVisible()
   await dwellForDemo(page, 800)
 })
 
 Then(
   'the copy-link button should confirm {string}',
   async ({ page }, _label: string) => {
-    await expect(page.getByRole('button', { name: 'Copied', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Copied/i })).toBeVisible()
     await dwellForDemo(page, Number(process.env.DEMO_TAIL_MS ?? 2500))
   },
 )
