@@ -38,7 +38,10 @@ export default defineConfig({
       use: {
         ...devices['Pixel 7'],
         viewport: MOBILE_VIEWPORT,
-        video: { mode: 'on', size: MOBILE_VIEWPORT },
+        // Mobile runs the same user journeys as a responsive regression
+        // check. Keep recordings to the desktop project so each scenario
+        // produces one stable documentation artifact.
+        video: 'off',
       },
     },
   ],

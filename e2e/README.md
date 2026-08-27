@@ -1,7 +1,7 @@
 # E2E demo recordings
 
 Playwright-BDD pipeline that drives the dev server through scripted user
-journeys and captures each scenario as an MP4. The MP4s in
+journeys and captures each desktop scenario as an MP4. The MP4s in
 [`e2e/videos/`](./videos) are committed and embedded in the root README.
 
 ## Run
@@ -14,9 +14,9 @@ npm run demo
 ```
 
 The dev server is started automatically (`npm run dev` via Playwright's
-`webServer` config). Recording is single-worker, headless, and runs in both
-Desktop Chrome and Pixel 7 mobile emulation. It uses `slowMo: 1200` so the
-videos are watchable at 1× speed.
+`webServer` config). Recording is single-worker and headless. Each journey runs
+in Desktop Chrome and Pixel 7 mobile emulation; only the desktop run is
+recorded. It uses `slowMo: 1200` so the videos are watchable at 1× speed.
 
 ## Structure
 
