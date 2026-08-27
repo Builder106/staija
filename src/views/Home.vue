@@ -615,14 +615,13 @@ onMounted(async () => {
    which reads far more alive than a constant sine bob. Transform-only, so
    the flag colors are untouched and it doesn't preview the pop-swap.
 
-   "scientist-leaders": a light glances across the cyan letters — a narrow
-   highlight band sweeping through the fill (animated background-position
-   on a background-clipped gradient), parked off-screen between passes so
-   it glints periodically rather than shimmering nonstop. Because it drives
-   background-position, not opacity or transform, it can't collide with the
-   pop-swap's fade/scale at all; a gentle float rides underneath for life.
-   The whole thing drops to a solid cyan fill under reduced-motion and
-   forced-colors (see those blocks below). */
+   "scientist-leaders": a light glances across the cyan letters. A narrow
+   highlight band moves across a background-clipped overlay, parked off-screen
+   between passes so it glints periodically rather than shimmering nonstop.
+   The overlay uses a transform, while the word's gentle float runs separately,
+   so neither animation collides with the pop-swap's fade/scale.
+   The motion runs only when the user has not requested reduced motion. The
+   phrase drops to a solid cyan fill under reduced-motion and forced-colors. */
 @keyframes idle-hop {
   0%,
   48%,
@@ -669,7 +668,6 @@ onMounted(async () => {
 .flag-line-2 {
   display: inline-block;
   transform-origin: bottom center;
-  animation: idle-hop 2.8s ease-in-out infinite;
 }
 .flag-line-0 {
   animation-delay: 0ms;
@@ -695,6 +693,7 @@ onMounted(async () => {
     var(--color-brand-sky) 100%
   );
   background-size: 200% 100%;
+  isolation: isolate;
   /* background-repeat left at its default (repeat) on purpose: the tiling
      cyan guarantees full coverage so no glyph ever falls on an empty area
      and vanishes. Endpoints of both ends of the gradient are the same cyan,
@@ -708,7 +707,6 @@ onMounted(async () => {
      is applied during that 0.8s, so the float's transform-return
      transition runs cleanly instead of snapping the word back over the
      still-exiting icons. */
-  animation: idle-float 3s ease-in-out 0.8s infinite;
 }
 
 /* Sheen sweep via composited transform on a pseudo-element — avoids
@@ -731,9 +729,24 @@ onMounted(async () => {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: idle-sheen 4.5s linear 0.8s infinite;
   pointer-events: none;
   z-index: -1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flag-line-0,
+  .flag-line-1,
+  .flag-line-2 {
+    animation: idle-hop 2.8s ease-in-out infinite;
+  }
+
+  .accent-text {
+    animation: idle-float 3s ease-in-out 0.8s infinite;
+  }
+
+  .accent-text::before {
+    animation: idle-sheen 4.5s linear 0.8s infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -749,6 +762,9 @@ onMounted(async () => {
   .accent-text {
     background-image: none;
     -webkit-text-fill-color: currentColor;
+  }
+  .accent-text::before {
+    background-image: none;
   }
 }
 

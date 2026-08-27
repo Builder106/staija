@@ -7,13 +7,12 @@ import { expect } from '@playwright/test'
 import { dwellForDemo } from '../support/dwell'
 
 const { Given, When, Then, Before } = createBdd()
+const DEMO_ORIGIN = 'http://localhost:5190'
 
 Before(async ({ context }) => {
-  try {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-  } catch {
-    /* permission unsupported in this engine */
-  }
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+    origin: DEMO_ORIGIN,
+  })
 })
 
 // --- Cold-visit flow ---------------------------------------------------
@@ -76,15 +75,26 @@ Then(
 )
 
 When('I copy the refer-a-friend share link', async ({ page }) => {
+  const clipboardPermission = await page.evaluate(async () => {
+    try {
+      return (
+        await navigator.permissions.query({ name: 'clipboard-write' as PermissionName })
+      ).state
+    } catch {
+      return 'unsupported'
+    }
+  })
+  expect(clipboardPermission, 'clipboard-write permission was not granted to the demo origin').toBe(
+    'granted',
+  )
   await page.getByRole('button', { name: /Copy link/i }).click()
   await expect(page.getByRole('button', { name: /Copied/i })).toBeVisible()
   await dwellForDemo(page, 800)
 })
 
-Then(
-  'the copy-link button should confirm {string}',
-  async ({ page }, _label: string) => {
-    await expect(page.getByRole('button', { name: /Copied/i })).toBeVisible()
-    await dwellForDemo(page, Number(process.env.DEMO_TAIL_MS ?? 2500))
-  },
-)
+Then('the copied share link should remain available', async ({ page }) => {
+  await expect(page.getByRole('textbox', { name: /Share link/i })).toHaveValue(
+    /\?ref=[A-Za-z0-9-]+/,
+  )
+  await dwellForDemo(page, Number(process.env.DEMO_TAIL_MS ?? 2500))
+})

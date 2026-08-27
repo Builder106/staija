@@ -13,7 +13,7 @@
  * network it suits.
  */
 import { Icon } from '@iconify/vue';
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 import { useAuth } from '../../composables/useAuth';
 import { getOrMintMyReferralId } from '../../services/referrals';
 import Body from '../ui/Body.vue';
@@ -76,17 +76,45 @@ const threadsHref = computed(
   () => `https://threads.net/intent/post?text=${encodeURIComponent(fullShareText.value)}`,
 );
 
-const copied = ref(false);
+type CopyFeedback = 'idle' | 'copied' | 'error';
+
+const copyFeedback = ref<CopyFeedback>('idle');
+let copyFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+function clearCopyFeedbackTimer() {
+  if (copyFeedbackTimer === undefined) return;
+  clearTimeout(copyFeedbackTimer);
+  copyFeedbackTimer = undefined;
+}
+
+function setCopyFeedback(feedback: CopyFeedback) {
+  clearCopyFeedbackTimer();
+  copyFeedback.value = feedback;
+  if (feedback === 'idle') return;
+
+  copyFeedbackTimer = setTimeout(
+    () => {
+      copyFeedback.value = 'idle';
+      copyFeedbackTimer = undefined;
+    },
+    feedback === 'error' ? 5000 : 2000,
+  );
+}
+
 async function copyLink() {
+  setCopyFeedback('idle');
   try {
+    if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+      throw new Error('Clipboard API unavailable');
+    }
     await navigator.clipboard.writeText(shareUrl.value);
-    copied.value = true;
-    setTimeout(() => (copied.value = false), 2000);
+    setCopyFeedback('copied');
   } catch {
-    // Clipboard blocked (older browsers, insecure context). Silent — the
-    // raw link is already on screen in the read-only input.
+    setCopyFeedback('error');
   }
 }
+
+onUnmounted(clearCopyFeedbackTimer);
 </script>
 
 <template>
@@ -111,12 +139,22 @@ async function copyLink() {
       <button
         type="button"
         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border hairline-ink bg-paper text-sm font-semibold text-ink hover:bg-brand-violet/5 hover:border-brand-violet/40 transition-colors"
+        :aria-describedby="copyFeedback === 'error' ? 'share-link-copy-feedback' : undefined"
         @click="copyLink"
       >
-        <Icon :icon="copied ? 'lucide:check' : 'lucide:copy'" width="14" />
-        {{ copied ? 'Copied' : 'Copy link' }}
+        <Icon :icon="copyFeedback === 'copied' ? 'lucide:check' : 'lucide:copy'" width="14" />
+        {{ copyFeedback === 'copied' ? 'Copied' : 'Copy link' }}
       </button>
     </div>
+    <p
+      v-if="copyFeedback === 'error'"
+      id="share-link-copy-feedback"
+      class="text-sm text-ink/65 mt-2"
+      role="status"
+      aria-live="polite"
+    >
+      Automatic copying is blocked in this browser. Select the link above to copy it manually.
+    </p>
 
     <div class="flex flex-wrap items-center gap-3">
       <a

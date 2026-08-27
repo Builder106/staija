@@ -25,4 +25,4 @@ Feature: Stay-connected hub for non-applicants
     Given I land on stay-connected as a closed-cycle StepUp visitor
     Then the hero should reflect a closed-cycle arrival from StepUp Scholars
     When I copy the refer-a-friend share link
-    Then the copy-link button should confirm "Copied"
+    Then the copied share link should remain available
