@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-08-29: Git deployment branches restricted #decision
+
+Git-triggered Vercel deployments now run only for `main` and `staging`. The project keeps `main` as its Production Branch, so `staging` is the only Preview branch. Replaced the old `ignoreCommand`, which created canceled deployment records for blocked branches, with `git.deploymentEnabled`.
+
 ## 2026-08-27 — Fast-forwarded staging with verified multi-viewport CI #milestone #decision
 
 Merged the current `origin/main` dependency updates and the latest `origin/staging` cleanup into the local `staging` branch, then pushed the result as a fast-forward update; `main` was not changed. CI now runs on pushes to `staging`, pins every external action to a full release SHA, and limits Dependabot write permissions to its own job. The demo suite replays five scenarios in Desktop Chrome and Pixel 7 mobile emulation, with recordings kept to the desktop run so each scenario has one stable artifact. Public routes now render in source-only checkouts without Firebase credentials, while protected routes remain signed out until configuration is supplied. Replaced swallowed demo locators with accessible assertions after the missing test environment had allowed a blank app shell to pass URL-only checks. Ampere-dev verification passed lint, format, the production dependency audit, license compliance, type-checking, unit tests, the production build, and all 10 desktop/mobile demo scenarios.
