@@ -108,11 +108,34 @@ export default defineConfig(async ({ mode }) => {
     test: {
       environment: 'happy-dom',
       include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-      // Shims a working localStorage for tests — happy-dom 20 ships a
-      // window.localStorage whose methods aren't reachable in this
-      // vitest combo. See tests/setup.ts for the diagnosis + workaround.
       setupFiles: ['tests/setup.ts'],
-
+      coverage: {
+        provider: 'v8',
+        include: [
+          'src/composables/useAutoSave.ts',
+          'src/composables/useTheme.ts',
+          'src/composables/useAvatarMotion.ts',
+          'src/composables/useReducedMotion.ts',
+          'src/services/permissions.ts',
+          'src/services/postLoginRedirect.ts',
+          'src/services/avatar-resolve.ts',
+          'src/services/avatar-lotties.ts',
+          'src/services/avatar/**/*.ts',
+          'src/services/lms-tutor.ts',
+          'src/services/lms-quiz.ts',
+          'src/services/richTextSerializer.ts',
+          'src/services/versionCheck.ts',
+          'src/services/types.ts',
+          'src/functions/**/*.ts',
+          'src/templates/**/*.ts',
+        ],
+        thresholds: {
+          lines: 100,
+          functions: 100,
+          branches: 100,
+          statements: 100,
+        },
+      },
     },
   }
 })
