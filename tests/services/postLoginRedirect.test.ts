@@ -41,4 +41,9 @@ describe('postLoginRoute', () => {
       expect(postLoginRoute(role)).not.toEqual({ name: 'home' })
     }
   })
+
+  it('falls back to home for unrecognized role', () => {
+    expect(postLoginRoute('unknown' as UserRole)).toEqual({ name: 'home' })
+  })
 })
+
