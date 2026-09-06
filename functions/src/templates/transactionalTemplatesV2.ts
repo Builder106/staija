@@ -10,6 +10,8 @@
 
 import {
   APP_URL,
+  FONT_DISPLAY,
+  FONT_MONO,
   GOLD,
   INK,
   MUTED,

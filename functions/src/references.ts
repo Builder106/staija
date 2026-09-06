@@ -23,6 +23,7 @@ import { getStorage } from 'firebase-admin/storage'
 import { getAppCheck } from 'firebase-admin/app-check'
 import { createHmac, timingSafeEqual, randomBytes } from 'crypto'
 import Busboy from 'busboy'
+import { APP_URL, sendMailgun, referenceInviteEmail, referenceLetterReceivedEmail } from './emailTemplates'
 import { isAllowedOrigin } from './cors'
 
 const REFERENCE_TOKEN_SECRET = defineSecret('REFERENCE_TOKEN_SECRET')
@@ -228,6 +229,7 @@ export const submitReferenceLetter = onRequest(
     secrets: [REFERENCE_TOKEN_SECRET, MAILGUN_API_KEY, MAILGUN_DOMAIN],
     memory: '512MiB',
     timeoutSeconds: 90,
+    invoker: 'public',
     cors: false, // we set CORS manually so we can whitelist origins
   },
   async (req, res) => {
