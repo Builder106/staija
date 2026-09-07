@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-07 — Standardized the Node runtime on Node 24 #decision
+
+Pinned the Functions engine and CI jobs to Node 24 while preserving the existing `main` production and `staging` preview deployment gates. Verification passed under Node 24.20.0 and npm 10.9.9; no lockfiles or application behavior changed.
+
 ## 2026-08-29: Git deployment branches restricted #decision
 
 Git-triggered Vercel deployments now run only for `main` and `staging`. The project keeps `main` as its Production Branch, so `staging` is the only Preview branch. Replaced the old `ignoreCommand`, which created canceled deployment records for blocked branches, with `git.deploymentEnabled`.
