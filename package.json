@@ -22,6 +22,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "avatars:generate": "tsx tools/avatars/generate.ts",
     "avatars:label": "tsx tools/avatars/parse-and-label.ts",
     "avatars:clean": "tsx tools/avatars/clean.ts",

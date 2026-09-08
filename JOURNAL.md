@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-07 — Split public-site QA from demo recording #decision
+
+Added a blocking, headless Playwright QA suite for stable visitor navigation and the stay-connected flow. The suite runs with local Vite defaults, intercepts provider-shaped requests, and asserts that no Firebase, Mailgun, or newsletter request is made; the existing video demo command and committed recordings remain manual and outside QA CI.
+
 ## 2026-09-07 — Standardized the Node runtime on Node 24 #decision
 
 Pinned the Functions engine and CI jobs to Node 24 while preserving the existing `main` production and `staging` preview deployment gates. Verification passed under Node 24.20.0 and npm 10.9.9; no lockfiles or application behavior changed.

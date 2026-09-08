@@ -125,12 +125,10 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
-      - name: Install ffmpeg for demo video processing
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-      - name: Run Demo E2E & a11y suite
-        run: npm run demo
+      - name: Run public-site QA E2E
+        run: npm run test:e2e
       - name: Upload Playwright artifacts on failure
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -138,7 +136,7 @@ jobs:
           name: playwright-results
           path: |
             test-results/
-            e2e/videos/
+            playwright-report/
           retention-days: 7
           if-no-files-found: ignore
 
