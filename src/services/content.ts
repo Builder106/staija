@@ -64,13 +64,6 @@ interface ContentfulCollection<F> {
   skip: number;
   limit: number;
   items: ContentfulEntry<F>[];
-  includes?: {
-    Asset?: Array<{ sys: { id: string }; fields: { file: { url: string } } }>;
-    Entry?: Array<{
-      sys: { id: string; contentType?: { sys: { id: string } } };
-      fields: Record<string, unknown>;
-    }>;
-  };
   includes?: ContentfulIncludes;
 }
 
@@ -118,7 +111,6 @@ interface CategoryFields {
 
 function resolveAssetUrl(
   assetRef: { sys: { id: string } } | undefined,
-  includes: ContentfulCollection<unknown>['includes'],
   includes: ContentfulIncludes | undefined,
 ): string | undefined {
   if (!assetRef || !includes?.Asset) return undefined;
@@ -130,7 +122,6 @@ function resolveAssetUrl(
 
 function resolveLinkedEntry<F>(
   entryRef: { sys: { id: string } } | undefined,
-  includes: ContentfulCollection<unknown>['includes'],
   includes: ContentfulIncludes | undefined,
 ): F | null {
   if (!entryRef || !includes?.Entry) return null;
@@ -168,7 +159,6 @@ function inferIsVirtual(location: string | undefined): boolean {
 
 function mapBlogPost(
   entry: ContentfulEntry<BlogPostFields>,
-  includes: ContentfulCollection<unknown>['includes'],
   includes: ContentfulIncludes | undefined,
 ): BlogPost {
   const f = entry.fields;
@@ -189,7 +179,6 @@ function mapBlogPost(
 
 function mapEvent(
   entry: ContentfulEntry<EventFields>,
-  includes: ContentfulCollection<unknown>['includes'],
   includes: ContentfulIncludes | undefined,
 ): EventItem {
   const f = entry.fields;
