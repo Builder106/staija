@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-13 — Automated VTracer migration held at the visual-quality gate #decision #blocked
+
+Added the pinned `@visioncortex/vtracer@1.0.0-alpha.4` Node/WASM tracing tool, provider-neutral SVG cleaning, fail-closed ten-portrait validation, and the three fixed bake-off profiles. The fidelity pass added explicit background preservation, deterministic comparison manifests, and two tuning rounds. All ten portraits trace, clean, verify, and repeat byte-identically for every candidate. The current Vectorizer-generated `parts.ts` remains production because `poster-cutout-balanced` (1.26 MB, 8,578 paths) and `poster-cutout-detail` (1.60 MB, 9,642 paths) remain visibly softer with weaker facial detail than the baseline at target sizes; `poster-polygon-detail` (839 KB, 8,787 paths) also introduces white halos around hair, glasses, and clothing. Stop status: plateau. Revisit with a stronger FOSS tracer before replacing the baseline.
+
 ## 2026-09-07 — Split public-site QA from demo recording #decision
 
 Added a blocking, headless Playwright QA suite for stable visitor navigation and the stay-connected flow. The suite runs with local Vite defaults, intercepts provider-shaped requests, and asserts that no Firebase, Mailgun, or newsletter request is made; the existing video demo command and committed recordings remain manual and outside QA CI.

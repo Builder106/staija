@@ -10,19 +10,18 @@ of whole portraits — not dropped. The layered pipeline (including
 revisit it. See [the parts.ts comment](../../src/services/avatar/parts.ts)
 for the full reasoning behind the current path.
 
-**Two scripted steps + one manual step.**
+**Scripted pipeline.**
 
 ```text
-generate.ts (PNG)  →  vectorizer.ai web (SVG)  →  clean.ts (cleaned + parts.ts auto-written)
+generate.ts (PNG)  →  trace.ts (SVG)  →  clean.ts (cleaned + parts.ts auto-written)  →  thumbs
 ```
 
-The middle step is done by hand on <https://vectorizer.ai>. We tried
-the Node-based tracers (VTracer via `@neplex/vectorizer`,
-imagetracerjs) and Vectorizer.AI's API; the web UI produces noticeably
-cleaner palettes (12–18 colors per portrait vs 100+ from the FOSS
-tracers) and is fast enough for 10 images that automating it isn't
-worth the cost. Drop the resulting SVGs into `tools/avatars/traced/`
-under their original `portrait-<slot>.svg`names and run`clean`.
+Tracing uses the pinned VTracer Node/WASM package. It runs locally,
+requires no runtime secret or Vercel environment variable, and does not
+add a provider watermark. Candidate output must pass structural and
+visual comparison before replacing production assets. The paused
+semantic face-labeling path remains optional historical tooling and is
+not part of this whole-portrait pipeline.
 
 The 10 prompts live in [prompts.ts](./prompts.ts) — edit there, not in
 the scripts. Re-running with new prompts will overwrite
@@ -62,24 +61,55 @@ HF_TOKEN=hf_xxxxx npm run avatars:generate -- --provider hf
 
 Output lands in `tools/avatars/raw/`.
 
-**2. Vectorize** by hand on <https://vectorizer.ai>. Upload each PNG,
-download the SVG, and save it to `tools/avatars/traced/` under the
-exact same stem (e.g. `portrait-hijab.png`→`portrait-hijab.svg`).
-
-If Vectorizer.AI's output omits `viewBox` (it sometimes does), the
-SVGs render cropped in viewers. The fix is a one-liner — see
-[the viewBox patch](#fixing-missing-viewbox) below.
-
-**3. Clean** the SVGs and inline into `parts.ts`:
+**2. Trace** every generated PNG with VTracer:
 
 ```sh
-npm run avatars:clean
+npm run avatars:trace -- --all --force --profile poster-cutout
 ```
 
-`avatars:clean`writes both`tools/avatars/clean/*.svg` (for inspection)
-and `src/services/avatar/parts.ts` (the production artifact). Pass
-`--no-write-parts` to only emit the inspection copies and leave parts.ts
-alone.
+Use `--slot <N>` for one prompt and `--output-dir <dir>` for an
+isolated comparison. Available profiles are `poster-spline`,
+`poster-cutout`, and `poster-polygon`. The command fails closed when a
+portrait is missing, duplicated, or has an invalid output.
+
+**3. Clean** the SVGs for inspection:
+
+```sh
+npm run avatars:clean -- --background preserve --no-write-parts
+```
+
+The default `--background preserve` mode keeps the colored full-canvas
+background. Use `--background transparent` only for an explicit,
+non-production transparency experiment. Pass `--input-dir` and
+`--output-dir` for isolated candidates. Only after visual approval,
+rerun without `--no-write-parts` to update `src/services/avatar/parts.ts`.
+
+**4. Verify** the complete cleaned set:
+
+```sh
+npm run avatars:verify -- --input-dir tools/avatars/clean
+```
+
+Verification requires exactly ten expected portraits and rejects
+malformed SVGs, missing viewBoxes, embedded images, and watermark
+markers.
+
+**5. Compare** a candidate against the production baseline:
+
+```sh
+npm run avatars:compare -- \
+  --baseline-dir <baseline-dir> \
+  --candidate-dir <candidate-clean-dir> \
+  --background preserve \
+  --sizes 32,56,72,80,120,160,256 \
+  --report-dir <report-dir>
+```
+
+Baseline and candidate must use the same renderer, dimensions,
+compositing background, and output format. The report records SVG
+metrics and rasterized results, and produces side-by-side sheets.
+Use temporary report and render directories; do not replace tracked
+thumbnails during benchmarking.
 
 ## What `clean` does
 
@@ -87,15 +117,9 @@ alone.
 
 - Strip metadata, comments, redundant attributes
 - Simplify path data (lower number precision, fewer Bézier nodes)
-- Detect and delete the background rectangle (the first big path
-
-     is usually the canvas backdrop). Skipped if the path is small or
-     its fill is a brand color (so we don't false-positive a hijab
-     or gele silhouette as background).
-
-- Drop any path with `vector-effect="non-scaling-stroke"` — those
-
-     are stroke-based watermarks left over from the API tier.
+- Preserve the full-canvas background by default. Background removal is
+  explicit through `--background transparent` and is not used for the
+  production comparison.
 
 1. Extracts inner SVG content from each `<svg>` wrapper
 2. Wraps in `<g transform="scale(80/origSize)">` so the trace's native
@@ -108,19 +132,47 @@ alone.
    fragments inlined into the `PORTRAITS` array, with slot-name
    comments preserved from `prompts.ts`
 
-## Fixing missing viewBox
+## Fidelity tuning rounds
 
-If the web Vectorizer.AI output looks cropped in Inkscape/VS Code, the
-SVG is missing its `viewBox`. The PNGs are 768×768, so:
+Tuning is limited to two rounds. Round 1 uses the exact
+`poster-cutout-balanced` profile:
 
-```sh
-for f in tools/avatars/traced/*.svg; do
-  grep -q 'viewBox=' "$f" || sed -i '' \
-    's|<svg xmlns="http://www.w3.org/2000/svg">|<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768">|' "$f"
-done
+```text
+preset=poster, clustering=color-cluster, hierarchical=cutout,
+mode=spline, filterSpeckle=2, simplify=1, maxColors=24, optimize=1
 ```
 
-Idempotent — files that already have `viewBox` are skipped.
+Round 2 uses these exact profiles:
+
+```text
+poster-cutout-detail:
+preset=poster, clustering=color-cluster, hierarchical=cutout,
+mode=spline, filterSpeckle=1, simplify=0.5, maxColors=32, optimize=1
+
+poster-polygon-detail:
+preset=poster, clustering=color-cluster, hierarchical=cutout,
+mode=polygon, filterSpeckle=1, maxColors=32, optimize=1
+```
+
+The polygon profile has no `simplify` setting because that option does
+not apply to polygon geometry. Do not add pixel mode, stacked hierarchy,
+or optimizer variants to these rounds.
+
+Review every portrait at each comparison size for silhouette, facial
+features, hair and accessories, palette separation, background behavior,
+seams, halos, cropping, and sharpness. Stop at the first profile that
+matches the baseline. If both rounds retain the same failures, stop with
+`plateau`, keep `parts.ts` and `public/avatars` unchanged, and record the
+result for a separate tracer evaluation.
+
+## Runtime SVGs and PNG thumbnails
+
+`src/services/avatar/parts.ts` contains cleaned inline SVG fragments
+used by the SVG avatar service. `public/avatars/*.png` contains static
+raster thumbnails used by the picker and thumbnail surfaces. Updating
+`parts.ts` does not regenerate the public PNGs automatically. Regenerate
+thumbnails explicitly only after a candidate passes visual approval;
+benchmark renders must use temporary assets instead.
 
 ## Slot mapping
 
