@@ -51,6 +51,14 @@ interface ContentfulEntry<F> {
   fields: F;
 }
 
+export interface ContentfulIncludes {
+  Asset?: Array<{ sys: { id: string }; fields: { file: { url: string } } }>;
+  Entry?: Array<{
+    sys: { id: string; contentType?: { sys: { id: string } } };
+    fields: Record<string, unknown>;
+  }>;
+}
+
 interface ContentfulCollection<F> {
   total: number;
   skip: number;
@@ -63,6 +71,7 @@ interface ContentfulCollection<F> {
       fields: Record<string, unknown>;
     }>;
   };
+  includes?: ContentfulIncludes;
 }
 
 // Field shapes match the Contentful content model in space `zcw0qx1phkan`.
@@ -110,6 +119,7 @@ interface CategoryFields {
 function resolveAssetUrl(
   assetRef: { sys: { id: string } } | undefined,
   includes: ContentfulCollection<unknown>['includes'],
+  includes: ContentfulIncludes | undefined,
 ): string | undefined {
   if (!assetRef || !includes?.Asset) return undefined;
   const asset = includes.Asset.find((a) => a.sys.id === assetRef.sys.id);
@@ -121,6 +131,7 @@ function resolveAssetUrl(
 function resolveLinkedEntry<F>(
   entryRef: { sys: { id: string } } | undefined,
   includes: ContentfulCollection<unknown>['includes'],
+  includes: ContentfulIncludes | undefined,
 ): F | null {
   if (!entryRef || !includes?.Entry) return null;
   const entry = includes.Entry.find((e) => e.sys.id === entryRef.sys.id);
@@ -158,6 +169,7 @@ function inferIsVirtual(location: string | undefined): boolean {
 function mapBlogPost(
   entry: ContentfulEntry<BlogPostFields>,
   includes: ContentfulCollection<unknown>['includes'],
+  includes: ContentfulIncludes | undefined,
 ): BlogPost {
   const f = entry.fields;
   const author = resolveLinkedEntry<AuthorFields>(f.author, includes);
@@ -178,6 +190,7 @@ function mapBlogPost(
 function mapEvent(
   entry: ContentfulEntry<EventFields>,
   includes: ContentfulCollection<unknown>['includes'],
+  includes: ContentfulIncludes | undefined,
 ): EventItem {
   const f = entry.fields;
   const location = f.location ?? 'TBD';
