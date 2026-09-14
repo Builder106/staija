@@ -85,7 +85,7 @@ export const paystackWebhook = onRequest(
       return
     }
 
-    const rawBody = (req as unknown as { rawBody?: Buffer }).rawBody?.toString('utf8') ?? JSON.stringify(req.body)
+    const rawBody = req.rawBody?.toString('utf8') ?? JSON.stringify(req.body)
     const signature = req.header('x-paystack-signature')
 
     if (!verifyPaystackSignature(rawBody, signature, PAYSTACK_SECRET_KEY.value())) {

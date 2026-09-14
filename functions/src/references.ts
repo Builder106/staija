@@ -310,7 +310,7 @@ export const submitReferenceLetter = onRequest(
       })
       bb.on('error', (err) => resolve({ ok: false, error: (err as Error).message }))
       // Firebase Functions provide the raw body buffer.
-      const raw = (req as unknown as { rawBody?: Buffer }).rawBody
+      const raw = req.rawBody
       if (raw) {
         bb.end(raw)
       } else {

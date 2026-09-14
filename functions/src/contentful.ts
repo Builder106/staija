@@ -80,7 +80,7 @@ export const contentfulWebhook = onRequest(
     let payload = req.body as ContentfulEntryPayload | undefined
     if (!payload?.sys?.id) {
       try {
-        const raw = (req as unknown as { rawBody?: Buffer }).rawBody
+        const raw = req.rawBody
         const text = raw ? raw.toString('utf-8') : typeof req.body === 'string' ? req.body : ''
         if (text) payload = JSON.parse(text) as ContentfulEntryPayload
       } catch (e) {
