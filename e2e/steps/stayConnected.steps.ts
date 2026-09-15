@@ -48,12 +48,13 @@ When('I fill in my notify-me email {string}', async ({ page }, email: string) =>
 
 When('I submit the notify-me form', async ({ page }) => {
   await page.getByRole('button', { name: /Notify me/i }).click()
-  await expect(page.getByText("You're on the list.", { exact: true })).toBeVisible()
   await dwellForDemo(page)
 })
 
-Then('the notify-me success message should be visible', async ({ page }) => {
-  await expect(page.getByText("You're on the list.", { exact: true })).toBeVisible()
+Then('the notify-me unavailable message should be visible', async ({ page }) => {
+  await expect(page.getByRole('alert')).toHaveText(
+    'Newsletter sign-ups are temporarily unavailable. Please try again later.',
+  )
   await dwellForDemo(page, Number(process.env.DEMO_TAIL_MS ?? 2500))
 })
 

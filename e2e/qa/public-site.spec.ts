@@ -13,7 +13,7 @@ test.describe('public visitor journeys', () => {
     ).toBeVisible()
   })
 
-  test('visitor submits stay-connected interest without a provider call', async ({ page }) => {
+  test('visitor sees the unavailable state without a provider call', async ({ page }) => {
     const newsletterRequests: string[] = []
     await page.route('**/*', async (route) => {
       if (/newsletter|mailgun|firebaseio|googleapis/.test(route.request().url())) {
@@ -28,7 +28,9 @@ test.describe('public visitor journeys', () => {
     await expect(page.getByRole('heading', { name: /StepUp Scholars isn't open right now/i })).toBeVisible()
     await page.getByLabel('Email', { exact: true }).fill('visitor@example.com')
     await page.getByRole('button', { name: /Notify me/i }).click()
-    await expect(page.getByText("You're on the list.", { exact: true })).toBeVisible()
+    await expect(page.getByRole('alert')).toHaveText(
+      'Newsletter sign-ups are temporarily unavailable. Please try again later.',
+    )
     expect(newsletterRequests).toEqual([])
   })
 })

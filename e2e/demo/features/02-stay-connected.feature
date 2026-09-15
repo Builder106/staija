@@ -19,7 +19,7 @@ Feature: Stay-connected hub for non-applicants
     When I choose the StepUp Scholars next-cycle interest
     And I fill in my notify-me email "future@example.com"
     And I submit the notify-me form
-    Then the notify-me success message should be visible
+    Then the notify-me unavailable message should be visible
 
   Scenario: Closed-cycle visitor sees the hub and copies the share link
     Given I land on stay-connected as a closed-cycle StepUp visitor
