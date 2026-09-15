@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-15 — Promoted FOSS layered-avatar set #implementation #milestone
+
+Added and visually reviewed complete 256×256 layer sources for all ten curated slots, deterministic `--all` compositing, self-contained validated Lottie JSON, and an in-process VTracer static pipeline. The approved `poster-cutout-detail` candidate is now promoted to `parts.ts` and the ten static PNG fallbacks. Linux verification passes 249 tests, lint, formatting, the retired-backend guard, the production build, and the existing public-site browser E2E. The promoted cleaned library SHA-256 is `a6f8048e32233942e128d91e6b1f2cd2f557f94d19394207c018736159896713`; the static-output manifest SHA-256 is `5c874553f2052e239016f71b929fb188710d73cd9f601df29b5e5b558c90d2f7`; and the Lottie-set manifest SHA-256 is `d376ebf36f8faa5b870febdd1a9922174c0b1dbdf954d12c3ced9b0cc18327e8`. No authenticated Settings/admin-preview browser scenario exists in the repository suite, so that manual release check remains open. The local `.env.production.local` still contains retired backend variable names; secret cleanup was not performed.
+
 ## 2026-09-13 — Automated VTracer migration held at the visual-quality gate #decision #blocked
 
 Added the pinned `@visioncortex/vtracer@1.0.0-alpha.4` Node/WASM tracing tool, provider-neutral SVG cleaning, fail-closed ten-portrait validation, and the three fixed bake-off profiles. The fidelity pass added explicit background preservation, deterministic comparison manifests, and two tuning rounds. All ten portraits trace, clean, verify, and repeat byte-identically for every candidate. The current Vectorizer-generated `parts.ts` remains production because `poster-cutout-balanced` (1.26 MB, 8,578 paths) and `poster-cutout-detail` (1.60 MB, 9,642 paths) remain visibly softer with weaker facial detail than the baseline at target sizes; `poster-polygon-detail` (839 KB, 8,787 paths) also introduces white halos around hair, glasses, and clothing. Stop status: plateau. Revisit with a stronger FOSS tracer before replacing the baseline.

@@ -1,31 +1,30 @@
 # Avatar generation pipeline
 
-**Current architecture (2026-05-06 pivot):** whole-portrait avatars,
-not layered parts. Each prompt produces a complete head/shoulders
-illustration; the avatar style seed-picks one per scholar. Diffusion
-image models can't reliably produce isolated body parts on transparent
-backgrounds, so the layered/animated approach is **paused** in favor
-of whole portraits — not dropped. The layered pipeline (including
-[tag_potrait.py](../tag_potrait.py)) stays in the tree for when we
-revisit it. See [the parts.ts comment](../../src/services/avatar/parts.ts)
-for the full reasoning behind the current path.
+**Current architecture:** the frontend still exposes whole-portrait
+avatars, while the ten curated slots also have a versioned layered source
+pipeline for static tracing and rich animation. A generalized user-created
+layered-PFP editor remains paused. See [the parts.ts comment](../../src/services/avatar/parts.ts)
+for the runtime boundary.
 
 **Scripted pipeline.**
 
 ```text
-generate.ts (PNG)  →  trace.ts (SVG)  →  clean.ts (cleaned + parts.ts auto-written)  →  thumbs
+layer sources → composite.ts (PNG) → trace.ts (VTracer SVG) → clean.ts (parts.ts) → thumbs
 ```
 
 Tracing uses the pinned VTracer Node/WASM package. It runs locally,
 requires no runtime secret or Vercel environment variable, and does not
-add a provider watermark. Candidate output must pass structural and
-visual comparison before replacing production assets. The paused
+add a provider watermark. The approved `poster-cutout-detail` output is
+the current static production candidate. Future candidates must pass
+structural and visual comparison before replacing production assets. The paused
 semantic face-labeling path remains optional historical tooling and is
 not part of this whole-portrait pipeline.
 
-The 10 prompts live in [prompts.ts](./prompts.ts) — edit there, not in
-the scripts. Re-running with new prompts will overwrite
-`src/services/avatar/parts.ts`on the next`clean` step.
+The 10 prompt names in [prompts.ts](./prompts.ts) preserve slot order for
+the existing API and optional source-art generation. The authoritative
+inputs for the promoted outputs are the layered manifests and assets under
+`tools/avatars/layers/`. Re-run `npm run avatars:static-candidate` after
+editing them; do not hand-edit `src/services/avatar/parts.ts`.
 
 ## Providers (PNG generation)
 
@@ -36,7 +35,7 @@ the scripts. Re-running with new prompts will overwrite
 
 ## Credentials via `.env`
 
-`generate.ts`auto-loads`.env` from the project root before reading
+`generate.ts` auto-loads `.env` from the project root before reading
 `process.env`. Add what you have:
 
 ```sh
@@ -61,16 +60,23 @@ HF_TOKEN=hf_xxxxx npm run avatars:generate -- --provider hf
 
 Output lands in `tools/avatars/raw/`.
 
-**2. Trace** every generated PNG with VTracer:
+**2. Composite and trace** the reviewed layered sources with VTracer:
+
+```sh
+npm run avatars:static-candidate -- --force --profile poster-cutout-detail
+```
+
+For raw prompt PNGs, trace every generated PNG with VTracer:
 
 ```sh
 npm run avatars:trace -- --all --force --profile poster-cutout
 ```
 
-Use `--slot <N>` for one prompt and `--output-dir <dir>` for an
-isolated comparison. Available profiles are `poster-spline`,
-`poster-cutout`, and `poster-polygon`. The command fails closed when a
-portrait is missing, duplicated, or has an invalid output.
+Use `--slot <N>` for one prompt, `--input-dir <dir>` for a compositor
+candidate, and `--output-dir <dir>` for an isolated comparison. Available
+profiles include `poster-spline`, `poster-cutout`, `poster-polygon`, and
+the balanced/detail variants. The command fails closed when a portrait is
+missing, duplicated, or has an invalid output.
 
 **3. Clean** the SVGs for inspection:
 
@@ -81,8 +87,9 @@ npm run avatars:clean -- --background preserve --no-write-parts
 The default `--background preserve` mode keeps the colored full-canvas
 background. Use `--background transparent` only for an explicit,
 non-production transparency experiment. Pass `--input-dir` and
-`--output-dir` for isolated candidates. Only after visual approval,
-rerun without `--no-write-parts` to update `src/services/avatar/parts.ts`.
+`--output-dir` for isolated candidates. Use `--parts-output` to write a
+review-only generated library. Only after visual approval, target
+`src/services/avatar/parts.ts`.
 
 **4. Verify** the complete cleaned set:
 
@@ -162,7 +169,7 @@ Review every portrait at each comparison size for silhouette, facial
 features, hair and accessories, palette separation, background behavior,
 seams, halos, cropping, and sharpness. Stop at the first profile that
 matches the baseline. If both rounds retain the same failures, stop with
-`plateau`, keep `parts.ts` and `public/avatars` unchanged, and record the
+`plateau`, keep the current production assets unchanged, and record the
 result for a separate tracer evaluation.
 
 ## Runtime SVGs and PNG thumbnails
@@ -176,8 +183,8 @@ benchmark renders must use temporary assets instead.
 
 ## Slot mapping
 
-`clean.ts`writes the cleaned SVG fragments into`parts.ts` at indices
-matching the prompt order in [prompts.ts](./prompts.ts):
+`clean.ts` writes the cleaned SVG fragments into `parts.ts` at indices
+matching the stable slot order in [prompts.ts](./prompts.ts):
 
 | Trace file | `PORTRAITS` index |
 | --- | --- |
@@ -197,56 +204,36 @@ If you ever want to hand-edit a portrait further, do it in
 Direct edits to `src/services/avatar/parts.ts` get clobbered on the
 next clean run.
 
-## Phase 4 — Lottie animations
+## Phase 4 — Rich Lottie animations
 
-Each portrait slot can have an OPTIONAL rigged Lottie animation that
-overlays the static thumbnail on the Settings hero (and any future
-surface that opts in via `LottieAvatar.vue`). Phase 4 is opt-in: the
-codebase ships zero Lottie files by default, so all surfaces fall
-back to the static PNG.
+The local, reproducible rigger generates all ten animations from reviewed
+transparent layer assets. It does not use Lottie Creator, MCP, or remote
+asset URLs.
 
-**File location:** [src/assets/avatar-lotties/slot-&lt;N&gt;.json](../../src/assets/avatar-lotties/)
-where `N` matches the slot index in the table above. The runtime
-discovers files by glob — drop one in and it lights up automatically.
+Each slot requires a manifest under `tools/avatars/manifests.ts` and these
+animation-safe layers under `tools/avatars/layers/slot-N/`:
 
-### Path A — Lottie Creator GUI (no MCP)
+```text
+background.png  body.png        head.png       hair-back.png
+hair-front.png  eyes-open.png   eyes-closed.png  brows.png
+mouth-rest.png  mouth-smile.png
+```
 
-1. Open <https://creator.lottiefiles.com/>
-2. Import [public/avatars/portrait-N.png](../../public/avatars/) at
+Optional accessories use unique IDs such as `accessory-glasses.png`.
+Every layer must be a reviewed 256×256 RGBA asset with identical alignment,
+explicit z-order, and no pixels belonging to another layer. Existing
+flattened portraits cannot be split safely into these layers.
 
-   256×256 as a raster layer
+Generate the JSON assets with:
 
-3. Build motion: idle breath, eye blinks, head tilt, expression
+```sh
+npm run avatars:lottie -- --all --force
+```
 
-   shifts. The avatar displays at 80px in Settings — keep motion
-   subtle enough to read at that size
-
-4. Export as Bodymovin/Lottie JSON
-5. Save as `slot-N.json`in`src/assets/avatar-lotties/`
-6. Reload Settings — the wired slot will swap from static PNG to
-
-   animated Lottie automatically
-
-### Path B — Lottie Creator MCP (Claude Code agent)
-
-The `lottiefiles-creator` MCP server is registered in this project
-(`claude mcp list` to verify). When connected to a Creator browser
-tab with MCP enabled in Creator's settings:
-
-1. Open Creator in a browser. Settings → enable MCP
-2. Tell Claude Code: *"Rig slot 6 with eye blinks every 4s and a
-
-   subtle head tilt right on hover. Source: public/avatars/portrait-6.png"*
-
-3. The agent calls `mcp__lottiefiles-creator__run_script` to script
-
-   the layer/keyframe/easing creation in your Creator tab
-
-4. Export from Creator and save as `slot-6.json`
-
-The MCP can't persist across sessions — every conversation starts
-with a fresh Creator state. Treat it as guided rigging, not
-unattended.
+The command fails closed when a required source layer is missing. Validate
+generated files with the tool tests before committing them. The runtime
+discovers `src/assets/avatar-lotties/slot-<N>.json` lazily and keeps the
+static PNG fallback for load errors and reduced-motion users.
 
 ### Visual verification
 
@@ -254,17 +241,19 @@ Drop a `slot-N.json`in and visit`/admin/avatar-preview` — a new
 "Lottie variants" section will appear comparing the static thumbnail
 to the animated version. Sign-off check before shipping to Settings.
 
-## Re-enabling the Settings integration (historical)
+## Settings integration
 
 The Settings page already renders the generated avatar via
 `AnimatedAvatar` (Phase 1) with the universal default of slot 6. The
 gallery picker (`AvatarPicker`) lets users override. The Lottie
 overlay (Phase 4 above) layers automatically on top when a matching
-JSON file exists.
+JSON file exists. It remains static until reviewed layer assets and
+validated slot JSON files are available.
 
 ## .gitignore note
 
-Add `tools/avatars/raw/`and`tools/avatars/traced/`to`.gitignore` —
-those are intermediate artifacts, not source. Only `prompts.ts`,
-`generate.ts`, `clean.ts`, this README, and the cleaned SVGs that land
-in `src/services/avatar/parts.ts` belong in the repo.
+Add `tools/avatars/raw/`, `tools/avatars/traced/`, and other generated
+intermediate directories to `.gitignore`. Keep reviewed layer sources,
+manifests, generator code, cleaned SVG output in `parts.ts`, and validated
+Lottie JSON assets in the repository. Do not commit raw comparison reports
+or unreviewed generated intermediates.

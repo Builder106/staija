@@ -71,6 +71,7 @@ describe('parseTraceArgs', () => {
     expect(options.all).toBe(true)
     expect(options.force).toBe(true)
     expect(options.profile).toBe('poster-cutout-detail')
+    expect(options.inputDir).toMatch(/tools\/avatars\/raw$/)
     expect(options.outputDir).toMatch(/benchmark$/)
   })
 

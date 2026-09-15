@@ -113,6 +113,21 @@ describe('LottieAvatar', () => {
     expect(loadAnimationMock).not.toHaveBeenCalled()
   })
 
+  it('keeps the fallback visible when lottie-web rejects animation data', async () => {
+    loadAnimationMock.mockImplementationOnce(() => {
+      throw new Error('invalid animation')
+    })
+    const LottieAvatar = await loadComponent()
+    const wrapper = mount(LottieAvatar, {
+      props: { fallbackSrc: FALLBACK_SRC, animationData: STUB_LOTTIE },
+    })
+
+    expect(wrapper.find('img').isVisible()).toBe(true)
+    expect(wrapper.find('.lottie-avatar__stage').classes()).not.toContain(
+      'lottie-avatar__stage--loaded',
+    )
+  })
+
   it('destroys the Lottie instance on unmount', async () => {
     const LottieAvatar = await loadComponent()
     const wrapper = mount(LottieAvatar, {

@@ -3,15 +3,14 @@ import { computed, onMounted, ref } from 'vue';
 import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue';
 import LottieAvatar from '../../components/avatars/LottieAvatar.vue';
 import { avatarThumbForSlot, PORTRAIT_SLOT_COUNT } from '../../services/avatar';
-import { hasLottieForSlot, loadLottieForSlot } from '../../services/avatar/lotties';
+import { loadLottieForSlot } from '../../services/avatar/lotties';
 
 /**
  * Phase 1 + Phase 4 avatar preview. Mounts AnimatedAvatar in every
  * state-prop value against the test slot (portrait-afro-medium =
  * slot 1) so motion can be eyeballed without re-enabling the
  * Settings page. Below, renders all 10 slots side-by-side, plus —
- * if any slot has a Lottie animation file present — a row showing
- * the Lottie variant alongside the static one for comparison.
+ * a row showing every slot's Lottie variant alongside the static one.
  *
  * This is a temporary route — delete it once the avatar work is
  * verified end-to-end and signed off.
@@ -30,19 +29,16 @@ const allSlots = computed(() =>
 
 const states = ['idle', 'hero', 'static'] as const;
 
-// Discover which slots have Lottie animations attached. The
-// `hasLottieForSlot` lookup is sync (Map.has under the hood); the
-// JSON itself is loaded lazily once we know we want to render it.
-const lottieSlots = computed(() => allSlots.value.filter((entry) => hasLottieForSlot(entry.slot)));
-
 const loadedLotties = ref<Record<number, Record<string, unknown> | null>>({});
 
 onMounted(async () => {
-  // Eagerly preload the small set of Lotties we know exist — preview
-  // is the one place we genuinely want all of them up at once.
-  for (const entry of lottieSlots.value) {
-    loadedLotties.value[entry.slot] = await loadLottieForSlot(entry.slot);
-  }
+  // The preview is the one place where all ten slots are intentionally
+  // loaded together. Missing files remain static through LottieAvatar's
+  // normal fallback behavior.
+  const entries = await Promise.all(
+    allSlots.value.map(async (entry) => [entry.slot, await loadLottieForSlot(entry.slot)] as const),
+  );
+  loadedLotties.value = Object.fromEntries(entries);
 });
 </script>
 
@@ -86,16 +82,15 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section v-if="lottieSlots.length > 0" class="avatar-preview__section">
-      <h2>Lottie variants ({{ lottieSlots.length }})</h2>
+    <section class="avatar-preview__section">
+      <h2>Lottie variants (10 slots)</h2>
       <p class="avatar-preview__hint">
-        These slots have a rigged Lottie animation in
-        <code>src/assets/avatar-lotties/</code>. Each pair shows the static thumbnail (left) next to
-        its Lottie variant (right).
+        Each pair shows the static thumbnail (left) next to its animated variant (right). Missing or
+        invalid animation data remains on the static thumbnail.
       </p>
       <div class="avatar-preview__library">
         <figure
-          v-for="entry in lottieSlots"
+          v-for="entry in allSlots"
           :key="`lottie-${entry.slot}`"
           class="avatar-preview__pair"
         >
@@ -106,7 +101,6 @@ onMounted(async () => {
             :alt="`Avatar slot ${entry.slot} static`"
           />
           <LottieAvatar
-            v-if="loadedLotties[entry.slot]"
             :animation-data="loadedLotties[entry.slot]"
             :fallback-src="entry.src"
             :size="120"

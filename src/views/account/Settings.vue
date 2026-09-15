@@ -296,14 +296,20 @@ const lottieAvailable = computed(
 // Lazily-loaded Lottie JSON for the displayed slot. Reloaded when
 // the slot changes (picker apply, photo upload/clear).
 const lottieAnimation = ref<Record<string, unknown> | null>(null);
+let lottieRequestId = 0;
 watch(
   displayedSlot,
   async (slot) => {
+    const requestId = ++lottieRequestId;
+    const requestedSlot = slot;
     if (slot === null || !hasLottieForSlot(slot)) {
       lottieAnimation.value = null;
       return;
     }
-    lottieAnimation.value = await loadLottieForSlot(slot);
+    const animation = await loadLottieForSlot(slot);
+    if (requestId === lottieRequestId && displayedSlot.value === requestedSlot) {
+      lottieAnimation.value = animation;
+    }
   },
   { immediate: true },
 );

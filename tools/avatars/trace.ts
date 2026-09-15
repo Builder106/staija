@@ -8,9 +8,11 @@
  */
 
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { basename, dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { convertFile } from '@visioncortex/vtracer'
+import { type AvatarSlot, type TraceBackend, type TraceProfile, type TraceRequest, type TraceResult } from './contracts.ts'
 import { PROMPTS } from './prompts.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -18,6 +20,8 @@ const RAW_DIR = join(HERE, 'raw')
 const DEFAULT_OUTPUT_DIR = join(HERE, 'traced')
 const INPUT_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg'])
 const VTRACER_VERSION = '1.0.0-alpha.4'
+
+export const VTRACER_ENGINE = 'vtracer' as const
 
 export type TraceProfileName =
   | 'poster-spline'
@@ -27,16 +31,7 @@ export type TraceProfileName =
   | 'poster-cutout-detail'
   | 'poster-polygon-detail'
 
-export interface TraceProfile {
-  readonly preset: 'poster'
-  readonly clustering: 'color-cluster'
-  readonly hierarchical: 'stacked' | 'cutout'
-  readonly mode: 'spline' | 'polygon'
-  readonly filterSpeckle: number
-  readonly simplify?: number
-  readonly maxColors: number
-  readonly optimize: 0 | 1 | 2
-}
+export type { TraceProfile } from './contracts.ts'
 
 export const TRACE_PROFILES: Readonly<Record<TraceProfileName, TraceProfile>> = {
   'poster-spline': {
@@ -105,12 +100,46 @@ export interface TraceOptions {
   readonly slot?: number
   readonly force: boolean
   readonly profile: TraceProfileName
+  readonly inputDir: string
   readonly outputDir: string
 }
 
 interface InputFile {
   readonly name: string
   readonly path: string
+}
+
+export function sha256(contents: Uint8Array | string): string {
+  return createHash('sha256').update(contents).digest('hex')
+}
+
+export const vTracerBackend: TraceBackend = {
+  name: VTRACER_ENGINE,
+  version: VTRACER_VERSION,
+  async trace(request: TraceRequest): Promise<TraceResult> {
+    await convertFile(request.inputPath, request.outputPath, request.profile)
+    const initialSvg = await readFile(request.outputPath, 'utf8')
+    const normalized = ensureViewBox(initialSvg, `slot-${request.slot}`)
+    validateSvgOutput(normalized, `slot-${request.slot}`)
+    await writeFile(request.outputPath, normalized)
+    return {
+      engine: VTRACER_ENGINE,
+      engineVersion: VTRACER_VERSION,
+      profile: profileNameFor(request.profile),
+      slot: request.slot,
+      inputPath: request.inputPath,
+      outputPath: request.outputPath,
+      inputSha256: request.inputSha256,
+      outputSha256: sha256(normalized),
+      svg: normalized,
+    }
+  },
+}
+
+function profileNameFor(profile: TraceProfile): TraceProfileName {
+  const entry = Object.entries(TRACE_PROFILES).find(([, value]) => value === profile)
+  if (!entry) throw new Error('Trace request uses an unknown profile')
+  return entry[0] as TraceProfileName
 }
 
 function usage(): string {
@@ -122,6 +151,7 @@ function usage(): string {
     '  --slot N              trace one zero-based prompt slot',
     '  --force               overwrite existing SVG output',
     '  --profile NAME        poster-spline, poster-cutout, poster-polygon, poster-cutout-balanced, poster-cutout-detail, or poster-polygon-detail',
+    '  --input-dir PATH      read raster inputs from PATH instead of tools/avatars/raw',
     '  --output-dir PATH     write SVGs to PATH instead of tools/avatars/traced',
   ].join('\n')
 }
@@ -131,6 +161,7 @@ export function parseTraceArgs(argv: readonly string[]): TraceOptions {
   let slot: number | undefined
   let force = false
   let profile: TraceProfileName = 'poster-spline'
+  let inputDir = RAW_DIR
   let outputDir = DEFAULT_OUTPUT_DIR
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -147,6 +178,10 @@ export function parseTraceArgs(argv: readonly string[]): TraceOptions {
       const value = argv[++index] as TraceProfileName | undefined
       if (!value || !(value in TRACE_PROFILES)) throw new Error(`Unknown profile: ${value ?? ''}`)
       profile = value
+    } else if (argument === '--input-dir') {
+      const value = argv[++index]
+      if (!value) throw new Error('--input-dir requires a directory')
+      inputDir = resolve(value)
     } else if (argument === '--output-dir') {
       const value = argv[++index]
       if (!value) throw new Error('--output-dir requires a path')
@@ -163,14 +198,14 @@ export function parseTraceArgs(argv: readonly string[]): TraceOptions {
     throw new Error(`Slot ${slot} out of range (0-${PROMPTS.length - 1})`)
   }
 
-  return { all, slot, force, profile, outputDir }
+  return { all, slot, force, profile, inputDir, outputDir }
 }
 
 export function selectedSlots(options: TraceOptions): number[] {
   return options.all ? PROMPTS.map((_prompt, index) => index) : [options.slot as number]
 }
 
-export function validateInputFiles(entries: readonly string[], slots: readonly number[]): InputFile[] {
+export function validateInputFiles(entries: readonly string[], slots: readonly number[], inputDir = RAW_DIR): InputFile[] {
   const expected = new Set(slots.map((slot) => PROMPTS[slot].name))
   const inputFiles: InputFile[] = []
   const seen = new Set<string>()
@@ -184,7 +219,7 @@ export function validateInputFiles(entries: readonly string[], slots: readonly n
     }
     if (seen.has(name)) throw new Error(`Multiple raster inputs for ${name}`)
     seen.add(name)
-    inputFiles.push({ name, path: join(RAW_DIR, entry) })
+    inputFiles.push({ name, path: join(inputDir, entry) })
   }
 
   const missing = [...expected].filter((name) => !seen.has(name))
@@ -222,10 +257,10 @@ async function fileExists(path: string): Promise<boolean> {
 async function main(): Promise<void> {
   const options = parseTraceArgs(process.argv.slice(2))
   const slots = selectedSlots(options)
-  const entries = await readdir(RAW_DIR).catch(() => {
-    throw new Error(`No raw/ directory at ${RAW_DIR}. Run avatars:generate first.`)
+  const entries = await readdir(options.inputDir).catch(() => {
+    throw new Error(`No raster input directory at ${options.inputDir}. Run avatars:generate or avatars:composite first.`)
   })
-  const inputs = validateInputFiles(entries, slots)
+  const inputs = validateInputFiles(entries, slots, options.inputDir)
   const profile = TRACE_PROFILES[options.profile]
   await mkdir(options.outputDir, { recursive: true })
 
@@ -240,10 +275,14 @@ async function main(): Promise<void> {
     }
     process.stdout.write(`→ ${input.name} (${options.profile}) ... `)
     try {
-      await convertFile(input.path, outputPath, profile)
-      const normalized = ensureViewBox(await readFile(outputPath, 'utf8'), input.name)
-      validateSvgOutput(normalized, input.name)
-      await writeFile(outputPath, normalized)
+      const inputSha256 = sha256(await readFile(input.path))
+      await vTracerBackend.trace({
+        inputPath: input.path,
+        outputPath,
+        profile,
+        slot: PROMPTS.findIndex((prompt) => prompt.name === input.name) as AvatarSlot,
+        inputSha256,
+      })
       console.log('done')
       traced += 1
     } catch (error) {
@@ -253,7 +292,16 @@ async function main(): Promise<void> {
   }
   await writeFile(
     join(options.outputDir, 'metadata.json'),
-    `${JSON.stringify({ profile: options.profile, version: VTRACER_VERSION }, null, 2)}\n`,
+    `${JSON.stringify({
+      engine: VTRACER_ENGINE,
+      engineVersion: VTRACER_VERSION,
+      profile: options.profile,
+      version: VTRACER_VERSION,
+      inputs: Object.fromEntries(await Promise.all(inputs.map(async (input) => [
+        input.name,
+        sha256(await readFile(input.path)),
+      ]))),
+    }, null, 2)}\n`,
   )
   console.log(`\nTraced ${traced}, skipped ${skipped}`)
 }

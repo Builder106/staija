@@ -6,22 +6,15 @@ import {
 import { PORTRAIT_SLOT_COUNT } from '../../src/services/avatar'
 
 /**
- * The lookup is glob-driven via Vite. With the directory empty
- * (default state — Phase 4 is opt-in), every slot returns false /
- * null. These tests guard the contract: the helper must NOT throw
- * for slots without files; it should silently return null/false so
- * callers can fall back to the static thumbnail.
- *
- * When a real `slot-<N>.json` is dropped into
- * `src/assets/avatar-lotties/`, the corresponding slot will start
- * returning true / a parsed module — at which point a follow-up test
- * can assert that.
+ * The lookup is glob-driven via Vite. These tests guard the runtime
+ * contract for generated and invalid slots; committed animation files
+ * are validated by the animation tooling before they reach this API.
  */
 
 describe('hasLottieForSlot', () => {
-  it('returns false for every slot when no Lottie files are present', () => {
+  it('finds every generated animation slot', () => {
     for (let slot = 0; slot < PORTRAIT_SLOT_COUNT; slot++) {
-      expect(hasLottieForSlot(slot)).toBe(false)
+      expect(hasLottieForSlot(slot)).toBe(true)
     }
   })
 
@@ -32,9 +25,14 @@ describe('hasLottieForSlot', () => {
 })
 
 describe('loadLottieForSlot', () => {
-  it('resolves to null for slots with no file', async () => {
-    expect(await loadLottieForSlot(0)).toBeNull()
-    expect(await loadLottieForSlot(6)).toBeNull()
+  it('loads embedded animation data for generated slots', async () => {
+    for (const slot of [0, 6]) {
+      const animation = await loadLottieForSlot(slot)
+      expect(animation).not.toBeNull()
+      expect(animation?.w).toBe(256)
+      expect(animation?.h).toBe(256)
+      expect(animation?.layers).toHaveLength(11)
+    }
   })
 
   it('resolves to null for out-of-range slots without throwing', async () => {

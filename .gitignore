@@ -45,6 +45,10 @@ functions/email-previews/
 tools/avatars/raw/
 tools/avatars/traced/
 tools/avatars/clean/
+tools/avatars/composited/
+tools/avatars/candidate-traced/
+tools/avatars/candidate-clean/
+tools/avatars/candidate-parts.ts
 .vercel
 
 # Playwright demo intermediates — only the converted .mp4s in e2e/videos/

@@ -60,6 +60,8 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
+      - name: Reject retired Vectorizer backend
+        run: npm run avatars:check-backend
       # --omit=dev: firebase-tools (devDependency, CLI only, never shipped)
       # bundles a deep tree with several CVEs that would require a breaking
       # firebase-tools major bump to clear. Scoped to production deps, which

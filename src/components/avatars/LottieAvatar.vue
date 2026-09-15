@@ -66,13 +66,20 @@ function loadInstance() {
     return;
   }
 
-  instance = lottie.loadAnimation({
-    container: container.value,
-    renderer: 'svg',
-    loop: props.loop,
-    autoplay: props.autoplay,
-    animationData: props.animationData,
-  });
+  try {
+    instance = lottie.loadAnimation({
+      container: container.value,
+      renderer: 'svg',
+      loop: props.loop,
+      autoplay: props.autoplay,
+      animationData: props.animationData,
+    });
+  } catch {
+    // Keep the static image visible when malformed data or a renderer
+    // failure prevents lottie-web from creating an instance.
+    destroyInstance();
+    return;
+  }
   // `DOMLoaded` fires once the Lottie SVG is in the DOM. We wait for
   // it before fading the fallback out so the swap is invisible.
   instance.addEventListener('DOMLoaded', () => {

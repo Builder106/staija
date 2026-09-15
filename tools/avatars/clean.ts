@@ -98,6 +98,7 @@ function parseArgs(argv: string[]) {
   return {
     inputDir: get('--input-dir', DEFAULT_INPUT_DIR),
     outputDir: get('--output-dir', DEFAULT_OUTPUT_DIR),
+    partsOutput: get('--parts-output', PARTS_TS),
     writeParts: !argv.includes('--no-write-parts'),
     background: (() => {
       const index = argv.indexOf('--background')
@@ -132,11 +133,11 @@ export function buildPartsTs(svgsByName: Map<string, string>): string {
     const escaped = svg.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
     return `  // ${index} — ${prompt.name}\n  '${escaped}',`
   })
-  return `/**\n * SVG part library for the STAIJA avatar style.\n *\n * **Generated file** — produced by tools/avatars/clean.ts after the\n * generate → trace → clean pipeline. Hand-edits here will be\n * overwritten on the next \`npm run avatars:clean\`. To change a\n * portrait, edit the prompt in tools/avatars/prompts.ts and re-run\n * the pipeline.\n *\n * Architecture: whole-portrait avatars. Each entry is a complete\n * head/shoulders SVG fragment, scaled to fit the 0 0 80 80 viewBox.\n * The Dicebear style at ./style.ts seed-picks one per scholar.\n */\n\nexport const PORTRAITS: string[] = [\n${entries.join('\n')}\n]\n`
+  return `/**\n * SVG part library for the STAIJA avatar style.\n *\n * **Generated file** — produced by tools/avatars/clean.ts after the\n * generate → trace → clean pipeline. Hand-edits here will be\n * overwritten on the next \`npm run avatars:clean\`. To change a\n * portrait, edit its layered source manifest and assets under\n * tools/avatars/layers/ and re-run the pipeline.\n *\n * Architecture: whole-portrait avatars. Each entry is a complete\n * head/shoulders SVG fragment, scaled to fit the 0 0 80 80 viewBox.\n * The Dicebear style at ./style.ts seed-picks one per scholar.\n */\n\nexport const PORTRAITS: string[] = [\n${entries.join('\n')}\n];\n`
 }
 
 async function main(): Promise<void> {
-  const { inputDir, outputDir, writeParts, background } = parseArgs(process.argv.slice(2))
+  const { inputDir, outputDir, partsOutput, writeParts, background } = parseArgs(process.argv.slice(2))
   await access(inputDir)
   await mkdir(outputDir, { recursive: true })
   const entries = selectPortraitEntries(await readdir(inputDir))
@@ -166,7 +167,10 @@ async function main(): Promise<void> {
   } catch {
     // Metadata is optional for manually supplied traced SVGs.
   }
-  if (writeParts) await writeFile(PARTS_TS, buildPartsTs(cleaned))
+  if (writeParts) {
+    await mkdir(dirname(partsOutput), { recursive: true })
+    await writeFile(partsOutput, buildPartsTs(cleaned))
+  }
   console.log(`Cleaned ${cleaned.size} portraits.`)
 }
 
