@@ -146,7 +146,7 @@ CONTENTFUL_MANAGEMENT_TOKEN
 VITE_CONTENTFUL_ENV_ID
 
 VITE_PAYSTACK_PUBLIC_KEY
-VITE_NEWSLETTER_ENDPOINT            # leave blank until the function is deployed
+VITE_NEWSLETTER_ENDPOINT            # subscribeNewsletter URL; blank until deployed
 VITE_PUBLIC_MENTORS_ENDPOINT        # getPublicMentors Cloud Function URL (public mentor showcase)
 VITE_REFERRER_NAME_ENDPOINT         # resolveReferrerName Cloud Function URL (personalised /stay-connected hero)
 VITE_APP_URL
@@ -157,15 +157,15 @@ VITE_RECAPTCHA_ENTERPRISE_SITE_KEY  # Firebase App Check site key (public)
 The three `*_ENDPOINT` vars are optional. Each surface degrades to a sensible
 empty state when its endpoint is unset:
 
-- `VITE_NEWSLETTER_ENDPOINT` unset → newsletter forms record intent locally and
+- `VITE_NEWSLETTER_ENDPOINT` unset → newsletter forms show an unavailable state
 
-  show a fake-success state (no real signup happens).
+  and do not submit or record a newsletter signup.
 
-Keep `VITE_NEWSLETTER_ENDPOINT` unset while `subscribeNewsletter` is not
-exported from `functions/src/index.ts`. Before configuring it, create the
-Mailgun list, set `MAILGUN_LIST_ADDRESS` in Firebase Secret Manager, export and
-deploy the function, and use the URL for the matching Firebase project. Do not
-point production or staging at a guessed or undeployed function URL.
+Keep `VITE_NEWSLETTER_ENDPOINT` unset until the Mailgun list exists,
+`MAILGUN_LIST_ADDRESS` is set in Firebase Secret Manager, and the exported
+`subscribeNewsletter` function is deployed. Use the URL for the matching
+Firebase project. Do not point production or staging at a guessed or
+undeployed function URL.
 
 - `VITE_PUBLIC_MENTORS_ENDPOINT`unset →`/stay-connected`'s mentor showcase
 

@@ -4,10 +4,9 @@
  *
  * Same Mailgun-mailing-list endpoint as the footer form, plus an
  * `interestTag` so future drip campaigns can segment by audience
- * (next-cycle applicant vs. mentor-curious vs. general). Falls back to
- * a "fake success" state when `VITE_NEWSLETTER_ENDPOINT` is unset,
- * matching the footer's behavior so unconfigured environments don't
- * advertise a broken form.
+ * (next-cycle applicant vs. mentor-curious vs. general). Shows an
+ * unavailable state when `VITE_NEWSLETTER_ENDPOINT` is unset so
+ * unconfigured environments do not claim a signup succeeded.
  *
  * The default interest tag respects the `?from` / `reason` the page
  * was opened with, so a visitor who arrived because StepUp is closed
@@ -81,11 +80,8 @@ async function handleSubmit(e: Event) {
   const referrerId = getCapturedReferrerId();
 
   if (!endpoint) {
-    // Endpoint not configured — record the intent locally, mirror the
-    // footer's "fake success" pattern so we don't expose half-built
-    // plumbing to visitors.
-    trackNewsletterSignup(`${source}:${interestTag.value}`);
-    status.value = 'success';
+    status.value = 'error';
+    error.value = 'Newsletter sign-ups are temporarily unavailable. Please try again later.';
     return;
   }
 

@@ -42,9 +42,8 @@ async function handleNewsletter(e: Event) {
 
   const endpoint = getAppConfig().newsletterEndpoint;
   if (!endpoint) {
-    // Endpoint not configured yet — track the intent but explain.
-    trackNewsletterSignup('footer');
-    newsletterStatus.value = 'success';
+    newsletterStatus.value = 'error';
+    newsletterError.value = 'Newsletter sign-ups are temporarily unavailable. Please try again later.';
     return;
   }
 
