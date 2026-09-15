@@ -43,7 +43,8 @@ async function handleNewsletter(e: Event) {
   const endpoint = getAppConfig().newsletterEndpoint;
   if (!endpoint) {
     newsletterStatus.value = 'error';
-    newsletterError.value = 'Newsletter sign-ups are temporarily unavailable. Please try again later.';
+    newsletterError.value =
+      'Newsletter sign-ups are temporarily unavailable. Please try again later.';
     return;
   }
 
