@@ -6,7 +6,7 @@
 
 ## 2026-09-15 — Restored Firebase Google popup compatibility on staging #fix
 
-Staging's CSP allowed the Firebase token and App Check endpoints but excluded Google Identity Services and the `staija-staging.firebaseapp.com` Firebase Auth helper iframe. Its `Cross-Origin-Opener-Policy: same-origin` also severed the popup opener channel. Added the narrow OAuth sources needed by Firebase Google popup sign-in, changed COOP to `same-origin-allow-popups`, and added a regression test over `vercel.json`. Firebase Console provider enablement and authorized-domain state remain deployment settings to verify separately.
+Staging's CSP allowed the Firebase token and App Check endpoints but excluded Google Identity Services, Firebase's `apis.google.com/js/api.js` popup-resolver client, and the `staija-staging.firebaseapp.com` Firebase Auth helper iframe. Its `Cross-Origin-Opener-Policy: same-origin` also severed the popup opener channel. Added the narrow OAuth sources needed by Firebase Google popup sign-in, changed COOP to `same-origin-allow-popups`, and added a regression test over `vercel.json`. Firebase Console provider enablement and authorized-domain state remain deployment settings to verify separately.
 
 ## 2026-09-15 — Newsletter forms fail closed without an endpoint #decision
 

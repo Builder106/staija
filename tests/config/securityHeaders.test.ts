@@ -36,6 +36,9 @@ describe('OAuth security headers', () => {
     expect(directiveSources(contentSecurityPolicy, 'script-src')).toContain(
       'https://accounts.google.com/gsi/client',
     )
+    expect(directiveSources(contentSecurityPolicy, 'script-src')).toContain(
+      'https://apis.google.com',
+    )
     expect(directiveSources(contentSecurityPolicy, 'connect-src')).toContain(
       'https://accounts.google.com/gsi/',
     )
