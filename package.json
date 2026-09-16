@@ -80,7 +80,7 @@
     "happy-dom": "^20.12.0",
     "jimp": "^1.6.1",
     "playwright": "1.63.0",
-    "playwright-bdd": "^9.2.0",
+    "playwright-bdd": "^9.2.1",
     "potrace": "^2.1.8",
     "@visioncortex/vtracer": "1.0.0-alpha.4",
     "prettier": "^3.9.6",
