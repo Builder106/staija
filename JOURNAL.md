@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-16 — Reconciled staging with main dependency updates #maintenance
+
+Merged the six dependency-update commits currently on `origin/main` into `staging` without conflicts, preserving staging's avatar, authentication, newsletter, and deployment changes. The resulting staging snapshot is ready for verification; production `main` remains unchanged until the reconciled staging state is reviewed and explicitly promoted.
+
 ## 2026-09-15 — Restored Firebase Google popup compatibility on staging #fix
 
 Staging's CSP allowed the Firebase token and App Check endpoints but excluded Google Identity Services, Firebase's `apis.google.com/js/api.js` popup-resolver client, and the `staija-staging.firebaseapp.com` Firebase Auth helper iframe. Its `Cross-Origin-Opener-Policy: same-origin` also severed the popup opener channel. Added the narrow OAuth sources needed by Firebase Google popup sign-in, changed COOP to `same-origin-allow-popups`, and added a regression test over `vercel.json`. Firebase Console provider enablement and authorized-domain state remain deployment settings to verify separately.
