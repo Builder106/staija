@@ -19,7 +19,7 @@ describe('avatar manifest contract', () => {
     expect(AVATAR_MANIFESTS.map((manifest) => manifest.slot)).toEqual([...Array(10).keys()])
   })
 
-  it('uses deterministic layer ordering and all required animation roles', () => {
+  it('keeps semantic layer order while drawing back hair below the head', () => {
     const manifest = AVATAR_MANIFESTS[0]
     expect(manifest.layers.map((layer) => layer.role)).toEqual([
       'background',
@@ -34,9 +34,8 @@ describe('avatar manifest contract', () => {
       'mouth-smile',
       'accessory',
     ])
-    expect(manifest.layers.map((layer) => layer.zIndex)).toEqual(
-      [...manifest.layers].map((layer) => layer.zIndex).sort((a, b) => a - b),
-    )
+    expect(manifest.layers.map((layer) => layer.zIndex)).toEqual([0, 10, 20, 15, 40, 50, 51, 52, 60, 61, 70])
+    expect([...manifest.layers].map((layer) => layer.zIndex).sort((a, b) => a - b)).toEqual([0, 10, 15, 20, 40, 50, 51, 52, 60, 61, 70])
     expect(REQUIRED_LAYER_ROLES.every((role) => manifest.layers.some((layer) => layer.role === role))).toBe(true)
   })
 

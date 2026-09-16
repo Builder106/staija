@@ -47,17 +47,18 @@ function layer(
   zIndex: number,
   motionId?: string,
 ): AvatarSlotManifest['layers'][number] {
-  const transform = LAYER_TRANSFORMS[role] ?? IDENTITY_TRANSFORM
+  const transform = layerTransform(slot, role)
   return {
     id: role,
     role,
     file: `tools/avatars/layers/slot-${slot}/${role}.png`,
-    zIndex,
+    zIndex: layerZIndex(slot, role, zIndex),
     visible:
       role !== 'eyes-closed' &&
       role !== 'mouth-smile' &&
       !(slot === 0 && (role === 'hair-back' || role === 'hair-front')) &&
-      !([6, 7, 8, 9].includes(slot) && role === 'hair-front'),
+      !(slot === 1 && role === 'hair-back') &&
+      !((slot === 6 || slot === 8) && role === 'hair-front'),
     opacity: 1,
     blendMode: 'normal',
     transform,
@@ -84,12 +85,23 @@ const LAYER_TRANSFORMS: Partial<Record<AvatarLayerRole, AvatarTransform>> = {
   accessory: centeredTransform(0.5),
 }
 
+function layerTransform(slot: AvatarSlot, role: AvatarLayerRole): AvatarTransform {
+  if (role === 'hair-front' && slot === 1) return centeredTransform(1.25)
+  if (role === 'hair-front' && (slot === 7 || slot === 9)) return centeredTransform(0.82, 0, -42)
+  return LAYER_TRANSFORMS[role] ?? IDENTITY_TRANSFORM
+}
+
+function layerZIndex(slot: AvatarSlot, role: AvatarLayerRole, zIndex: number): number {
+  if (role === 'hair-back' && (slot === 6 || slot === 8)) return 30
+  return zIndex
+}
+
 function manifest(slot: AvatarSlot, name: string): AvatarSlotManifest {
   const roles: readonly [AvatarLayerRole, number][] = [
     ['background', 0],
     ['body', 10],
     ['head', 20],
-    ['hair-back', 30],
+    ['hair-back', 15],
     ['hair-front', 40],
     ['eyes-open', 50],
     ['eyes-closed', 51],
