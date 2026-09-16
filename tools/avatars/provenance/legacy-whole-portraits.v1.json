@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "legacy-whole-portrait-provenance",
+  "status": "historical-reconstruction",
+  "scope": "The ten whole-portrait PNGs first committed in f32c10e. This record is not an input to the current layered-avatar pipeline.",
+  "reconstructedFrom": {
+    "commit": "f32c10ebe61738774b2adc786974923f8ded1c3c",
+    "committedAt": "2026-05-08T07:21:25-04:00",
+    "files": [
+      "tools/avatars/prompts.ts",
+      "tools/avatars/generate.ts",
+      "tools/avatars/README.md",
+      "src/services/avatar/style.ts"
+    ]
+  },
+  "recoverability": {
+    "reconstructable": [
+      "Prompt text, shared style anchor, negative prompts, request parameters, and deterministic per-slot seed",
+      "The original committed thumbnail for each slot, identified by its Git blob object ID",
+      "The manual Vectorizer.AI tracing boundary and DiceBear's runtime selection role"
+    ],
+    "notRecoverable": [
+      "The uncommitted raw 1024x1024 provider response",
+      "The manually downloaded Vectorizer.AI SVG export",
+      "The provider model snapshot and any server-side generation settings not sent by generate.ts"
+    ]
+  },
+  "generation": {
+    "provider": "pollinations",
+    "endpointTemplate": "https://image.pollinations.ai/prompt/{urlEncodedInputs}?{parameters}",
+    "model": "flux",
+    "width": 1024,
+    "height": 1024,
+    "parameters": {
+      "nologo": true,
+      "private": true,
+      "enhance": false
+    },
+    "inputsTemplate": "{styleAnchor}. SUBJECT: {subjectPrompt}",
+    "negativeTemplate": "{negativeBase}, {extraNegative}",
+    "seedAlgorithm": "Start with signed 32-bit seed 0. For each UTF-16 code unit in the slot name, compute seed = ((seed << 5) - seed + charCode) | 0. Send abs(seed) % 100000.",
+    "output": "tools/avatars/raw/{name}.png"
+  },
+  "styleAnchor": "STRICT FLAT 2D VECTOR ILLUSTRATION, editorial poster style, NOT 3D, NOT photorealistic, NOT rendered, bold clean solid color shapes only, at most one tonal step for cheek dimension (no gradients, no soft transitions, no smooth shading), harmonious limited palette, simple outline definition where needed, head and shoulders crop, subject perfectly centered, plain solid background (paper white or single subtle brand-color wash), square 1024x1024 canvas, no text, no logos, no watermarks",
+  "negativeBase": "3D render, photorealistic skin, beauty photography, retouched portrait, smooth gradient skin, hyperreal, octane render, cinema 4D, pixar style, disney 3D, soft cloth simulation, fabric texture, realistic shadows, depth of field, bokeh, caricature, exaggerated proportions, anime, manga, cartoon-cute chibi, gradient mesh, drop shadow, photographic background, multiple subjects, body below shoulders, hands visible, props, busy background, signature, watermark, low resolution, blurry",
+  "tracing": {
+    "backend": "Vectorizer.AI web UI",
+    "mode": "manual",
+    "input": "tools/avatars/raw/{name}.png",
+    "output": "tools/avatars/traced/{name}.svg",
+    "postprocess": "tools/avatars/clean.ts produced cleaned SVG fragments and src/services/avatar/parts.ts"
+  },
+  "runtimeSelection": {
+    "library": "@dicebear/core v9",
+    "role": "DiceBear selected one pre-generated SVG fragment from PORTRAITS using a user's seeded PRNG. It did not generate the source art.",
+    "replacement": "A local djb2 hash now selects the same kind of pre-generated portrait without a DiceBear dependency."
+  },
+  "slots": [
+    {
+      "slot": 0,
+      "name": "portrait-bald",
+      "generationSeed": 46391,
+      "subjectPrompt": "Portrait of a young African male STEM scholar, age 17-20, bald (clean-shaven head), medium-deep brown skin tone #5C341B with subtle warmer cheek lighting from upper-left, calm neutral expression, plain warm-brown crew-neck t-shirt, no jewelry, no glasses. Front-facing, head and shoulders only, eye-line at 40% from canvas top. Soft cream/paper background #F1F5F9",
+      "extraNegative": null,
+      "originalPng": {
+        "path": "public/avatars/portrait-0.png",
+        "gitBlob": "9ff72ba663a8342707a87fb163943cff3ef06c92"
+      }
+    },
+    {
+      "slot": 1,
+      "name": "portrait-afro-medium",
+      "generationSeed": 84942,
+      "subjectPrompt": "Portrait of a young African woman STEM scholar, age 17-20, voluminous natural afro hairstyle, hair color black-brown #1A0F08 with subtle texture, warm medium-brown skin #7B4923, small gold stud earrings, soft confident smile, plain charcoal crew-neck t-shirt, no glasses. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": "heavy makeup, false eyelashes, glamour styling",
+      "originalPng": {
+        "path": "public/avatars/portrait-1.png",
+        "gitBlob": "f8d87740c6b809eb4581b0028280e8251d1517e9"
+      }
+    },
+    {
+      "slot": 2,
+      "name": "portrait-locs",
+      "generationSeed": 35291,
+      "subjectPrompt": "Portrait of a young African man STEM scholar, age 17-20, shoulder-length freeform locs (dreadlocks), hair color black-brown #1A0F08, deep warm brown skin tone #46271A, neutral focused expression, plain navy crew-neck t-shirt, no glasses, no jewelry. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": null,
+      "originalPng": {
+        "path": "public/avatars/portrait-2.png",
+        "gitBlob": "5dc50312ec202a723064ebdf91f4538b57309706"
+      }
+    },
+    {
+      "slot": 3,
+      "name": "portrait-braids-long",
+      "generationSeed": 30000,
+      "subjectPrompt": "Portrait of a young African woman STEM scholar, age 17-20, long box braids parted in the center hanging past the shoulders, braids in black-brown #1A0F08, medium brown skin tone #6B3E25, small simple gold hoops, neutral self-assured expression, plain forest-green crew-neck t-shirt, no glasses. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": "heavy makeup, false eyelashes",
+      "originalPng": {
+        "path": "public/avatars/portrait-3.png",
+        "gitBlob": "f18e60c510f1a9ccdc8e9d9e9e5c46ad494658b5"
+      }
+    },
+    {
+      "slot": 4,
+      "name": "portrait-hijab",
+      "generationSeed": 18440,
+      "subjectPrompt": "Portrait of a young Muslim African woman scholar, age 17-20, modest deep emerald-green hijab #3D5A4A fully covering hair, ears, and neck, draping naturally over shoulders. Medium-deep brown skin #5C341B visible only on the face. Subtle inner-fold ring of slightly darker green #2D4337 around the face. Soft warm smile, no jewelry, no glasses. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": "hair visible, sheer fabric, fashion makeup",
+      "originalPng": {
+        "path": "public/avatars/portrait-4.png",
+        "gitBlob": "87388cd745424dea5ff8c1a8dc0b14c40d4ac25b"
+      }
+    },
+    {
+      "slot": 5,
+      "name": "portrait-gele",
+      "generationSeed": 93591,
+      "subjectPrompt": "Portrait of a young Nigerian woman scholar, age 17-20, wearing a tall structured traditional Nigerian gele headwrap in brand-violet #8B55FF with a slightly lighter top fold #A878FF and a darker headband stripe #6B3FE0. Decorative small gold dots #FFD700 scattered across the gele in a loose Ankara-inspired pattern. Deep brown skin tone #46271A. Confident neutral expression. Plain off-white blouse with rounded neckline. No glasses, simple gold studs only. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": "casual headwrap, beanie, generic turban",
+      "originalPng": {
+        "path": "public/avatars/portrait-5.png",
+        "gitBlob": "2aa921d48749408d87b2bf2adda2aab38ed90197"
+      }
+    },
+    {
+      "slot": 6,
+      "name": "portrait-twa-glasses",
+      "generationSeed": 53719,
+      "subjectPrompt": "Portrait of a young African scholar, age 17-20, androgynous gender-neutral presentation, very short cropped TWA (teeny weeny afro) natural hair, hair color black-brown #1A0F08, warm medium-brown skin #6B3E25, modern thick-frame square eyeglasses in matte black #181818 with subtle white highlight on lens upper edge, calm neutral expression, plain heather-grey crew-neck t-shirt under a slate-grey lab coat collar. Front-facing, head and shoulders only. Soft brand-sky-tinted background, very pale #E0F4F7",
+      "extraNegative": "overtly feminine styling, overtly masculine styling, makeup",
+      "originalPng": {
+        "path": "public/avatars/portrait-6.png",
+        "gitBlob": "43cc0e2d04e3f07dd20d249aa4d030d64309fc70"
+      }
+    },
+    {
+      "slot": 7,
+      "name": "portrait-twists-puff",
+      "generationSeed": 58420,
+      "subjectPrompt": "Portrait of a young African woman STEM scholar, age 17-20, two-strand twists pulled up into a high natural puff at the crown of the head, twists in black-brown #1A0F08, deep warm brown skin tone #46271A, soft engaged smile, plain mustard-yellow crew-neck t-shirt, simple silver studs, no glasses. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": "heavy makeup, false eyelashes, glamour styling",
+      "originalPng": {
+        "path": "public/avatars/portrait-7.png",
+        "gitBlob": "c05c5f8668daa4e4511b2bde23adb423299967b4"
+      }
+    },
+    {
+      "slot": 8,
+      "name": "portrait-fade-glasses",
+      "generationSeed": 26517,
+      "subjectPrompt": "Portrait of a young African man STEM scholar, age 17-20, low fade haircut (very short on sides, slightly longer on top), hair color black-brown #1A0F08, deep brown skin tone #3A2114, round wire-frame eyeglasses in warm brass #C8A24A with thin frames, neutral focused expression, plain white crew-neck t-shirt under a navy blazer collar. Front-facing, head and shoulders only. Soft cream/paper background #F1F5F9",
+      "extraNegative": null,
+      "originalPng": {
+        "path": "public/avatars/portrait-8.png",
+        "gitBlob": "002629ee769c6b7e1207e305b95429af0337cfa8"
+      }
+    },
+    {
+      "slot": 9,
+      "name": "portrait-bantu",
+      "generationSeed": 93442,
+      "subjectPrompt": "Portrait of a young African scholar, age 17-20, gender-neutral presentation, hair styled in bantu knots (multiple small twisted knots arranged in a grid pattern across the scalp), hair color black-brown #1A0F08, warm medium-deep brown skin tone #5C341B, soft confident expression, plain dusty-rose crew-neck t-shirt, no glasses, no visible jewelry. Front-facing, head and shoulders only. Soft brand-violet-tinted background, very pale #F0E8FF",
+      "extraNegative": "cornrows, dreadlocks, single bun",
+      "originalPng": {
+        "path": "public/avatars/portrait-9.png",
+        "gitBlob": "04b7e9405456ef8cfdc08d79cac36b1bf04049e1"
+      }
+    }
+  ]
+}

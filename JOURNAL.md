@@ -16,6 +16,17 @@ Removed the newsletter forms' fake-success path when `VITE_NEWSLETTER_ENDPOINT` 
 
 Exported `subscribeNewsletter` from `functions/src/index.ts`, so the next production or staging Functions deployment includes the public Mailgun signup endpoint. The function requires the existing `MAILGUN_API_KEY` and `MAILGUN_LIST_ADDRESS` secrets. Kept the authenticated `setNewsletterSubscription` callable and Paystack functions unexported. The frontend newsletter endpoint remains unset until the function is deployed and endpoint checks pass; the focused Functions TypeScript build passed.
 
+## 2026-09-16 — Recovered provenance for legacy whole-portrait avatars #decision
+
+Added `tools/avatars/provenance/legacy-whole-portraits.v1.json` to preserve the
+recoverable source-art recipe for the ten PNGs first committed in `f32c10e`:
+the historical Pollinations `flux` request settings, complete prompts,
+deterministic per-slot seeds, initial PNG Git blob IDs, manual Vectorizer.AI
+tracing boundary, and DiceBear's selection-only runtime role. The raw provider
+responses, downloaded Vectorizer exports, and remote model snapshot were never
+committed, so the manifest can reconstruct the request but cannot promise
+pixel-identical regeneration.
+
 ## 2026-09-15 — Promoted FOSS layered-avatar set #implementation #milestone
 
 Added and visually reviewed complete 256×256 layer sources for all ten curated slots, deterministic `--all` compositing, self-contained validated Lottie JSON, and an in-process VTracer static pipeline. The approved `poster-cutout-detail` candidate is now promoted to `parts.ts` and the ten static PNG fallbacks. Linux verification passes 249 tests, lint, formatting, the retired-backend guard, the production build, and the existing public-site browser E2E. The promoted cleaned library SHA-256 is `a6f8048e32233942e128d91e6b1f2cd2f557f94d19394207c018736159896713`; the static-output manifest SHA-256 is `5c874553f2052e239016f71b929fb188710d73cd9f601df29b5e5b558c90d2f7`; and the Lottie-set manifest SHA-256 is `d376ebf36f8faa5b870febdd1a9922174c0b1dbdf954d12c3ced9b0cc18327e8`. No authenticated Settings/admin-preview browser scenario exists in the repository suite, so that manual release check remains open. The local `.env.production.local` still contains retired backend variable names; secret cleanup was not performed.

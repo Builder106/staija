@@ -26,6 +26,19 @@ inputs for the promoted outputs are the layered manifests and assets under
 `tools/avatars/layers/`. Re-run `npm run avatars:static-candidate` after
 editing them; do not hand-edit `src/services/avatar/parts.ts`.
 
+## Legacy whole-portrait provenance
+
+[legacy-whole-portraits.v1.json](./provenance/legacy-whole-portraits.v1.json)
+records the recoverable recipe for the ten original whole-portrait PNGs:
+their prompts, deterministic Pollinations `flux` seeds, request settings,
+initial PNG Git blob IDs, the manual Vectorizer.AI tracing step, and
+DiceBear's former selection-only role. It is historical evidence, not an
+input to the current layered-avatar pipeline.
+
+The original provider responses and manually downloaded trace exports were
+not committed. The manifest can reconstruct the request but cannot guarantee
+identical pixels from a changed remote model or service.
+
 ## Providers (PNG generation)
 
 | Provider | Free? | Auth | Quality | Notes |
