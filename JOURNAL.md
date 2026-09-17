@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-16 — Approved and promoted the current layered-avatar candidate #implementation #milestone
+
+After visual approval, regenerated the ten-slot `poster-cutout-detail` VTracer candidate from the committed layer sources and promoted its validated static PNGs, cleaned `parts.ts`, and self-contained Lottie documents as one coherent runtime set. The promotion tool verified the current source composites, required VTracer profile, all cleaned SVGs, generated parts, and embedded Lottie assets before applying; slots 0, 6, and 8 were regenerated but retained identical runtime bytes. Final SHA-256 values: static-PNG set `10acef16491b541217c189206aacf35c1e876a648e645879ccddaa0b91dcaace`, `parts.ts` `2ce2f4a96a7e8a39a785c81be208047936a303aadf1e7c9332f4c0f24ca46e5e`, and Lottie-set `e486594d4ab1fcd93374cc59d5699c0d754ac7801c545e3ca2822233f0585d3a`. Managed verification passed the full 261-test coverage suite, lint, format, retired-backend guard, production dependency audit, license scan, type-check, production build, and public-site E2E/accessibility suite. Normal builds now omit source maps, which reduces `dist` from 54,804 KB to 27,608 KB and restores the 50 MB CI ceiling; `ANALYZE=1` remains the explicit local analysis mode. Authenticated Settings and admin-preview, upload-bypass, reduced-motion, fallback, and Lottie network-loading behavior remain manual staging release checks after a separately authorized push.
+
 ## 2026-09-16 — Reconciled staging with main dependency updates #maintenance
 
 Merged the six dependency-update commits currently on `origin/main` into `staging` without conflicts, preserving staging's avatar, authentication, newsletter, and deployment changes. The resulting staging snapshot is ready for verification; production `main` remains unchanged until the reconciled staging state is reviewed and explicitly promoted.
