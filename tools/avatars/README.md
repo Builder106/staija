@@ -131,6 +131,39 @@ metrics and rasterized results, and produces side-by-side sheets.
 Use temporary report and render directories; do not replace tracked
 thumbnails during benchmarking.
 
+## Runtime candidate review and promotion
+
+The static candidate is not served automatically. Generate it from the
+reviewed source layers, then create the picker-size comparison sheets:
+
+```sh
+npm run avatars:static-candidate -- --force --profile poster-cutout-detail
+npm run avatars:review -- \
+  --baseline-dir public/avatars \
+  --candidate-dir tools/avatars/composited \
+  --output-dir tools/avatars/review
+```
+
+The review command validates all ten 256×256 baseline and candidate PNGs
+before producing ignored two-column sheets at 32, 56, 80, 120, and 256 px.
+Its JSON manifest records a SHA-256 hash for each baseline, candidate, and
+sheet. The left column is the served baseline; the right column is the
+candidate.
+
+Only a human visual approval can advance a candidate. Before approval, run
+the promotion command without `--apply`; it validates the required VTracer
+engine and `poster-cutout-detail` profile, current source-layer composites,
+all cleaned SVGs, generated parts, and all ten embedded-asset Lottie files:
+
+```sh
+npm run avatars:promote
+```
+
+After approval, `npm run avatars:promote -- --apply` writes the validated
+PNGs, `parts.ts`, and Lottie documents through temporary files. It does not
+stage, commit, push, or deploy. Review the resulting diff and hashes before
+using Git as the atomic publication boundary.
+
 ## What `clean` does
 
 1. Runs SVGO with `preset-default` + custom plugins to:

@@ -42,11 +42,14 @@ function layerMotion(layer: AvatarLayer, motion: MotionConfig): Record<string, u
   return ks
 }
 
-async function requireSource(manifest: AvatarManifest): Promise<Array<{ layer: AvatarLayer; bytes: Uint8Array }>> {
+async function requireSource(
+  manifest: AvatarManifest,
+  repositoryRoot = ROOT,
+): Promise<Array<{ layer: AvatarLayer; bytes: Uint8Array }>> {
   const result: Array<{ layer: AvatarLayer; bytes: Uint8Array }> = []
   for (const layer of [...manifest.layers].sort((a, b) => a.zIndex - b.zIndex || a.id.localeCompare(b.id))) {
-    const path = resolve(ROOT, layer.file)
-    if (!path.startsWith(join(ROOT, 'tools/avatars/layers') + '/')) throw new Error(`Slot ${manifest.slot}: unsafe layer path ${layer.file}`)
+    const path = resolve(repositoryRoot, layer.file)
+    if (!path.startsWith(join(repositoryRoot, 'tools/avatars/layers') + '/')) throw new Error(`Slot ${manifest.slot}: unsafe layer path ${layer.file}`)
     try { await access(path) } catch { throw new Error(`Slot ${manifest.slot}: missing source layer ${layer.file}; add source art before running the Lottie rigger`) }
     const bytes = await readFile(path)
     if (!bytes.length) throw new Error(`Slot ${manifest.slot}: source layer ${layer.file} is empty`)
@@ -55,15 +58,24 @@ async function requireSource(manifest: AvatarManifest): Promise<Array<{ layer: A
   return result
 }
 
-export async function buildLottieDocument(slot: number): Promise<Record<string, unknown>> {
-  const manifest = AVATAR_MANIFESTS[slot]
+export async function buildLottieDocumentForManifest(
+  manifest: AvatarManifest,
+  repositoryRoot = ROOT,
+): Promise<Record<string, unknown>> {
+  const slot = manifest.slot
   const motion = MOTION_CONFIGS[slot]
   if (!manifest || !motion) throw new Error(`No manifest and motion configuration exists for slot ${slot}`)
-  const sources = await requireSource(manifest)
+  const sources = await requireSource(manifest, repositoryRoot)
   const assets = sources.map(({ layer, bytes }) => ({ id: `slot-${slot}-${layer.id}`, w: CANVAS_SIZE, h: CANVAS_SIZE, u: '', p: `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`, e: 1 }))
   const layers = sources.map(({ layer }, index) => ({ ddd: 0, ind: index + 1, ty: 2, nm: layer.id, refId: `slot-${slot}-${layer.id}`, sr: 1, ks: layerMotion(layer, motion), ip: 0, op: TOTAL_FRAMES, st: 0, bm: 0 }))
   const sourceHash = hash(Buffer.concat(sources.map(({ bytes }) => Buffer.from(bytes))))
   return { v: '5.7.4', fr: 60, ip: 0, op: TOTAL_FRAMES, w: CANVAS_SIZE, h: CANVAS_SIZE, nm: `staija-avatar-slot-${slot}`, ddd: 0, assets, layers, meta: { schemaVersion: 1, generator: 'staija-avatar-rig', slot, motion: motion.label, sourceHash } }
+}
+
+export async function buildLottieDocument(slot: number): Promise<Record<string, unknown>> {
+  const manifest = AVATAR_MANIFESTS[slot]
+  if (!manifest) throw new Error(`No manifest exists for slot ${slot}`)
+  return buildLottieDocumentForManifest(manifest)
 }
 
 async function rigSlot(slot: number): Promise<void> {

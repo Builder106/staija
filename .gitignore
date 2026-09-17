@@ -49,6 +49,7 @@ tools/avatars/composited/
 tools/avatars/candidate-traced/
 tools/avatars/candidate-clean/
 tools/avatars/candidate-parts.ts
+tools/avatars/review/
 .vercel
 
 # Playwright demo intermediates — only the converted .mp4s in e2e/videos/

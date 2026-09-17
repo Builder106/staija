@@ -32,6 +32,8 @@
     "avatars:thumbs": "tsx tools/avatars/thumbs.ts",
     "avatars:composite": "tsx tools/avatars/composite.ts",
     "avatars:static-candidate": "tsx tools/avatars/static-candidate.ts",
+    "avatars:review": "tsx tools/avatars/review.ts",
+    "avatars:promote": "tsx tools/avatars/promote.ts",
     "avatars:empty-layers": "tsx tools/avatars/ensure-empty-layers.ts",
     "avatars:check-backend": "sh scripts/check-avatar-backend.sh",
     "avatars:lottie": "tsx tools/avatars/lottie-rig.ts",
