@@ -12,7 +12,7 @@ import { computed } from 'vue';
 // `body` arrives as a Contentful `Document`. Plain strings (legacy
 // content) fall through as-is so callers can ignore the difference.
 
-const props = defineProps<{ body: unknown }>();
+const props = defineProps<{ body: Document | string | null | undefined }>();
 
 const html = computed(() => {
   if (!props.body) return '';

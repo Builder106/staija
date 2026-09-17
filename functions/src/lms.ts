@@ -519,7 +519,14 @@ export const gradeSubmission = onCall<GradeSubmissionInput>(
       )
     }
 
-    const update: Record<string, unknown> = {
+    interface SubmissionGradeUpdate {
+      status: string
+      gradedAt: FieldValue
+      gradedBy: string
+      grade?: number
+      mentorComment?: string
+    }
+    const update: SubmissionGradeUpdate = {
       status,
       gradedAt: FieldValue.serverTimestamp(),
       gradedBy: request.auth.uid,
@@ -687,7 +694,18 @@ export const submitQuiz = onCall<SubmitQuizInput>(
     // Update lesson_progress
     const progressId = `${enrollmentId}_${lessonSlug}`
     const progressRef = db.collection('lesson_progress').doc(progressId)
-    const progressUpdate: Record<string, unknown> = {
+    interface LessonProgressUpdate {
+      enrollmentId: string
+      studentId: string
+      mentorId: string | null
+      lessonSlug: string
+      moduleSlug: string
+      quizScore: number
+      quizPassed: boolean
+      status?: string
+      completedAt?: Date
+    }
+    const progressUpdate: LessonProgressUpdate = {
       enrollmentId,
       studentId: enrollment.studentId,
       mentorId: enrollment.mentorId ?? null,

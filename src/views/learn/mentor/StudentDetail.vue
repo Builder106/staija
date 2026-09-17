@@ -16,6 +16,7 @@ import {
   ProgressService,
   SubmissionService,
   toMillis,
+  type TimestampLike,
 } from '../../../services/learn';
 import { MentorService } from '../../../services/mentor';
 import type {
@@ -84,7 +85,7 @@ async function load() {
   }
 }
 
-function fmtDate(value: unknown) {
+function fmtDate(value: TimestampLike) {
   return new Date(toMillis(value)).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

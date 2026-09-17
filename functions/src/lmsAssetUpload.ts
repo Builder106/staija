@@ -127,7 +127,10 @@ export const lmsAssetUpload = onCall<AssetUploadInput>(
             // Node's Buffer works fine here at runtime — the SDK's HTTP
             // layer accepts it like any Uint8Array-backed payload — but
             // it doesn't structurally match the stricter ArrayBuffer type.
-            file: buffer as unknown as ArrayBuffer,
+            file: buffer.buffer.slice(
+              buffer.byteOffset,
+              buffer.byteOffset + buffer.byteLength,
+            ) as ArrayBuffer,
           }),
         },
       },

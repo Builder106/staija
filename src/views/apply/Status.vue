@@ -111,11 +111,20 @@ function formatDate(d: Date | string | undefined): string {
   return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
+type TimestampInput =
+  | Date
+  | { toDate: () => Date }
+  | { seconds: number; nanoseconds?: number }
+  | string
+  | number
+  | null
+  | undefined;
+
 /** Coerce Firestore Timestamp / ISO string / Date into a Date. The
  *  reviewedAt field comes back as a Timestamp object from getDoc(),
  *  and `new Date(timestampObject)` produces an Invalid Date — same
  *  shape as the admin-side display we already had to normalise. */
-function toDate(value: unknown): Date | null {
+function toDate(value: TimestampInput): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;
   if (typeof value === 'object' && value !== null && 'toDate' in value) {

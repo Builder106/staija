@@ -34,7 +34,7 @@ async function onSubmit(e: Event) {
     // New sign-ups always land as applicant.
     primeProfileCache(cred.user.uid, 'applicant');
     router.push({ name: 'applicant-dashboard' });
-  } catch (err: unknown) {
+  } catch (err) {
     error.value = toFriendlyAuthMessage(err, 'Sign up failed');
   } finally {
     submitting.value = false;
@@ -48,7 +48,7 @@ async function onGoogle() {
     const { credential, role } = await AuthService.signInWithGoogle();
     primeProfileCache(credential.user.uid, role);
     router.push(postLoginRoute(role));
-  } catch (err: unknown) {
+  } catch (err) {
     error.value = toFriendlyAuthMessage(err, 'Google sign up failed');
   } finally {
     submitting.value = false;

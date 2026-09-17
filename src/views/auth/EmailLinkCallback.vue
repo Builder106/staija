@@ -104,7 +104,7 @@ const completeSignIn = async () => {
       }
       router.push(postLoginRoute(resolvedRole));
     }, 2000);
-  } catch (err: unknown) {
+  } catch (err) {
     error.value =
       err instanceof Error ? err.message : 'Failed to complete sign in. Please try again.';
     completing.value = false;
@@ -140,7 +140,7 @@ const checkEmailLink = async () => {
       emailPrompt.value = true;
       loading.value = false;
     }
-  } catch (err: unknown) {
+  } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to process sign-in link.';
     loading.value = false;
   }

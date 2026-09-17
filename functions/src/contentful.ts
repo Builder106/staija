@@ -22,6 +22,15 @@ type ContentfulTopic =
   | 'ContentManagement.Entry.unarchive'
   | string
 
+export type ContentfulWebhookFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | { [key: string]: ContentfulWebhookFieldValue }
+  | ContentfulWebhookFieldValue[]
+
 interface ContentfulEntryPayload {
   sys: {
     id: string
@@ -30,7 +39,7 @@ interface ContentfulEntryPayload {
     createdAt?: string
     updatedAt?: string
   }
-  fields?: Record<string, Record<string, unknown>>
+  fields?: Record<string, Record<string, ContentfulWebhookFieldValue>>
 }
 
 const COLLECTION_MAP: Record<string, string> = {
@@ -124,7 +133,7 @@ export const contentfulWebhook = onRequest(
       if (topic === 'ContentManagement.Entry.publish' || topic === 'ContentManagement.Entry.unarchive') {
         const locale = 'en-US'
         const fields = payload.fields ?? {}
-        const flattened: Record<string, unknown> = {}
+        const flattened: Record<string, ContentfulWebhookFieldValue> = {}
         for (const [key, value] of Object.entries(fields)) {
           flattened[key] = value?.[locale] ?? null
         }

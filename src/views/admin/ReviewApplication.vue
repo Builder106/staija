@@ -274,11 +274,20 @@ function formatDateTime(date: Date | undefined | null): string {
   return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+type TimestampInput =
+  | Date
+  | { toDate: () => Date }
+  | { seconds: number; nanoseconds?: number }
+  | string
+  | number
+  | null
+  | undefined;
+
 /** Coerce Firestore Timestamp / ISO / Date into a Date. Status data
  *  arrives in multiple shapes depending on whether the doc was just
  *  written by a Cloud Function (Timestamp) or read from cache (Date),
  *  so we normalise once at the edge. */
-function toDate(value: unknown): Date | null {
+function toDate(value: TimestampInput): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;
   if (typeof value === 'object' && value !== null && 'toDate' in value) {

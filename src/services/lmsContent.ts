@@ -84,11 +84,22 @@ export type LmsFields =
   | { type: 'assignmentSpec'; fields: AssignmentSpecFields }
   | { type: 'quiz'; fields: QuizFields };
 
+export type LmsEntryFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Document
+  | { sys?: { id?: string; type?: string; linkType?: string } }
+  | LmsEntryFieldValue[]
+  | { [key: string]: LmsEntryFieldValue };
+
 // Lightweight summary used by list views.
 export interface EntrySummary {
   id: string;
   contentType: LmsContentType;
-  fields: Record<string, unknown>;
+  fields: Record<string, LmsEntryFieldValue>;
   publishedAt: string | null;
   updatedAt: string;
   isPublished: boolean;
@@ -295,7 +306,7 @@ export async function computeCourseEstimatedHours(moduleIds: string[]): Promise<
     limit: 100,
   });
   const lessonIds = modules.flatMap((m) => {
-    const lessonsField = (m.fields as Record<string, unknown>).lessons;
+    const lessonsField = m.fields.lessons;
     if (!Array.isArray(lessonsField)) return [];
     return lessonsField
       .map((l) => (l as { sys?: { id?: string } })?.sys?.id)
@@ -311,7 +322,7 @@ export async function computeCourseEstimatedHours(moduleIds: string[]): Promise<
     limit: 200,
   });
   const minutes = lessons.reduce((sum, l) => {
-    const m = (l.fields as Record<string, unknown>).estimatedMinutes;
+    const m = l.fields.estimatedMinutes;
     return sum + (typeof m === 'number' ? m : 0);
   }, 0);
   return {
@@ -338,7 +349,7 @@ export async function listTracksForProgram(
   });
   const set = new Set<string>();
   for (const c of courses) {
-    const t = (c.fields as Record<string, unknown>).track;
+    const t = c.fields.track;
     if (typeof t === 'string' && t.trim()) set.add(t.trim());
   }
   return Array.from(set).sort();
@@ -369,13 +380,13 @@ export async function buildDuplicateCourseFields(sourceId: string): Promise<Cour
   };
 }
 
-function extractRefIds(value: unknown): string[] {
+function extractRefIds(value: LmsEntryFieldValue | undefined): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .map((v) => (v as { sys?: { id?: string } })?.sys?.id)
     .filter((v): v is string => !!v);
 }
-function extractRefId(value: unknown): string | undefined {
+function extractRefId(value: LmsEntryFieldValue | undefined): string | undefined {
   return (value as { sys?: { id?: string } })?.sys?.id;
 }
 

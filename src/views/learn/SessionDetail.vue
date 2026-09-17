@@ -9,7 +9,7 @@ import Heading from '../../components/ui/Heading.vue';
 import Section from '../../components/ui/Section.vue';
 import UiCard from '../../components/ui/UiCard.vue';
 import { useAuth } from '../../composables/useAuth';
-import { SessionService, rsvpSession, toMillis } from '../../services/learn';
+import { SessionService, rsvpSession, toMillis, type TimestampLike } from '../../services/learn';
 import type { LiveSession, SessionRsvp } from '../../services/types';
 
 const route = useRoute();
@@ -65,7 +65,7 @@ async function setRsvp(value: 'yes' | 'no' | 'maybe') {
   }
 }
 
-function fmtFull(ts: unknown) {
+function fmtFull(ts: TimestampLike) {
   return new Date(toMillis(ts)).toLocaleString('en-US', {
     weekday: 'long',
     month: 'long',

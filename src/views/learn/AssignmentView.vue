@@ -19,6 +19,7 @@ import {
   SubmissionService,
   submitAssignment,
   toMillis,
+  type TimestampLike,
 } from '../../services/learn';
 import type { AssignmentSubmission, CmsAssignmentSpec, Enrollment } from '../../services/types';
 
@@ -146,7 +147,7 @@ async function handleSubmit() {
   }
 }
 
-function fmtDate(value: unknown) {
+function fmtDate(value: TimestampLike) {
   return new Date(toMillis(value)).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

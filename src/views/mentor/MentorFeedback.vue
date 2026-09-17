@@ -122,7 +122,16 @@ async function handleSubmit() {
   }
 }
 
-function timeAgo(value: unknown): string {
+type TimestampLike =
+  | Date
+  | { toDate: () => Date }
+  | { seconds: number; nanoseconds?: number }
+  | string
+  | number
+  | null
+  | undefined;
+
+function timeAgo(value: TimestampLike): string {
   const ms = Date.now() - toMillis(value);
   const min = Math.floor(ms / 60000);
   if (min < 1) return 'just now';
@@ -138,7 +147,7 @@ function timeAgo(value: unknown): string {
   });
 }
 
-function toMillis(value: unknown): number {
+function toMillis(value: TimestampLike): number {
   if (value instanceof Date) return value.getTime();
   if (
     value &&

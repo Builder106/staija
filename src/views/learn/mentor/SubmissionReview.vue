@@ -10,7 +10,7 @@ import Section from '../../../components/ui/Section.vue';
 import UiButton from '../../../components/ui/UiButton.vue';
 import UiCard from '../../../components/ui/UiCard.vue';
 import { DatabaseService } from '../../../services/database';
-import { SubmissionService, gradeSubmission, toMillis } from '../../../services/learn';
+import { SubmissionService, gradeSubmission, toMillis, type TimestampLike } from '../../../services/learn';
 import type { AssignmentSubmission, UserProfile } from '../../../services/types';
 
 const route = useRoute();
@@ -64,7 +64,7 @@ async function save(status: 'returned' | 'graded') {
   }
 }
 
-function fmtDate(value: unknown) {
+function fmtDate(value: TimestampLike) {
   return new Date(toMillis(value)).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',

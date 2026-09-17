@@ -27,10 +27,19 @@ const LOCALE = 'en-US'
 
 type LmsContentType = 'course' | 'module' | 'lesson' | 'assignmentSpec' | 'quiz'
 
+export type LmsFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | { [key: string]: LmsFieldValue }
+  | LmsFieldValue[]
+
 interface EntrySummary {
   id: string
   contentType: LmsContentType
-  fields: Record<string, unknown>
+  fields: Record<string, LmsFieldValue>
   publishedAt: string | null
   updatedAt: string
   isPublished: boolean
@@ -38,11 +47,10 @@ interface EntrySummary {
 }
 
 // The client sends fields un-localized; the function wraps them as
-// { en-US: value } before handing to Contentful. We use `unknown` on
-// the wire and only validate at the dispatch boundary.
+// { en-US: value } before handing to Contentful.
 interface LmsCreateOrUpdatePayload {
   type: LmsContentType
-  fields: Record<string, unknown>
+  fields: Record<string, LmsFieldValue>
 }
 
 type AdminRequest =
@@ -79,14 +87,14 @@ function L<T>(value: T | undefined): { [LOCALE]: T } | undefined {
   return { [LOCALE]: value }
 }
 
-function refsArray(ids: unknown, linkType: 'Entry' | 'Asset') {
+function refsArray(ids: LmsFieldValue | undefined, linkType: 'Entry' | 'Asset') {
   if (!Array.isArray(ids) || ids.length === 0) return undefined
   return ids
     .filter((v): v is string => typeof v === 'string' && v.length > 0)
     .map((id) => ({ sys: { type: 'Link' as const, linkType, id } }))
 }
 
-function singleRef(id: unknown, linkType: 'Entry' | 'Asset') {
+function singleRef(id: LmsFieldValue | undefined, linkType: 'Entry' | 'Asset') {
   if (typeof id !== 'string' || !id) return undefined
   return { sys: { type: 'Link' as const, linkType, id } }
 }
@@ -100,12 +108,12 @@ function slugify(input: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-function normalizeSlug(input: unknown): string {
+function normalizeSlug(input: LmsFieldValue | undefined): string {
   return slugify(typeof input === 'string' ? input : '')
 }
 
-function clean<T extends Record<string, unknown>>(obj: T): Partial<T> {
-  const out: Record<string, unknown> = {}
+function clean<T extends Record<string, LmsFieldValue | { [LOCALE]: LmsFieldValue } | undefined>>(obj: T): Partial<T> {
+  const out: Record<string, LmsFieldValue | { [LOCALE]: LmsFieldValue } | undefined> = {}
   for (const [k, v] of Object.entries(obj)) {
     if (v !== undefined) out[k] = v
   }
@@ -120,7 +128,7 @@ function clean<T extends Record<string, unknown>>(obj: T): Partial<T> {
  * with a 422. Rounding at the server boundary means callers can compute
  * with floats and persist with confidence the contract holds.
  */
-function int(v: unknown): number | undefined {
+function int(v: LmsFieldValue | undefined): number | undefined {
   if (typeof v !== 'number' || !Number.isFinite(v)) return undefined
   return Math.round(v)
 }
@@ -131,8 +139,10 @@ function int(v: unknown): number | undefined {
  * the browser. Unknown fields are dropped (defense against future
  * client/server skew).
  */
-function shapeFields(payload: LmsCreateOrUpdatePayload): Record<string, unknown> {
-  const f = payload.fields as Record<string, unknown>
+function shapeFields(
+  payload: LmsCreateOrUpdatePayload,
+): Record<string, { [LOCALE]: LmsFieldValue } | undefined> {
+  const f = payload.fields
   switch (payload.type) {
     case 'course':
       return clean({
@@ -189,9 +199,9 @@ function shapeFields(payload: LmsCreateOrUpdatePayload): Record<string, unknown>
 }
 
 function summarize(entry: EntryProps): EntrySummary {
-  const fields: Record<string, unknown> = {}
+  const fields: Record<string, LmsFieldValue> = {}
   for (const [k, v] of Object.entries(entry.fields ?? {})) {
-    fields[k] = (v as Record<string, unknown>)?.[LOCALE]
+    fields[k] = (v as Record<string, LmsFieldValue>)?.[LOCALE]
   }
   const isPublished =
     !!entry.sys.publishedVersion && entry.sys.version === entry.sys.publishedVersion + 1
@@ -209,7 +219,9 @@ function summarize(entry: EntryProps): EntrySummary {
 
 // ---------- Dispatch ----------
 
-async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<unknown> {
+type DispatchResult = EntrySummary[] | EntrySummary | { ok: boolean }
+
+async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<DispatchResult> {
   switch (request.action) {
     case 'list': {
       const query: Record<string, string | number> = {
@@ -244,7 +256,7 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
       const incoming = shapeFields(request.payload)
       for (const [k, v] of Object.entries(incoming)) {
         if (v === undefined) continue
-        ;(entry.fields as Record<string, unknown>)[k] = v
+        ;(entry.fields as Record<string, { [LOCALE]: LmsFieldValue } | undefined>)[k] = v
       }
       const updated = await client.entry.update({ entryId: request.id }, entry)
       return summarize(updated)
@@ -270,9 +282,9 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
   }
 }
 
-function validate(req: unknown): AdminRequest {
+function validate(req: LmsFieldValue | object): AdminRequest {
   if (!req || typeof req !== 'object') throw new HttpsError('invalid-argument', 'request missing.')
-  const r = req as Record<string, unknown>
+  const r = req as Record<string, LmsFieldValue>
   const action = r.action
   const VALID_TYPES: LmsContentType[] = ['course', 'module', 'lesson', 'assignmentSpec', 'quiz']
   switch (action) {
@@ -291,7 +303,9 @@ function validate(req: unknown): AdminRequest {
       return r as AdminRequest
     case 'create':
     case 'update': {
-      const payload = r.payload as { type?: unknown; fields?: unknown } | undefined
+      const payload = r.payload as
+        | { type?: LmsContentType; fields?: Record<string, LmsFieldValue> }
+        | undefined
       if (!payload || !VALID_TYPES.includes(payload.type as LmsContentType)) {
         throw new HttpsError('invalid-argument', `${action}.payload.type invalid.`)
       }

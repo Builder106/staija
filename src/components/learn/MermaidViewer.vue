@@ -31,7 +31,7 @@ async function renderDiagram() {
     const cleanCode = props.code.trim();
     const { svg } = await mermaid.render(diagramId, cleanCode);
     svgContent.value = svg;
-  } catch (err: unknown) {
+  } catch (err) {
     console.warn('Mermaid render error:', err);
     error.value = 'Could not render interactive diagram. Raw code shown below.';
   } finally {

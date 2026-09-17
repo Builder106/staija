@@ -19,6 +19,7 @@ import {
   unpublishEntry,
   updateEntry,
   type EntrySummary,
+  type LmsEntryFieldValue,
 } from '../../../services/lmsContent';
 
 const router = useRouter();
@@ -376,7 +377,7 @@ async function drawerDelete() {
 // reference arrays look like [{ sys: { id, linkType: 'Entry' } }, ...].
 // These helpers pull a clean string[] out.
 
-function extractRefIds(value: unknown): string[] {
+function extractRefIds(value: LmsEntryFieldValue | undefined): string[] {
   if (!Array.isArray(value)) return [];
   const out: string[] = [];
   for (const v of value) {
@@ -387,7 +388,7 @@ function extractRefIds(value: unknown): string[] {
 }
 
 function readField<T = string>(entry: EntrySummary, name: string): T | undefined {
-  return (entry.fields as Record<string, unknown>)[name] as T | undefined;
+  return entry.fields[name] as T | undefined;
 }
 
 function entryTitle(entry: EntrySummary): string {

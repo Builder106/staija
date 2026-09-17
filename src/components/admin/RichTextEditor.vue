@@ -10,6 +10,7 @@ import { onBeforeUnmount, watch } from 'vue';
 import {
   contentfulToTipTap,
   tipTapToContentful,
+  type TipTapAttributes,
   type TipTapDoc,
 } from '../../services/richTextSerializer';
 
@@ -85,7 +86,7 @@ onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 
-function isActive(name: string, attrs?: Record<string, unknown>) {
+function isActive(name: string, attrs?: TipTapAttributes) {
   return editor.value?.isActive(name, attrs) ?? false;
 }
 

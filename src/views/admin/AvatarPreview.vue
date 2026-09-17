@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue';
 import LottieAvatar from '../../components/avatars/LottieAvatar.vue';
 import { avatarThumbForSlot, PORTRAIT_SLOT_COUNT } from '../../services/avatar';
-import { loadLottieForSlot } from '../../services/avatar/lotties';
+import { loadLottieForSlot, type LottieAnimationData } from '../../services/avatar/lotties';
 
 /**
  * Phase 1 + Phase 4 avatar preview. Mounts AnimatedAvatar in every
@@ -29,7 +29,7 @@ const allSlots = computed(() =>
 
 const states = ['idle', 'hero', 'static'] as const;
 
-const loadedLotties = ref<Record<number, Record<string, unknown> | null>>({});
+const loadedLotties = ref<Record<number, LottieAnimationData | null>>({});
 
 onMounted(async () => {
   // The preview is the one place where all ten slots are intentionally

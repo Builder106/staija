@@ -92,7 +92,10 @@ function takeFromBucket(
  *  v2 sits behind Google's load balancer, which sets `X-Forwarded-For`
  *  with the original client IP first. Falls back to req.ip then to a
  *  fixed sentinel so an absent header doesn't crash the limiter. */
-function clientIp(req: { ip?: string; headers: Record<string, unknown> }): string {
+function clientIp(req: {
+  ip?: string
+  headers: Record<string, string | string[] | undefined>
+}): string {
   const xff = req.headers['x-forwarded-for']
   const xffStr = Array.isArray(xff) ? xff[0] : typeof xff === 'string' ? xff : ''
   if (xffStr) {
@@ -127,12 +130,12 @@ export const subscribeNewsletter = onRequest(
     }
 
     const body = req.body as {
-      email?: unknown
-      source?: unknown
-      trap?: unknown
-      interestTag?: unknown
-      program?: unknown
-      referrerId?: unknown
+      email?: string | null
+      source?: string | null
+      trap?: string | null
+      interestTag?: string | null
+      program?: string | null
+      referrerId?: string | null
     }
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
     const source = typeof body.source === 'string' ? body.source : 'unknown'
@@ -181,7 +184,7 @@ export const subscribeNewsletter = onRequest(
     // per-email (catches a flood that fans out IPs but reuses the same
     // address). Both return the same Retry-After hint so a polite
     // client can back off without parsing the body.
-    const ip = clientIp({ ip: req.ip, headers: req.headers as Record<string, unknown> })
+    const ip = clientIp({ ip: req.ip, headers: req.headers })
     if (!takeFromBucket(ipBuckets, ip, IP_WINDOW_MS, IP_WINDOW_MAX)) {
       res.set('Retry-After', '60')
       res.status(429).json({ error: 'Too many requests. Try again in a minute.' })

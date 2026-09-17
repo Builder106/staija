@@ -23,7 +23,7 @@ import { useAuth } from '../../composables/useAuth';
 import { functions } from '../../config/firebase';
 import { AuthService } from '../../services/auth';
 import { avatarSeedFor, resolveAvatarSrc } from '../../services/avatar';
-import { hasLottieForSlot, loadLottieForSlot } from '../../services/avatar/lotties';
+import { hasLottieForSlot, loadLottieForSlot, type LottieAnimationData } from '../../services/avatar/lotties';
 import { DatabaseService } from '../../services/database';
 import { StorageService } from '../../services/storageService';
 import type { EmailPreferences } from '../../services/types';
@@ -295,7 +295,7 @@ const lottieAvailable = computed(
 
 // Lazily-loaded Lottie JSON for the displayed slot. Reloaded when
 // the slot changes (picker apply, photo upload/clear).
-const lottieAnimation = ref<Record<string, unknown> | null>(null);
+const lottieAnimation = ref<LottieAnimationData | null>(null);
 let lottieRequestId = 0;
 watch(
   displayedSlot,
@@ -314,7 +314,9 @@ watch(
   { immediate: true },
 );
 
-function formatDate(date: unknown): string {
+type DateInput = Date | { toDate?: () => Date } | string | number | null | undefined;
+
+function formatDate(date: DateInput): string {
   if (!date) return '—';
   const candidate =
     typeof (date as { toDate?: () => Date })?.toDate === 'function'
@@ -520,7 +522,8 @@ async function exportData() {
   exporting.value = true;
   exportError.value = null;
   try {
-    const callable = httpsCallable<Record<string, never>, Record<string, unknown>>(
+    type UserExportData = Record<string, string | number | boolean | null | undefined | object>;
+    const callable = httpsCallable<Record<string, never>, UserExportData>(
       functions,
       'exportUserData',
     );

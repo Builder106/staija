@@ -93,7 +93,9 @@ export class MentorService {
   }
 }
 
-function toMillis(value: unknown): number {
+export type TimestampLike = Date | { toDate: () => Date } | string | number | null | undefined;
+
+function toMillis(value: TimestampLike): number {
   if (value instanceof Date) return value.getTime();
   if (
     value &&

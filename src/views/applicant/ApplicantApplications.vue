@@ -316,7 +316,7 @@ const loadApplications = async () => {
 
     const userApps = await DatabaseService.getUserApplications(currentUser.uid);
     applications.value = userApps;
-  } catch (err: unknown) {
+  } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load applications';
   } finally {
     loading.value = false;

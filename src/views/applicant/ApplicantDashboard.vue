@@ -17,6 +17,7 @@ import {
   saveDraft as saveCloudDraft,
   watchUserDrafts,
   type ApplicationDraftDoc,
+  type DraftPayload,
 } from '../../services/applicationDrafts';
 import { AuthService, DatabaseService } from '../../services/firebase';
 import type { Application } from '../../services/types';
@@ -106,7 +107,7 @@ async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[])
   // each a few KB.
   interface LocalEntry {
     savedAt: number;
-    payload: Record<string, unknown>;
+    payload: DraftPayload;
   }
   const local = new Map<LocalDraft['slug'], LocalEntry>();
   for (const { slug } of PROGRAM_SLUGS) {
@@ -117,7 +118,7 @@ async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[])
       const parsed = JSON.parse(raw) as {
         v?: number;
         savedAt?: number;
-        data?: Record<string, unknown>;
+        data?: DraftPayload;
       };
       if (parsed.v !== 1 || typeof parsed.savedAt !== 'number') continue;
       if (Date.now() - parsed.savedAt > DRAFT_TTL_MS) {
@@ -184,7 +185,7 @@ async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[])
   // (gated below) so subsequent snapshots don't trigger redundant
   // sync writes for drafts the cloud already has.
   const syncTargets: Array<
-    [LocalDraft['slug'], { savedAt: number; payload: Record<string, unknown> }]
+    [LocalDraft['slug'], { savedAt: number; payload: DraftPayload }]
   > = [];
   for (const [slug, entry] of local) {
     if (cloud.has(slug)) continue;
@@ -478,7 +479,16 @@ async function loadData() {
   }
 }
 
-function toDate(value: unknown): Date {
+type TimestampInput =
+  | Date
+  | { toDate: () => Date }
+  | { seconds: number; nanoseconds?: number }
+  | string
+  | number
+  | null
+  | undefined;
+
+function toDate(value: TimestampInput): Date {
   if (value instanceof Date) return value;
   if (
     value &&

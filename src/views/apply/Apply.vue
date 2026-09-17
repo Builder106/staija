@@ -24,6 +24,7 @@ import {
   getDraft as getCloudDraft,
   saveDraft as saveCloudDraft,
   watchDraftDoc,
+  type DraftPayload,
   type DraftProgramSlug,
   type StagedFile,
   type StagedFiles,
@@ -54,8 +55,19 @@ interface ReferenceEntry {
   relationship: string;
 }
 
+export type ApplicationFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | string[]
+  | { [key: string]: ApplicationFieldValue };
+
+export type ApplicationFields = Record<string, ApplicationFieldValue>;
+
 const eligibility = ref<Record<string, boolean>>({});
-const fields = ref<Record<string, unknown>>({});
+const fields = ref<ApplicationFields>({});
 const references = ref<ReferenceEntry[]>([
   { name: '', email: '', institution: '', relationship: '' },
   { name: '', email: '', institution: '', relationship: '' },
@@ -445,7 +457,7 @@ async function initAutoSave() {
     // deepest step that has any data. The fallback handles drafts
     // saved by older bundles that didn't track lastStep, drafts
     // affected by partial-save races, etc.
-    const restoredLast = resolveResumeStep(v as Record<string, unknown>) ?? '';
+    const restoredLast = resolveResumeStep(v as DraftPayload) ?? '';
     if (
       restoredLast &&
       restoredLast !== 'eligibility' &&
@@ -600,14 +612,14 @@ const currentStep = computed(() => stepsMeta.value[stepIndex.value]);
 // that hit some race condition during save). `data` is the persisted
 // form state from a draft payload, with the same shape as
 // `formStateForSave.value`.
-function stepHasDataInPayload(stepId: string, data: Record<string, unknown>): boolean {
+function stepHasDataInPayload(stepId: string, data: DraftPayload): boolean {
   if (!program.value) return false;
   if (stepId === 'eligibility') {
-    const e = data.eligibility as Record<string, unknown> | undefined;
+    const e = data.eligibility as Record<string, boolean> | undefined;
     return e ? Object.values(e).some((v) => !!v) : false;
   }
   if (stepId === 'references') {
-    const refs = (data.references as Array<Record<string, unknown>> | undefined) ?? [];
+    const refs = (data.references as Array<Record<string, string>> | undefined) ?? [];
     return refs.some((r) => !!(r.name || r.email || r.institution || r.relationship));
   }
   // Files step isn't persisted; review step is a summary only.
@@ -615,7 +627,7 @@ function stepHasDataInPayload(stepId: string, data: Record<string, unknown>): bo
   // Schema-driven step (personal, academic, motivation, ...).
   const schemaStep = program.value.steps.find((s) => s.id === stepId);
   if (!schemaStep) return false;
-  const fields = (data.fields as Record<string, unknown> | undefined) ?? {};
+  const fields = (data.fields as ApplicationFields | undefined) ?? {};
   for (const f of schemaStep.fields) {
     const v = fields[f.name];
     if (typeof v === 'string' && v.trim()) return true;
@@ -646,7 +658,7 @@ function stepHasDataInPayload(stepId: string, data: Record<string, unknown>): bo
 //     the applicant past an empty required step lets them walk
 //     forward to a Submit-time validation failure. Forcing them to
 //     re-fill at the gap is the safer default.
-function resolveResumeStep(data: Record<string, unknown>): string | null {
+function resolveResumeStep(data: DraftPayload): string | null {
   const explicit = typeof data.lastStep === 'string' ? data.lastStep : '';
   if (explicit && explicit !== 'eligibility') return explicit;
   if (!program.value) return null;
@@ -669,7 +681,7 @@ function readLastStepFromLocal(): string | null {
     const key = `staija.draft.apply.${program.value.slug}.${user.value.uid}`;
     const raw = window.localStorage.getItem(key);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { data?: Record<string, unknown> };
+    const parsed = JSON.parse(raw) as { data?: DraftPayload };
     if (!parsed?.data || typeof parsed.data !== 'object') return null;
     return resolveResumeStep(parsed.data);
   } catch {
@@ -869,13 +881,13 @@ async function handleSubmit() {
   submitting.value = true;
   submitError.value = null;
   try {
-    const f = fields.value as Record<string, unknown>;
+    const f = fields.value;
     // Firestore rejects `undefined` field values on createApplication,
     // and program-specific extras (state / country / timezone /
     // internetSelfReport) only exist in one program's schema each — so
     // we build the object conditionally and never write a key whose
     // value would be `undefined`.
-    const personalInfo: Record<string, unknown> = {
+    const personalInfo: Record<string, string | number | boolean | null | undefined> = {
       firstName: (f.firstName as string) ?? '',
       lastName: (f.lastName as string) ?? '',
       email: (f.email as string) ?? user.value.email ?? '',
@@ -1202,7 +1214,7 @@ function setTagsValue(name: string, value: string) {
     .filter(Boolean);
 }
 
-function wordCount(s: unknown): number {
+function wordCount(s: string | null | undefined): number {
   if (typeof s !== 'string') return 0;
   const trimmed = s.trim();
   if (!trimmed) return 0;
@@ -1256,8 +1268,8 @@ watch(
       for (const f of step.fields) {
         if (!f.optionsBy) continue;
         const parent = f.optionsBy.dependsOn;
-        const before = (prev as Record<string, unknown> | undefined)?.[parent];
-        const after = (next as Record<string, unknown>)[parent];
+        const before = prev?.[parent];
+        const after = next[parent];
         if (before !== undefined && before !== after) {
           fields.value[f.name] = '';
         }

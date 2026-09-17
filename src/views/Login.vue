@@ -33,7 +33,7 @@ async function onSubmit(e: Event) {
   try {
     const { credential, role } = await AuthService.signIn(email.value, password.value);
     redirectAfterAuth(credential.user.uid, role);
-  } catch (err: unknown) {
+  } catch (err) {
     error.value = toFriendlyAuthMessage(err, 'Sign in failed');
   } finally {
     submitting.value = false;
@@ -46,7 +46,7 @@ async function onGoogle() {
   try {
     const { credential, role } = await AuthService.signInWithGoogle();
     redirectAfterAuth(credential.user.uid, role);
-  } catch (err: unknown) {
+  } catch (err) {
     error.value = toFriendlyAuthMessage(err, 'Google sign in failed');
   } finally {
     submitting.value = false;

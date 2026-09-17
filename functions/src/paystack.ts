@@ -38,7 +38,7 @@ interface PaystackChargePayload {
     }
     plan?: { plan_code?: string; name?: string } | null
     subscription?: { subscription_code?: string }
-    metadata?: Record<string, unknown> | string
+    metadata?: Record<string, string | number | boolean | null | undefined> | string
   }
 }
 

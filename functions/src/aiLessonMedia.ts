@@ -106,7 +106,15 @@ Constraints:
     throw new HttpsError('internal', 'Groq returned an empty response.')
   }
 
-  let parsed: unknown
+  type JsonParsed =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | JsonParsed[]
+    | { [key: string]: JsonParsed }
+  let parsed: JsonParsed
   try {
     parsed = JSON.parse(raw)
   } catch {
