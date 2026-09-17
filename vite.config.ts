@@ -63,7 +63,10 @@ export default defineConfig(async ({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true,
+      // Source maps are useful only for an explicit local analysis build.
+      // Keeping them out of ordinary deployment output preserves the CI
+      // bundle budget and avoids publishing source maps with the app.
+      sourcemap: process.env.ANALYZE === '1',
       // Manual chunks: carve off Tiptap (only loaded on admin content
       // routes) to reduce main bundle size. Firebase kept in vendor
       // because it's used across auth routes. The previous manualChunks
