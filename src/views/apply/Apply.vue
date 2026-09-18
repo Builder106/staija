@@ -899,7 +899,9 @@ async function handleSubmit() {
     };
     for (const key of ['region', 'state', 'country', 'timezone', 'internetSelfReport'] as const) {
       const v = f[key];
-      if (v !== undefined && v !== null && v !== '') personalInfo[key] = v;
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+        if (v !== '') personalInfo[key] = v;
+      }
     }
     const academicInfo = {
       gpa: (f.gpa as string) ?? '',
@@ -1214,7 +1216,7 @@ function setTagsValue(name: string, value: string) {
     .filter(Boolean);
 }
 
-function wordCount(s: string | null | undefined): number {
+function wordCount(s: ApplicationFieldValue | unknown): number {
   if (typeof s !== 'string') return 0;
   const trimmed = s.trim();
   if (!trimmed) return 0;

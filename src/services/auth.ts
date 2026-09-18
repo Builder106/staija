@@ -307,19 +307,33 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
 // Firestore's IndexedDB persistence layer can throw raw browser exceptions
 // (e.g. "the database connection is closing") when a second tab or the
 // OAuth popup races the main tab's connection. Those aren't meaningful to
-// users, so they're mapped to one friendly retry message.
-export type AuthErrorLike = Error | { message?: string; code?: string } | string | null | undefined;
+export type AuthErrorLike =
+  Error | { message?: string; code?: string } | string | null | undefined | unknown;
 
-function isStorageError(error: AuthErrorLike): boolean {
-  const message = error instanceof Error ? error.message : String(error);
+function isStorageError(error: unknown): boolean {
+  if (!error) return false;
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'object' &&
+          'message' in error &&
+          typeof (error as { message?: unknown }).message === 'string'
+        ? (error as { message: string }).message
+        : String(error);
   return /database connection is closing|indexeddb|version change transaction/i.test(message);
 }
 
-export function toFriendlyAuthMessage(error: AuthErrorLike, fallback: string): string {
+export function toFriendlyAuthMessage(error: unknown, fallback: string): string {
   if (isStorageError(error)) {
     return 'A temporary storage issue interrupted sign-in. Please try again, or close other tabs of this site and retry.';
   }
-  const code = (error as { code?: string } | undefined)?.code;
+  const code =
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof (error as { code?: unknown }).code === 'string'
+      ? (error as { code: string }).code
+      : undefined;
   if (code && AUTH_ERROR_MESSAGES[code]) return AUTH_ERROR_MESSAGES[code];
   return error instanceof Error ? error.message : fallback;
 }

@@ -14,7 +14,10 @@ declare module 'https://esm.sh/lottie-web@5.12.2' {
     setDirection(direction: 1 | -1): void;
   }
 
-  export type LottieAnimationData = Record<string, string | number | boolean | null | undefined | object>;
+  export type LottieAnimationData = Record<
+    string,
+    string | number | boolean | null | undefined | object
+  >;
 
   const lottie: {
     loadAnimation(params: {

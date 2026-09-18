@@ -16,9 +16,6 @@ import { useFormDirty } from '../../../composables/useFormDirty';
 import {
   buildDuplicateCourseFields,
   computeCourseEstimatedHours,
-  type ComputedHours,
-  type CourseFields,
-  type LmsEntryFieldValue,
   createEntry,
   currentTermVersion,
   getEntry,
@@ -29,6 +26,9 @@ import {
   slugify,
   updateEntry,
   uploadAsset,
+  type ComputedHours,
+  type CourseFields,
+  type LmsEntryFieldValue,
 } from '../../../services/lmsContent';
 
 const route = useRoute();

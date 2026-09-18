@@ -184,9 +184,7 @@ async function reconcileDrafts(uid: string, cloudDocsRaw: ApplicationDraftDoc[])
   // local copy. The auto-push pass only runs on the FIRST reconcile
   // (gated below) so subsequent snapshots don't trigger redundant
   // sync writes for drafts the cloud already has.
-  const syncTargets: Array<
-    [LocalDraft['slug'], { savedAt: number; payload: DraftPayload }]
-  > = [];
+  const syncTargets: Array<[LocalDraft['slug'], { savedAt: number; payload: DraftPayload }]> = [];
   for (const [slug, entry] of local) {
     if (cloud.has(slug)) continue;
     const tomb = tombstones.get(slug);

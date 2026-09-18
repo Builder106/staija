@@ -353,9 +353,7 @@ export async function getEvent(slug: string): Promise<EventItem | null> {
  * unknown sort attribute) as "model not ready yet" — fall back to mocks rather
  * than blocking the whole page. Other errors (auth, network, 5xx) still throw.
  */
-function isUnknownFieldOrType(
-  err: Error | { message?: string } | string | number | boolean | null | undefined | object,
-): boolean {
+function isUnknownFieldOrType(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
   const m = err.message;
   return (

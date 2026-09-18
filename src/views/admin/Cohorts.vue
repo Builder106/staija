@@ -13,7 +13,12 @@ import UiCard from '../../components/ui/UiCard.vue';
 import UiSelect from '../../components/ui/UiSelect.vue';
 import { useAuth } from '../../composables/useAuth';
 import { functions } from '../../config/firebase';
-import { CohortService, EnrollmentService, toMillis, type TimestampLike } from '../../services/learn';
+import {
+  CohortService,
+  EnrollmentService,
+  toMillis,
+  type TimestampLike,
+} from '../../services/learn';
 import type { Cohort } from '../../services/types';
 
 const { user } = useAuth();
