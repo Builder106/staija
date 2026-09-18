@@ -56,7 +56,9 @@ interface FinalizeResult {
   finalized: Record<string, string>
 }
 
-function isValidProgram(value: unknown): value is ProgramSlug {
+function isValidProgram(
+  value: string | number | boolean | null | undefined | object,
+): value is ProgramSlug {
   return value === 'stepup-scholars' || value === 'dynamerge'
 }
 
@@ -220,7 +222,7 @@ export const finalizeApplicationFiles = onCall<FinalizeInput>(
     // map keyed by field name (motivation, etc.); other kinds live
     // at the top level of the documents object.
     if (Object.keys(documentsPatch).length > 0 || Object.keys(audioPatch).length > 0) {
-      const patch: Record<string, unknown> = {}
+      const patch: Record<string, string> = {}
       for (const [k, v] of Object.entries(documentsPatch)) patch[`documents.${k}`] = v
       for (const [k, v] of Object.entries(audioPatch)) patch[`documents.audio.${k}`] = v
       try {

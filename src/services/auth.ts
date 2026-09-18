@@ -308,12 +308,14 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
 // (e.g. "the database connection is closing") when a second tab or the
 // OAuth popup races the main tab's connection. Those aren't meaningful to
 // users, so they're mapped to one friendly retry message.
-function isStorageError(error: unknown): boolean {
+export type AuthErrorLike = Error | { message?: string; code?: string } | string | null | undefined;
+
+function isStorageError(error: AuthErrorLike): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return /database connection is closing|indexeddb|version change transaction/i.test(message);
 }
 
-export function toFriendlyAuthMessage(error: unknown, fallback: string): string {
+export function toFriendlyAuthMessage(error: AuthErrorLike, fallback: string): string {
   if (isStorageError(error)) {
     return 'A temporary storage issue interrupted sign-in. Please try again, or close other tabs of this site and retry.';
   }

@@ -16,13 +16,18 @@ const slotIndex = process.argv.indexOf('--slot')
 const SLOT = slotIndex >= 0 ? Number(process.argv[slotIndex + 1]) : null
 const AVATAR_SLOTS = Array.from({ length: AVATAR_SLOT_COUNT }, (_, slot) => slot)
 
+type LottieValue = { a: number; k: unknown } | number | number[]
+interface LottieLayer { ddd: number; ind: number; ty: number; nm: string; refId: string; sr: number; ks: Record<string, LottieValue>; ip: number; op: number; st: number; bm: number }
+interface LottieAsset { id: string; w: number; h: number; u: string; p: string; e: number }
+interface LottieDocument { v: string; fr: number; ip: number; op: number; w: number; h: number; nm: string; ddd: number; assets: LottieAsset[]; layers: LottieLayer[]; meta: { schemaVersion: number; generator: string; slot: number; motion: string; sourceHash: string } }
+
 const scalar = (steps: readonly { frame: number; value: number }[]) => ({ a: 1, k: steps.map(({ frame, value }) => ({ t: frame, s: [value] })) })
 const vector = (steps: readonly { frame: number; value: { x: number; y: number } }[]) => ({ a: 1, k: steps.map(({ frame, value }) => ({ t: frame, s: [value.x, value.y, 0] })) })
 const visibility = (steps: readonly { frame: number; value: boolean }[]) => scalar(steps.map(({ frame, value }) => ({ frame, value: value ? 100 : 0 })))
 function hash(bytes: Uint8Array): string { return createHash('sha256').update(bytes).digest('hex') }
 
-function layerMotion(layer: AvatarLayer, motion: MotionConfig): Record<string, unknown> {
-  const ks: Record<string, unknown> = {
+function layerMotion(layer: AvatarLayer, motion: MotionConfig): Record<string, LottieValue> {
+  const ks: Record<string, LottieValue> = {
     a: 0,
     k: [128 + layer.transform.x, 128 + layer.transform.y, 0],
     s: { a: 0, k: [layer.transform.scaleX * 100, layer.transform.scaleY * 100, 100] },
@@ -61,7 +66,7 @@ async function requireSource(
 export async function buildLottieDocumentForManifest(
   manifest: AvatarManifest,
   repositoryRoot = ROOT,
-): Promise<Record<string, unknown>> {
+): Promise<LottieDocument> {
   const slot = manifest.slot
   const motion = MOTION_CONFIGS[slot]
   if (!manifest || !motion) throw new Error(`No manifest and motion configuration exists for slot ${slot}`)
@@ -72,7 +77,7 @@ export async function buildLottieDocumentForManifest(
   return { v: '5.7.4', fr: 60, ip: 0, op: TOTAL_FRAMES, w: CANVAS_SIZE, h: CANVAS_SIZE, nm: `staija-avatar-slot-${slot}`, ddd: 0, assets, layers, meta: { schemaVersion: 1, generator: 'staija-avatar-rig', slot, motion: motion.label, sourceHash } }
 }
 
-export async function buildLottieDocument(slot: number): Promise<Record<string, unknown>> {
+export async function buildLottieDocument(slot: number): Promise<LottieDocument> {
   const manifest = AVATAR_MANIFESTS[slot]
   if (!manifest) throw new Error(`No manifest exists for slot ${slot}`)
   return buildLottieDocumentForManifest(manifest)

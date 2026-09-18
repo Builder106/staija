@@ -107,7 +107,7 @@ export const respondToOffer = onCall<RespondInput>(
     // declining applicant who first hit decline with a note, then
     // accidentally re-fired accept without a note, would otherwise
     // lose the declining context). Skip the note field when blank.
-    const patch: Record<string, unknown> = {
+    const patch: Record<string, string | number | boolean | Date | FieldValue | null> = {
       spotResponse: input.response,
       spotRespondedAt,
       updatedAt: new Date(),

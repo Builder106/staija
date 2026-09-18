@@ -154,7 +154,17 @@ export const createMentorInvite = onCall<CreateInput>(
       // 32 hex chars from 16 random bytes — opaque, unguessable, fits
       // in a URL without encoding. Each invite gets its own token.
       const token = crypto.randomBytes(16).toString('hex')
-      const doc: Record<string, unknown> = {
+      interface MentorInviteDoc {
+        token: string
+        createdBy: string
+        createdByName: string
+        createdAt: number
+        expiresAt: number
+        consumed: boolean
+        note?: string
+        email?: string
+      }
+      const doc: MentorInviteDoc = {
         token,
         createdBy: req.auth.uid,
         createdByName,
@@ -312,7 +322,14 @@ export const consumeMentorInvite = onCall<ConsumeInput>(
         consumedBy: req.auth!.uid,
         consumedAt: now,
       })
-      const userPatch: UpdateData<Record<string, unknown>> = {
+      interface MentorUserPatch {
+        role: string
+        updatedAt: Date
+        mentorBio?: string
+        mentorAvailability?: string
+        [key: string]: string | Date | undefined
+      }
+      const userPatch: UpdateData<MentorUserPatch> = {
         role: 'mentor',
         updatedAt: new Date(),
       }

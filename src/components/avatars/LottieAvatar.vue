@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import lottie, { type AnimationItem } from 'lottie-web';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import type { LottieAnimationData } from '../../services/avatar/lotties';
 
 /**
  * Plays a Lottie animation in a circular avatar frame, with a PNG
@@ -24,7 +25,7 @@ const props = withDefaults(
     // Parsed Lottie JSON. When null/undefined, only the fallback
     // renders. Use a dynamic-import so the JSON doesn't bloat the
     // bundle of pages that don't need it.
-    animationData?: Record<string, unknown> | null;
+    animationData?: LottieAnimationData | null;
     // PNG shown until the Lottie loads (and as the permanent
     // rendering when prefers-reduced-motion is set).
     fallbackSrc: string;

@@ -31,6 +31,49 @@ async function httpGet<T>(url: string, token: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export type ContentfulValue = string | number | boolean | null | undefined | ContentfulSys | ContentfulFieldRecord | ContentfulValue[];
+export type ContentfulFieldRecord = { [key: string]: ContentfulValue };
+
+export interface ContentfulSys {
+  id: string;
+  type: string;
+  createdAt?: string;
+  updatedAt?: string;
+  contentType?: { sys: ContentfulSys };
+  [key: string]: ContentfulValue;
+}
+
+export interface ContentfulEntry<TFields = ContentfulFieldRecord> {
+  sys: ContentfulSys;
+  fields: TFields;
+}
+
+export interface ContentfulAsset {
+  sys: ContentfulSys;
+  fields: {
+    title?: string;
+    description?: string;
+    file?: {
+      url?: string;
+      details?: { size?: number; image?: { width?: number; height?: number } };
+      fileName?: string;
+      contentType?: string;
+    };
+  };
+}
+
+export interface ContentfulEntriesResponse<TItem = ContentfulEntry> {
+  sys: ContentfulSys;
+  total: number;
+  skip: number;
+  limit: number;
+  items: TItem[];
+  includes?: {
+    Entry?: ContentfulEntry[];
+    Asset?: ContentfulAsset[];
+  };
+}
+
 export class ContentfulClient {
   private config: ContentfulClientConfig;
 
@@ -47,7 +90,7 @@ export class ContentfulClient {
   }
 
   // Generic entries fetch
-  async getEntries<T = unknown>(query: Record<string, string | number | boolean> = {}): Promise<T> {
+  async getEntries<T = ContentfulEntriesResponse>(query: Record<string, string | number | boolean> = {}): Promise<T> {
     const search = new URLSearchParams();
     Object.entries(query).forEach(([k, v]) => search.append(k, String(v)));
     const url = buildEndpoint(this.config, `/entries?${search.toString()}`);
@@ -55,13 +98,13 @@ export class ContentfulClient {
   }
 
   // Single entry by ID
-  async getEntry<T = unknown>(entryId: string, include = 2): Promise<T> {
+  async getEntry<T = ContentfulEntry>(entryId: string, include = 2): Promise<T> {
     const url = buildEndpoint(this.config, `/entries/${entryId}?include=${include}`);
     return httpGet<T>(url, this.config.token);
   }
 
   // Assets (images/files)
-  async getAsset<T = unknown>(assetId: string): Promise<T> {
+  async getAsset<T = ContentfulAsset>(assetId: string): Promise<T> {
     const url = buildEndpoint(this.config, `/assets/${assetId}`);
     return httpGet<T>(url, this.config.token);
   }

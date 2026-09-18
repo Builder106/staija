@@ -51,11 +51,20 @@ interface ContentfulEntry<F> {
   fields: F;
 }
 
+export type ContentfulIncludesFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | { [key: string]: ContentfulIncludesFieldValue }
+  | ContentfulIncludesFieldValue[];
+
 export interface ContentfulIncludes {
   Asset?: Array<{ sys: { id: string }; fields: { file: { url: string } } }>;
   Entry?: Array<{
     sys: { id: string; contentType?: { sys: { id: string } } };
-    fields: Record<string, unknown>;
+    fields: Record<string, ContentfulIncludesFieldValue>;
   }>;
 }
 
@@ -344,7 +353,9 @@ export async function getEvent(slug: string): Promise<EventItem | null> {
  * unknown sort attribute) as "model not ready yet" — fall back to mocks rather
  * than blocking the whole page. Other errors (auth, network, 5xx) still throw.
  */
-function isUnknownFieldOrType(err: unknown): boolean {
+function isUnknownFieldOrType(
+  err: Error | { message?: string } | string | number | boolean | null | undefined | object,
+): boolean {
   if (!(err instanceof Error)) return false;
   const m = err.message;
   return (

@@ -148,7 +148,7 @@ export const askLmsTutor = onCall(
         reply,
         suggestedFollowUps,
       }
-    } catch (err: unknown) {
+    } catch (err) {
       console.error('askLmsTutor Groq API error:', err)
       throw new HttpsError('internal', 'AI Tutor encountered an error processing your request.')
     }

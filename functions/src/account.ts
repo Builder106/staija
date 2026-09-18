@@ -62,7 +62,7 @@ export const deleteAccount = onCall<Record<string, never>>(
     }
 
     const errors: string[] = []
-    const safe = async (label: string, op: () => Promise<unknown>) => {
+    const safe = async <T>(label: string, op: () => Promise<T>) => {
       try {
         await op()
       } catch (err) {

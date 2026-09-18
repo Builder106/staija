@@ -12,9 +12,32 @@
  * `tools/avatars/README.md` for the rigging workflow.
  */
 
+export type LottieJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | LottieJsonValue[]
+  | { [key: string]: LottieJsonValue };
+
+export interface LottieAnimationData {
+  v?: string;
+  fr?: number;
+  ip?: number;
+  op?: number;
+  w: number;
+  h: number;
+  nm?: string;
+  ddd?: number;
+  assets?: LottieJsonValue[];
+  layers: LottieJsonValue[];
+  [key: string]: LottieJsonValue;
+}
+
 // `import.meta.glob` with no `eager: true` returns loaders, not
 // modules. Each loader is a `() => Promise<{ default: <json> }>`.
-const LOADERS = import.meta.glob<{ default: Record<string, unknown> }>(
+const LOADERS = import.meta.glob<{ default: LottieAnimationData }>(
   '../../assets/avatar-lotties/slot-*.json',
 );
 
@@ -24,8 +47,8 @@ const SLOT_FILE_PATTERN = /slot-(\d+)\.json$/;
  * Build the lookup table once. Maps slot index → loader function.
  * Slots without a file simply aren't in the map.
  */
-function buildIndex(): Map<number, () => Promise<{ default: Record<string, unknown> }>> {
-  const index = new Map<number, () => Promise<{ default: Record<string, unknown> }>>();
+function buildIndex(): Map<number, () => Promise<{ default: LottieAnimationData }>> {
+  const index = new Map<number, () => Promise<{ default: LottieAnimationData }>>();
   for (const [path, loader] of Object.entries(LOADERS)) {
     const match = SLOT_FILE_PATTERN.exec(path);
     if (!match) continue;
@@ -41,9 +64,9 @@ function isValidSlot(slot: number): boolean {
   return Number.isInteger(slot) && slot >= 0 && slot < 10;
 }
 
-function isAnimationData(value: unknown): value is Record<string, unknown> {
+function isAnimationData(value: string | number | boolean | null | undefined | object): value is LottieAnimationData {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const candidate = value as Record<string, unknown>;
+  const candidate = value as Partial<LottieAnimationData>;
   return (
     Array.isArray(candidate.layers) &&
     typeof candidate.w === 'number' &&
@@ -64,7 +87,7 @@ export function hasLottieForSlot(slot: number): boolean {
  * file exists. The returned object is the parsed Bodymovin/Lottie
  * JSON shape, ready to hand to `lottie.loadAnimation({ animationData })`.
  */
-export async function loadLottieForSlot(slot: number): Promise<Record<string, unknown> | null> {
+export async function loadLottieForSlot(slot: number): Promise<LottieAnimationData | null> {
   if (!isValidSlot(slot)) return null;
   const loader = SLOT_INDEX.get(slot);
   if (!loader) return null;

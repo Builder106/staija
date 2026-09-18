@@ -4,9 +4,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { AVATAR_MANIFESTS } from './manifests.ts'
 import { compositeManifest } from './composite.ts'
 import { cleanOne, buildPartsTs } from './clean.ts'
-import { sha256, TRACE_PROFILES, vTracerBackend, type TraceProfileName } from './trace.ts'
+import { isTraceProfileName, sha256, TRACE_PROFILES, vTracerBackend, type TraceProfileName } from './trace.ts'
 import { validateSvg } from './verify.ts'
-import { type AvatarSlot } from './contracts.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '../..')
@@ -17,8 +16,8 @@ const PARTS_OUTPUT = join(HERE, 'candidate-parts.ts')
 function profileName(): TraceProfileName {
   const index = process.argv.indexOf('--profile')
   const value = index === -1 ? 'poster-cutout' : process.argv[index + 1]
-  if (!value || !(value in TRACE_PROFILES)) throw new Error(`Unknown profile: ${value ?? ''}`)
-  return value as TraceProfileName
+  if (!isTraceProfileName(value)) throw new Error(`Unknown profile: ${value ?? ''}`)
+  return value
 }
 
 async function main(): Promise<void> {
@@ -39,7 +38,7 @@ async function main(): Promise<void> {
       inputPath: composite.outputPath,
       outputPath: tracePath,
       profile,
-      slot: manifest.slot as AvatarSlot,
+      slot: manifest.slot,
       inputSha256: sha256(compositeBytes),
     })
     const { inner } = cleanOne(traced.svg, { background: 'preserve' })

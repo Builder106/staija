@@ -66,7 +66,7 @@ export const resolveReferrerName = onRequest(
         res.status(404).json({ error: 'Not found.' })
         return
       }
-      const data = snap.data() as { displayName?: unknown; directoryHidden?: unknown }
+      const data = snap.data() as { displayName?: string | null; directoryHidden?: boolean | null }
       // Respect the directory-hidden flag — if the user opted out of
       // appearing in any directory, we don't surface their name here
       // either. The visitor still gets a useful page; the hero just

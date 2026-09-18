@@ -144,12 +144,13 @@ const aiCopiedKey = ref<string | null>(null);
 function flattenBody(doc: Document | undefined): string {
   if (!doc) return '';
   const out: string[] = [];
-  const walk = (node: { nodeType?: string; value?: string; content?: unknown[] }) => {
+  type DocumentTreeNode = { nodeType?: string; value?: string; content?: DocumentTreeNode[] };
+  const walk = (node: DocumentTreeNode) => {
     if (node.nodeType === 'text' && typeof node.value === 'string') out.push(node.value);
     if (Array.isArray(node.content))
-      node.content.forEach((c) => walk(c as Parameters<typeof walk>[0]));
+      node.content.forEach((c) => walk(c));
   };
-  walk(doc as Parameters<typeof walk>[0]);
+  walk(doc as DocumentTreeNode);
   return out.join(' ').replace(/\s+/g, ' ').trim();
 }
 

@@ -7,25 +7,21 @@ import { config as loadEnv } from 'dotenv'
 loadEnv({ path: '.env' })
 loadEnv({ path: '.env.local', override: true })
 
-import contentful from 'contentful-management'
-const { createClient } = contentful
+import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'
 
 async function main() {
-  const space = await createClient({
-    accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
-  }).getSpace(process.env.VITE_CONTENTFUL_SPACE_ID!)
-
-  const hooks = await space.getWebhooks()
+  const client = createPlainClient(requireContentfulConfig())
+  const hooks = await client.webhook.getMany({ query: {} })
   for (const hook of hooks.items) {
     if (!hook.url.includes('contentfulwebhook')) continue
     console.log(`Patching ${hook.name} (${hook.sys.id})…`)
-    ;(hook as unknown as { filters: unknown }).filters = [
+    const filters = [
       {
         in: [{ doc: 'sys.environment.sys.id' }, ['master', 'staging']],
       },
     ]
-    const updated = await hook.update()
-    console.log(`  filters now: ${JSON.stringify((updated as unknown as { filters: unknown }).filters)}`)
+    const updated = await client.webhook.update({ webhookDefinitionId: hook.sys.id }, { filters })
+    console.log(`  filters now: ${JSON.stringify(updated.filters)}`)
   }
 }
 

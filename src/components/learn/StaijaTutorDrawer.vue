@@ -113,7 +113,7 @@ async function sendQuestion(textToSend?: string) {
     });
 
     await scrollToBottom();
-  } catch (err: unknown) {
+  } catch (err) {
     console.error('Tutor error:', err);
     error.value = 'Failed to fetch tutor response. Please check your network or try again.';
   } finally {

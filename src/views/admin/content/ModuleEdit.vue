@@ -18,6 +18,7 @@ import {
   normalizeSlug,
   publishEntry,
   updateEntry,
+  type LmsEntryFieldValue,
   type ModuleFields,
 } from '../../../services/lmsContent';
 
@@ -43,7 +44,7 @@ const form = ref<ModuleFields>({
 });
 const { isDirty, markClean } = useFormDirty(form);
 
-function extractRefIds(value: unknown): string[] {
+function extractRefIds(value: LmsEntryFieldValue | undefined): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .map((v) => (v as { sys?: { id?: string } })?.sys?.id)

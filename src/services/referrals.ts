@@ -44,7 +44,7 @@ function mintShortId(): string {
   return out;
 }
 
-function isLikelyValidRefId(value: unknown): value is string {
+function isLikelyValidRefId(value: string | null | undefined): value is string {
   return (
     typeof value === 'string' &&
     value.length > 0 &&
@@ -179,7 +179,7 @@ export async function resolveReferrerDisplayName(
     const url = `${endpoint}?uid=${encodeURIComponent(uid)}`;
     const res = await fetch(url, { method: 'GET' });
     if (!res.ok) return null;
-    const data = (await res.json()) as { displayName?: unknown };
+    const data = (await res.json()) as { displayName?: string | null };
     return typeof data.displayName === 'string' && data.displayName.trim().length > 0
       ? data.displayName.trim()
       : null;

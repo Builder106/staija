@@ -13,7 +13,7 @@ import UiCard from '../../components/ui/UiCard.vue';
 import UiSelect from '../../components/ui/UiSelect.vue';
 import { useAuth } from '../../composables/useAuth';
 import { functions } from '../../config/firebase';
-import { CohortService, EnrollmentService, toMillis } from '../../services/learn';
+import { CohortService, EnrollmentService, toMillis, type TimestampLike } from '../../services/learn';
 import type { Cohort } from '../../services/types';
 
 const { user } = useAuth();
@@ -215,7 +215,7 @@ async function rearmDeferredsCron(c: Cohort) {
   }
 }
 
-function fmtDate(value: unknown) {
+function fmtDate(value: TimestampLike) {
   return new Date(toMillis(value)).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

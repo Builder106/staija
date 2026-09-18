@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-17 — Added strict tooling type coverage #type-safety
+
+Added a dedicated `tsconfig.tools.json` and `typecheck:tools` script so authored LMS and avatar tooling is included in strict TypeScript coverage. Replaced avoidable Contentful, webhook, metadata, face-segmentation, and Lottie-builder assertions with `satisfies`, concrete interfaces, and runtime validation; caught errors and arbitrary JSON remain `unknown` boundaries.
+
 ## 2026-09-16 — Approved and promoted the current layered-avatar candidate #implementation #milestone
 
 After visual approval, regenerated the ten-slot `poster-cutout-detail` VTracer candidate from the committed layer sources and promoted its validated static PNGs, cleaned `parts.ts`, and self-contained Lottie documents as one coherent runtime set. The promotion tool verified the current source composites, required VTracer profile, all cleaned SVGs, generated parts, and embedded Lottie assets before applying; slots 0, 6, and 8 were regenerated but retained identical runtime bytes. Final SHA-256 values: static-PNG set `10acef16491b541217c189206aacf35c1e876a648e645879ccddaa0b91dcaace`, `parts.ts` `2ce2f4a96a7e8a39a785c81be208047936a303aadf1e7c9332f4c0f24ca46e5e`, and Lottie-set `e486594d4ab1fcd93374cc59d5699c0d754ac7801c545e3ca2822233f0585d3a`. Managed verification passed the full 261-test coverage suite, lint, format, retired-backend guard, production dependency audit, license scan, type-check, production build, and public-site E2E/accessibility suite. Normal builds now omit source maps, which reduces `dist` from 54,804 KB to 27,608 KB and restores the 50 MB CI ceiling; `ANALYZE=1` remains the explicit local analysis mode. Authenticated Settings and admin-preview, upload-bypass, reduced-motion, fallback, and Lottie network-loading behavior remain manual staging release checks after a separately authorized push.
@@ -266,3 +270,6 @@ Donations infrastructure exists but is gated off via `src/config/features.ts:don
 ## Ongoing — Animated layered-avatar pipeline paused #pivot
 
 The `tools/tag_potrait.py`+ Hugging Face + Vectorizer.AI pipeline that produced animated profile pictures is paused, not abandoned. May extract to a separate project.`HF_TOKEN`, `VECTORIZER_API_ID`, `VECTORIZER_API_SECRET`stay documented in`.env.example` until that decision lands.
+## 2026-09-17 — Completed LMS tooling Any/Unknown remediation #decision
+
+Finished the tools-side Contentful migration on `fix/any-unknown-remediation` with one shared typed plain-client adapter. LMS seed and webhook utilities now use scoped `PlainClientAPI` entry and webhook namespaces; webhook filters and records use SDK-derived shapes, while parsed metadata and caught errors remain `unknown` only at their JSON/error boundaries and are narrowed before use. This keeps the deprecated chainable `getSpace()`/`getEnvironment()` API out of every `tools/lms-seed` script without weakening strict type checking. Verification is pending because the managed verifier was unreachable and reported its workspace locked during this run.

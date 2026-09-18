@@ -73,7 +73,10 @@ interface RequestPayload {
    *  subject is used — preferred, since the template author tunes the
    *  subject line alongside the body. */
   subjectOverride?: string
-  context?: NextCycleOpenedContext | MentorIntroContext | Record<string, unknown>
+  context?:
+    | NextCycleOpenedContext
+    | MentorIntroContext
+    | Record<string, string | number | boolean | null | undefined>
   /** When true, build everything and return the projected recipient
    *  count without actually sending. Used by the admin UI's "Preview"
    *  button to surface the audience size before the irreversible
@@ -84,7 +87,7 @@ interface RequestPayload {
 interface MailgunListMember {
   address: string
   subscribed: boolean
-  vars?: Record<string, unknown>
+  vars?: Record<string, string | number | boolean | null | undefined>
 }
 
 interface MailgunMembersPage {

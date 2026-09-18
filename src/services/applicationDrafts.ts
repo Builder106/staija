@@ -28,6 +28,8 @@ import {
   serverTimestamp,
   setDoc,
   where,
+  type FieldValue,
+  type Timestamp,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { deleteObject, ref as storageRef } from 'firebase/storage';
@@ -70,6 +72,19 @@ export interface StagedFiles {
   audio?: Record<string, StagedFile>;
 }
 
+export type DraftFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | StagedFiles
+  | StagedFile
+  | DraftFieldValue[]
+  | { [key: string]: DraftFieldValue };
+
+export type DraftPayload = Record<string, DraftFieldValue>;
+
 /** Shape stored in Firestore. `payload` is opaque — matches what Apply.vue
  *  hands to useAutoSave so the same restore code path works for both. */
 export interface ApplicationDraftDoc {
@@ -77,13 +92,13 @@ export interface ApplicationDraftDoc {
   program: DraftProgramSlug;
   /** Wizard form state. Intentionally untyped at the service layer — the
    *  consumer (Apply.vue) owns the shape and stays the source of truth. */
-  payload: Record<string, unknown>;
+  payload: DraftPayload;
   /** Client-side ms epoch. Used to compare against the local-storage
    *  draft's `savedAt` on mount and pick the newer one. We store this in
    *  addition to `updatedAt` so the comparison doesn't have to wait for
    *  the server timestamp to materialise on first write. */
   savedAt: number;
-  updatedAt?: unknown; // serverTimestamp
+  updatedAt?: Timestamp | FieldValue | Date | number | string | null; // serverTimestamp
   /** Tombstone flag. Set true by deleteDraft so other devices' auto-sync
    *  can distinguish "the user actively deleted this" from "the cloud
    *  copy was never written". Without it, a delete on device A would be
@@ -120,7 +135,7 @@ export async function getDraft(
 export async function saveDraft(
   userId: string,
   program: DraftProgramSlug,
-  payload: Record<string, unknown>,
+  payload: DraftPayload,
 ): Promise<boolean> {
   try {
     const ref = doc(db, 'applicationDrafts', draftId(userId, program));
@@ -203,12 +218,12 @@ export async function deleteDraft(userId: string, program: DraftProgramSlug): Pr
 async function readPayload(
   userId: string,
   program: DraftProgramSlug,
-): Promise<Record<string, unknown>> {
+): Promise<DraftPayload> {
   try {
     const snap = await getDoc(doc(db, 'applicationDrafts', draftId(userId, program)));
     if (!snap.exists()) return {};
     const payload = (snap.data() as ApplicationDraftDoc).payload;
-    return (payload as Record<string, unknown>) ?? {};
+    return (payload as DraftPayload) ?? {};
   } catch {
     return {};
   }
@@ -216,7 +231,7 @@ async function readPayload(
 
 /** Walk a draft payload and pull every staged-file Storage path. Defensive
  *  about shape — old drafts predate StagedFiles and won't have the field. */
-function collectStagedPaths(payload: Record<string, unknown>): string[] {
+function collectStagedPaths(payload: DraftPayload): string[] {
   const stagedFiles = payload.stagedFiles as StagedFiles | undefined;
   if (!stagedFiles) return [];
   const paths: string[] = [];

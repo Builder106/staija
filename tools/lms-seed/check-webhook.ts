@@ -8,15 +8,11 @@ import { config as loadEnv } from 'dotenv'
 loadEnv({ path: '.env' })
 loadEnv({ path: '.env.local', override: true })
 
-import contentful from 'contentful-management'
-const { createClient } = contentful
+import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'
 
 async function main() {
-  const space = await createClient({
-    accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
-  }).getSpace(process.env.VITE_CONTENTFUL_SPACE_ID!)
-
-  const hooks = await space.getWebhooks()
+  const client = createPlainClient(requireContentfulConfig())
+  const hooks = await client.webhook.getMany({ query: {} })
   if (!hooks.items.length) {
     console.log('No webhooks configured in this space.')
     return
@@ -27,8 +23,8 @@ async function main() {
   // because some of them are shared secrets and printing them was the
   // root cause of an earlier credential leak into a transcript.
   for (const hook of hooks.items) {
-    const raw = (hook as unknown as { toPlainObject?: () => unknown }).toPlainObject?.() ?? hook
-    const redacted = JSON.parse(JSON.stringify(raw)) as { headers?: Array<{ value?: string }> }
+    const parsed: unknown = JSON.parse(JSON.stringify(hook))
+    const redacted = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as { headers?: Array<{ value?: string }> } : {}
     if (Array.isArray(redacted.headers)) {
       for (const h of redacted.headers) {
         if (h.value) h.value = '<redacted>'
@@ -49,16 +45,8 @@ async function main() {
     console.log(`  contentType: ${hook.transformation?.contentType ?? '(default)'}`)
     // Contentful environment scope — when present, the webhook only fires
     // for events in those envs. Empty/undefined = all environments.
-    const raw = hook as unknown as { environments?: unknown[] }
-    console.log(`  environments: ${raw.environments ? JSON.stringify(raw.environments) : '(all)'}`)
-
-    try {
-      const health = await (hook as unknown as { getHealth?: () => Promise<unknown> }).getHealth?.()
-      console.log(`  health:   ${JSON.stringify(health)}`)
-    } catch (e) {
-      console.log(`  health:   (unavailable: ${e instanceof Error ? e.message : 'err'})`)
-    }
-    const calls = await hook.getCalls()
+    console.log('  environments: (inspect raw config above)')
+    const calls = await client.webhookCall.getMany({ webhookDefinitionId: hook.sys.id, query: {} })
     const recent = calls.items.slice(0, 5)
     if (recent.length === 0) {
       console.log('  recent calls: (none)')

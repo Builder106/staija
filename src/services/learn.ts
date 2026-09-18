@@ -507,7 +507,9 @@ export const askLmsTutor = (data: AskLmsTutorPayload) =>
 // Used by views that rendervariously-typed timestamps from the same
 // service. Same shape as the helper in mentor.ts; deliberately
 // duplicated here to keep the module self-contained.
-export function toMillis(value: unknown): number {
+export type TimestampLike = Date | { toDate: () => Date } | string | number | null | undefined;
+
+export function toMillis(value: TimestampLike): number {
   if (value instanceof Date) return value.getTime();
   if (
     value &&

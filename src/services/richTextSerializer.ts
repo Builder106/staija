@@ -39,9 +39,19 @@ import {
 
 // TipTap / ProseMirror types are loose JSON. We keep a local minimal
 // shape that's sufficient for the serializer.
+export type TipTapAttributeValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | TipTapAttributeValue[]
+  | { [key: string]: TipTapAttributeValue };
+export type TipTapAttributes = Record<string, TipTapAttributeValue>;
+
 export interface TipTapMark {
   type: string;
-  attrs?: Record<string, unknown>;
+  attrs?: TipTapAttributes;
 }
 export interface TipTapTextNode {
   type: 'text';
@@ -50,7 +60,7 @@ export interface TipTapTextNode {
 }
 export interface TipTapBlockNode {
   type: string;
-  attrs?: Record<string, unknown>;
+  attrs?: TipTapAttributes;
   content?: TipTapNode[];
   marks?: TipTapMark[];
 }

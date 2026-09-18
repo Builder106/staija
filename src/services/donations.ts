@@ -76,7 +76,7 @@ interface PaystackPopWindow extends Window {
       currency?: string;
       ref?: string;
       plan?: string;
-      metadata?: Record<string, unknown>;
+      metadata?: Record<string, string | number | boolean | null | undefined | string[]>;
       callback: (resp: { reference: string; status?: string }) => void;
       onClose: () => void;
     }) => PaystackHandler;

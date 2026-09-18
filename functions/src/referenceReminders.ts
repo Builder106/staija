@@ -39,7 +39,7 @@ interface ApplicationDocForReminder {
   program?: 'stepup_scholars' | 'dynamerge'
   personalInfo?: { firstName?: string; lastName?: string }
   references?: ApplicationRef[]
-  referenceReminderSentAt?: Record<string, unknown>
+  referenceReminderSentAt?: Record<string, Timestamp | Date | number | string>
 }
 
 function programLabel(p?: ApplicationDocForReminder['program']): string {

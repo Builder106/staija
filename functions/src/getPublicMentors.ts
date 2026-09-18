@@ -64,7 +64,16 @@ export const getPublicMentors = onRequest(
 
       const mentors: PublicMentor[] = []
       for (const doc of snap.docs) {
-        const data = doc.data() as Record<string, unknown>
+        interface MentorDocData {
+          directoryHidden?: boolean
+          displayName?: string
+          photoURL?: string | null
+          avatarSlot?: number | null
+          mentorBio?: string
+          mentorAvailability?: string
+          [key: string]: string | number | boolean | null | undefined
+        }
+        const data = doc.data() as MentorDocData
         // Belt-and-braces: skip anyone who has the directory-hidden
         // flag on, even though that flag is primarily an alumni
         // concept. If a mentor toggles it for any reason, honor it.

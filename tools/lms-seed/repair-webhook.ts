@@ -13,8 +13,7 @@ import { config as loadEnv } from 'dotenv'
 loadEnv({ path: '.env' })
 loadEnv({ path: '.env.local', override: true })
 
-import contentful from 'contentful-management'
-const { createClient } = contentful
+import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'
 
 const URL = process.env.STAIJA_WEBHOOK_URL
 const TOKEN = process.env.STAIJA_WEBHOOK_TOKEN
@@ -25,20 +24,17 @@ if (!URL || !TOKEN) {
 }
 
 async function main() {
-  const space = await createClient({
-    accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
-  }).getSpace(process.env.VITE_CONTENTFUL_SPACE_ID!)
-
-  const hooks = await space.getWebhooks()
+  const client = createPlainClient(requireContentfulConfig())
+  const hooks = await client.webhook.getMany({ query: {} })
   for (const hook of hooks.items) {
     if (hook.url.includes('contentfulwebhook')) {
       console.log(`Deleting existing: ${hook.sys.id}`)
-      await hook.delete()
+      await client.webhook.delete({ webhookDefinitionId: hook.sys.id })
     }
   }
 
   // Recreate from scratch.
-  const created = await space.createWebhook({
+  const created = await client.webhook.create({
     name: 'Mirror to Firestore (LMS)',
     url: URL,
     topics: [
@@ -50,7 +46,7 @@ async function main() {
     ],
     headers: [{ key: 'x-staija-token', value: TOKEN }],
     active: true,
-  } as Parameters<typeof space.createWebhook>[0])
+  })
   console.log(`Created: ${created.sys.id}`)
   console.log(`  topics: ${created.topics.join(', ')}`)
   console.log(`  active: ${created.active}`)

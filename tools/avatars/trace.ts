@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto'
 import { basename, dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { convertFile } from '@visioncortex/vtracer'
-import { type AvatarSlot, type TraceBackend, type TraceProfile, type TraceRequest, type TraceResult } from './contracts.ts'
+import { isAvatarSlot, type AvatarSlot, type TraceBackend, type TraceProfile, type TraceRequest, type TraceResult } from './contracts.ts'
 import { PROMPTS } from './prompts.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -139,7 +139,12 @@ export const vTracerBackend: TraceBackend = {
 function profileNameFor(profile: TraceProfile): TraceProfileName {
   const entry = Object.entries(TRACE_PROFILES).find(([, value]) => value === profile)
   if (!entry) throw new Error('Trace request uses an unknown profile')
-  return entry[0] as TraceProfileName
+  if (!(entry[0] in TRACE_PROFILES)) throw new Error('Trace request uses an unknown profile')
+  return entry[0]
+}
+
+export function isTraceProfileName(value: string | undefined): value is TraceProfileName {
+  return value !== undefined && value in TRACE_PROFILES
 }
 
 function usage(): string {
@@ -175,8 +180,8 @@ export function parseTraceArgs(argv: readonly string[]): TraceOptions {
     } else if (argument === '--force') {
       force = true
     } else if (argument === '--profile') {
-      const value = argv[++index] as TraceProfileName | undefined
-      if (!value || !(value in TRACE_PROFILES)) throw new Error(`Unknown profile: ${value ?? ''}`)
+      const value = argv[++index]
+      if (!isTraceProfileName(value)) throw new Error(`Unknown profile: ${value ?? ''}`)
       profile = value
     } else if (argument === '--input-dir') {
       const value = argv[++index]
@@ -280,7 +285,7 @@ async function main(): Promise<void> {
         inputPath: input.path,
         outputPath,
         profile,
-        slot: PROMPTS.findIndex((prompt) => prompt.name === input.name) as AvatarSlot,
+        slot: (() => { const slot = PROMPTS.findIndex((prompt) => prompt.name === input.name); if (!isAvatarSlot(slot)) throw new Error(`Unknown avatar prompt: ${input.name}`); return slot })(),
         inputSha256,
       })
       console.log('done')

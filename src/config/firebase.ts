@@ -96,7 +96,7 @@ export const auth: Auth = isFirebaseConfigured()
         queueMicrotask(() => callback(null));
         return () => {};
       },
-    } as unknown as Auth);
+    } as Partial<Auth> as Auth);
 // initializeFirestore (not getFirestore) so we can pass transport options.
 // experimentalAutoDetectLongPolling probes the default WebChannel streaming
 // transport at startup, and on failure transparently falls back to plain

@@ -107,11 +107,20 @@ const PROGRAM_LABEL: Record<Application['program'], string> = {
   dynamerge: 'Dynamerge',
 };
 
+type TimestampInput =
+  | Date
+  | { toDate: () => Date }
+  | { seconds: number; nanoseconds?: number }
+  | string
+  | number
+  | null
+  | undefined;
+
 /** Coerce Firestore Timestamp / ISO string / Date into a real Date.
  *  Without this the bare `new Date(timestampObject)` call returned an
  *  Invalid Date and surfaced "Invalid Date" in the table cell — the
  *  ALL-CAPS clue you saw on the legacy surface. */
-function toDate(value: unknown): Date | null {
+function toDate(value: TimestampInput): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;
   if (typeof value === 'object' && value !== null && 'toDate' in value) {
@@ -125,7 +134,7 @@ function toDate(value: unknown): Date | null {
   return null;
 }
 
-function formatDate(value: unknown): string {
+function formatDate(value: TimestampInput): string {
   const d = toDate(value);
   if (!d) return '—';
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });

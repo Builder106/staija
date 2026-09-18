@@ -8,7 +8,7 @@ import Eyebrow from '../../components/ui/Eyebrow.vue';
 import Heading from '../../components/ui/Heading.vue';
 import Section from '../../components/ui/Section.vue';
 import UiCard from '../../components/ui/UiCard.vue';
-import { SubmissionService, toMillis } from '../../services/learn';
+import { SubmissionService, toMillis, type TimestampLike } from '../../services/learn';
 import type { AssignmentSubmission } from '../../services/types';
 
 const route = useRoute();
@@ -31,7 +31,7 @@ async function load() {
   }
 }
 
-function fmtDate(value: unknown) {
+function fmtDate(value: TimestampLike) {
   return new Date(toMillis(value)).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',

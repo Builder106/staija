@@ -5,6 +5,7 @@ import { dirname, isAbsolute, resolve } from 'node:path'
 import { Jimp } from 'jimp'
 import {
   AVATAR_CANVAS_SIZE,
+  isAvatarSlot,
   type AvatarSlotManifest,
   type CompositeOptions,
   type CompositeResult,
@@ -90,8 +91,8 @@ export async function compositeManifest(
 function parseSlot(value: string | undefined): AvatarSlotManifest['slot'] {
   if (!value || !/^\d+$/.test(value)) throw new Error('Expected --slot 0 through 9')
   const slot = Number(value)
-  if (!Number.isInteger(slot) || slot < 0 || slot > 9) throw new Error('Expected --slot 0 through 9')
-  return slot as AvatarSlotManifest['slot']
+  if (!isAvatarSlot(slot)) throw new Error('Expected --slot 0 through 9')
+  return slot
 }
 
 function parseSlots(): readonly AvatarSlotManifest['slot'][] {

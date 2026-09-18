@@ -18,6 +18,7 @@ import {
   computeCourseEstimatedHours,
   type ComputedHours,
   type CourseFields,
+  type LmsEntryFieldValue,
   createEntry,
   currentTermVersion,
   getEntry,
@@ -137,13 +138,13 @@ async function load() {
   }
 }
 
-function extractRefIds(value: unknown): string[] {
+function extractRefIds(value: LmsEntryFieldValue | undefined): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .map((v) => (v as { sys?: { id?: string } })?.sys?.id)
     .filter((v): v is string => !!v);
 }
-function extractRefId(value: unknown): string | undefined {
+function extractRefId(value: LmsEntryFieldValue | undefined): string | undefined {
   return (value as { sys?: { id?: string } })?.sys?.id;
 }
 
