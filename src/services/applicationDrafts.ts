@@ -215,10 +215,7 @@ export async function deleteDraft(userId: string, program: DraftProgramSlug): Pr
 /** Read just enough of the draft to enumerate staged uploads. Returns
  *  an empty object on any failure — the caller treats that as "nothing
  *  to clean up", and the orphan cron sweeps stragglers regardless. */
-async function readPayload(
-  userId: string,
-  program: DraftProgramSlug,
-): Promise<DraftPayload> {
+async function readPayload(userId: string, program: DraftProgramSlug): Promise<DraftPayload> {
   try {
     const snap = await getDoc(doc(db, 'applicationDrafts', draftId(userId, program)));
     if (!snap.exists()) return {};

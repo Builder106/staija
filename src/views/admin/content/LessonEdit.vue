@@ -147,8 +147,7 @@ function flattenBody(doc: Document | undefined): string {
   type DocumentTreeNode = { nodeType?: string; value?: string; content?: DocumentTreeNode[] };
   const walk = (node: DocumentTreeNode) => {
     if (node.nodeType === 'text' && typeof node.value === 'string') out.push(node.value);
-    if (Array.isArray(node.content))
-      node.content.forEach((c) => walk(c));
+    if (Array.isArray(node.content)) node.content.forEach((c) => walk(c));
   };
   walk(doc as DocumentTreeNode);
   return out.join(' ').replace(/\s+/g, ' ').trim();

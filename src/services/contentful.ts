@@ -31,7 +31,15 @@ async function httpGet<T>(url: string, token: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export type ContentfulValue = string | number | boolean | null | undefined | ContentfulSys | ContentfulFieldRecord | ContentfulValue[];
+export type ContentfulValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ContentfulSys
+  | ContentfulFieldRecord
+  | ContentfulValue[];
 export type ContentfulFieldRecord = { [key: string]: ContentfulValue };
 
 export interface ContentfulSys {
@@ -90,7 +98,9 @@ export class ContentfulClient {
   }
 
   // Generic entries fetch
-  async getEntries<T = ContentfulEntriesResponse>(query: Record<string, string | number | boolean> = {}): Promise<T> {
+  async getEntries<T = ContentfulEntriesResponse>(
+    query: Record<string, string | number | boolean> = {},
+  ): Promise<T> {
     const search = new URLSearchParams();
     Object.entries(query).forEach(([k, v]) => search.append(k, String(v)));
     const url = buildEndpoint(this.config, `/entries?${search.toString()}`);

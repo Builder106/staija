@@ -12,15 +12,6 @@
  * `tools/avatars/README.md` for the rigging workflow.
  */
 
-export type LottieJsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | LottieJsonValue[]
-  | { [key: string]: LottieJsonValue };
-
 export interface LottieAnimationData {
   v?: string;
   fr?: number;
@@ -30,9 +21,9 @@ export interface LottieAnimationData {
   h: number;
   nm?: string;
   ddd?: number;
-  assets?: LottieJsonValue[];
-  layers: LottieJsonValue[];
-  [key: string]: LottieJsonValue;
+  assets?: unknown[];
+  layers: unknown[];
+  [key: string]: unknown;
 }
 
 // `import.meta.glob` with no `eager: true` returns loaders, not
@@ -64,7 +55,9 @@ function isValidSlot(slot: number): boolean {
   return Number.isInteger(slot) && slot >= 0 && slot < 10;
 }
 
-function isAnimationData(value: string | number | boolean | null | undefined | object): value is LottieAnimationData {
+function isAnimationData(
+  value: string | number | boolean | null | undefined | object,
+): value is LottieAnimationData {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const candidate = value as Partial<LottieAnimationData>;
   return (

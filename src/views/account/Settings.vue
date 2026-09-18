@@ -23,7 +23,11 @@ import { useAuth } from '../../composables/useAuth';
 import { functions } from '../../config/firebase';
 import { AuthService } from '../../services/auth';
 import { avatarSeedFor, resolveAvatarSrc } from '../../services/avatar';
-import { hasLottieForSlot, loadLottieForSlot, type LottieAnimationData } from '../../services/avatar/lotties';
+import {
+  hasLottieForSlot,
+  loadLottieForSlot,
+  type LottieAnimationData,
+} from '../../services/avatar/lotties';
 import { DatabaseService } from '../../services/database';
 import { StorageService } from '../../services/storageService';
 import type { EmailPreferences } from '../../services/types';
