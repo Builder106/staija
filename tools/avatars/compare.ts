@@ -43,6 +43,12 @@ export interface ComparisonManifest {
   candidate: AssetRecord[]
 }
 
+function isMetadata(value: unknown): value is { profile?: string; version?: string } {
+  return typeof value === 'object' && value !== null &&
+    (!('profile' in value) || typeof value.profile === 'string') &&
+    (!('version' in value) || typeof value.version === 'string')
+}
+
 export function sha256(contents: Uint8Array | string): string {
   return createHash('sha256').update(contents).digest('hex')
 }
@@ -108,7 +114,8 @@ async function optionalHash(dir: string, name: string): Promise<string | undefin
 
 async function metadata(dir: string): Promise<{ profile: string; version: string }> {
   try {
-    const parsed = JSON.parse(await readFile(join(dir, 'metadata.json'), 'utf8')) as Record<string, unknown>
+    const parsed: unknown = JSON.parse(await readFile(join(dir, 'metadata.json'), 'utf8'))
+    if (!isMetadata(parsed)) throw new Error('metadata.json has an invalid shape')
     return { profile: typeof parsed.profile === 'string' ? parsed.profile : 'unknown', version: typeof parsed.version === 'string' ? parsed.version : 'unknown' }
   } catch { return { profile: 'unknown', version: 'unknown' } }
 }

@@ -48,18 +48,14 @@ if (cliEnvFlag) {
 // contentful-management ships a CJS default export; under ESM (Node's
 // "type": "module"), named imports aren't synthesized, so we grab
 // createClient off the default. Types still come from the named exports.
-import contentful from 'contentful-management'
-import type { Environment, Entry } from 'contentful-management'
+import type { PlainClientAPI, EntryProps } from 'contentful-management'
 import type { Document } from '@contentful/rich-text-types'
-
-const { createClient } = contentful
+import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'
 
 // ---------- Config ----------
 
 const SPACE_ID = process.env.VITE_CONTENTFUL_SPACE_ID
 const ENV_ID = process.env.VITE_CONTENTFUL_ENV_ID
-const MANAGEMENT_TOKEN = process.env.CONTENTFUL_MANAGEMENT_TOKEN
-
 const LOCALE = 'en-US'
 const DEMO_PREFIX = 'demo-'
 
@@ -368,7 +364,7 @@ function richTextDoc(paragraphs: string[]): Document {
       data: {},
       content: [{ nodeType: 'text', value, marks: [], data: {} }],
     })),
-  } as Document
+  } satisfies Document
 }
 
 function L<T>(value: T | undefined): { [LOCALE]: T } | undefined {
@@ -380,54 +376,48 @@ function entryLink(id: string) {
   return { sys: { type: 'Link' as const, linkType: 'Entry' as const, id } }
 }
 
-function clean<T extends Record<string, unknown>>(obj: T): Partial<T> {
-  const out: Record<string, unknown> = {}
+function clean<T extends object>(obj: T): Partial<T> {
+  const out = {} as Partial<T>
   for (const [k, v] of Object.entries(obj)) {
-    if (v !== undefined) out[k] = v
+    if (v !== undefined) Object.assign(out, { [k]: v })
   }
-  return out as Partial<T>
+  return out
 }
 
-async function getEnv(): Promise<Environment> {
-  if (!SPACE_ID || !ENV_ID || !MANAGEMENT_TOKEN) {
-    throw new Error(
-      'Missing Contentful env vars. Set VITE_CONTENTFUL_SPACE_ID, VITE_CONTENTFUL_ENV_ID, and CONTENTFUL_MANAGEMENT_TOKEN in .env.',
-    )
-  }
-  const client = createClient({ accessToken: MANAGEMENT_TOKEN })
-  const space = await client.getSpace(SPACE_ID)
-  return space.getEnvironment(ENV_ID)
+function getEnv(): PlainClientAPI {
+  return createPlainClient(requireContentfulConfig())
 }
 
 // Idempotent write: if an entry with `id` exists, patch its fields and
 // return it. Otherwise create with that ID. Always publishes after.
 async function upsert(
-  env: Environment,
+  env: PlainClientAPI,
   contentType: string,
   id: string,
-  fields: Record<string, unknown>,
-): Promise<Entry> {
-  let entry: Entry
+  fields: Record<string, object>,
+): Promise<EntryProps> {
+  let entry: EntryProps
   try {
-    entry = await env.getEntry(id)
+    entry = await env.entry.get({ entryId: id })
     for (const [k, v] of Object.entries(fields)) {
       if (v === undefined) continue
-      ;(entry.fields as Record<string, unknown>)[k] = v
+      entry.fields[k] = v
     }
-    entry = await entry.update()
+    entry = await env.entry.update({ entryId: id }, entry)
   } catch (err: unknown) {
     if (!isNotFound(err)) throw err
-    entry = await env.createEntryWithId(contentType, id, { fields })
+    entry = await env.entry.create({ entryId: id, contentTypeId: contentType }, { fields })
   }
   if (!entry.sys.publishedVersion || entry.sys.version !== entry.sys.publishedVersion + 1) {
-    entry = await entry.publish()
+    entry = await env.entry.publish({ entryId: id }, entry)
   }
   return entry
 }
 
 function isNotFound(err: unknown): boolean {
   if (typeof err !== 'object' || !err) return false
-  const e = err as { name?: string; status?: number; sys?: { id?: string } }
+  const e: { name?: string; status?: number; sys?: { id?: string } } =
+    typeof err === 'object' && err !== null ? Object.fromEntries(Object.entries(err)) : {}
   return e.name === 'NotFound' || e.status === 404 || e.sys?.id === 'NotFound'
 }
 
@@ -529,7 +519,7 @@ async function republishDemo() {
   const types = ['lesson', 'assignmentSpec', 'module', 'course'] as const
   let total = 0
   for (const contentType of types) {
-    const result = await env.getEntries({ content_type: contentType, limit: 1000 })
+    const result = await env.entry.getMany({ query: { content_type: contentType, limit: 1000 } })
     const demos = result.items.filter((e) => e.sys.id.startsWith(DEMO_PREFIX))
     for (const entry of demos) {
       try {
@@ -538,8 +528,8 @@ async function republishDemo() {
         // Avoid unpublish-then-publish: it generates two webhooks per
         // entry and they can race in the mirror (delete arrives after
         // the publish, leaving the doc missing).
-        const updated = await entry.update()
-        await updated.publish()
+        const updated = await env.entry.update({ entryId: entry.sys.id }, entry)
+        await env.entry.publish({ entryId: entry.sys.id }, updated)
         console.log(`  · ${contentType.padEnd(15)} ${entry.sys.id}`)
         total++
       } catch (err) {
@@ -562,7 +552,7 @@ async function clearDemo(opts: { dryRun: boolean }) {
   const types = ['course', 'module', 'lesson', 'assignmentSpec'] as const
 
   for (const contentType of types) {
-    const result = await env.getEntries({ content_type: contentType, limit: 1000 })
+    const result = await env.entry.getMany({ query: { content_type: contentType, limit: 1000 } })
     const demos = result.items.filter((e) => e.sys.id.startsWith(DEMO_PREFIX))
     if (demos.length === 0) {
       console.log(`  ${contentType.padEnd(15)} (none)`)
@@ -572,9 +562,8 @@ async function clearDemo(opts: { dryRun: boolean }) {
       console.log(`  ${contentType.padEnd(15)} ${entry.sys.id}`)
       if (opts.dryRun) continue
       try {
-        if (entry.sys.publishedVersion) await entry.unpublish()
-        const fresh = await env.getEntry(entry.sys.id)
-        await fresh.delete()
+        if (entry.sys.publishedVersion) await env.entry.unpublish({ entryId: entry.sys.id }, entry)
+        await env.entry.delete({ entryId: entry.sys.id })
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
         console.error(`    ! failed: ${message}`)

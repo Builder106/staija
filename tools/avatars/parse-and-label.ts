@@ -109,6 +109,12 @@ interface Segment {
   mask: string // base64 PNG
 }
 
+function isSegment(value: unknown): value is Segment {
+  if (!value || typeof value !== 'object') return false
+  const segment = value as { label?: unknown; score?: unknown; mask?: unknown }
+  return typeof segment.label === 'string' && typeof segment.score === 'number' && typeof segment.mask === 'string'
+}
+
 async function parseAndLabel(slot: number, name: string): Promise<void> {
   const inPath = join(RAW_DIR, `${name}.png`)
   const outPath = join(TRACED_DIR, `${name}.svg`)
@@ -133,10 +139,14 @@ async function parseAndLabel(slot: number, name: string): Promise<void> {
 
   // Run face parsing. Returns an array of one entry per detected
   // class with a base64 binary mask the same size as the source.
-  const segments = (await client.imageSegmentation({
+  const response: unknown = await client.imageSegmentation({
     inputs: new Blob([sourceBuffer], { type: 'image/png' }),
     model: MODEL,
-  })) as unknown as Segment[]
+  })
+  if (!Array.isArray(response) || !response.every(isSegment)) {
+    throw new Error('Face-parsing response did not contain valid labelled segments')
+  }
+  const segments = response
 
   const groups: string[] = []
   let skipped = 0

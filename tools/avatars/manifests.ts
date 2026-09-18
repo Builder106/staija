@@ -1,5 +1,6 @@
 import {
   AVATAR_CANVAS_SIZE,
+  isAvatarSlot,
   type AvatarLayerRole,
   type AvatarSlot,
   type AvatarSlotManifest,
@@ -128,6 +129,7 @@ function manifest(slot: AvatarSlot, name: string): AvatarSlotManifest {
   }
 }
 
-export const AVATAR_MANIFESTS: readonly AvatarSlotManifest[] = SLOT_NAMES.map((name, slot) =>
-  manifest(slot as AvatarSlot, name),
-)
+export const AVATAR_MANIFESTS: readonly AvatarSlotManifest[] = SLOT_NAMES.map((name, slot) => {
+  if (!isAvatarSlot(slot)) throw new Error(`Invalid avatar slot: ${slot}`)
+  return manifest(slot, name)
+})

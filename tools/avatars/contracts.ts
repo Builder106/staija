@@ -5,6 +5,10 @@ export const AVATAR_DURATION_FRAMES = 600 as const
 
 export type AvatarSlot = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
+export function isAvatarSlot(value: number): value is AvatarSlot {
+  return Number.isInteger(value) && value >= 0 && value < AVATAR_SLOT_COUNT
+}
+
 export type AvatarLayerRole =
   | 'background'
   | 'body'
