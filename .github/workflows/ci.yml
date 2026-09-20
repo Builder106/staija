@@ -62,10 +62,9 @@ jobs:
       - run: npm ci
       - name: Reject retired Vectorizer backend
         run: npm run avatars:check-backend
-      # --omit=dev: firebase-tools (devDependency, CLI only, never shipped)
-      # bundles a deep tree with several CVEs that would require a breaking
-      # firebase-tools major bump to clear. Scoped to production deps, which
-      # matches the app's actual deployed attack surface.
+      # Scope the CI audit to production dependencies, which matches the
+      # application's deployed attack surface. Build and operator tools are
+      # not shipped in the browser bundle.
       - name: Dependency security audit
         run: npm audit --omit=dev --audit-level=high
       - name: Open-source license compliance scan

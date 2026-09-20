@@ -10,7 +10,7 @@
  *      ▼  HuggingFace face-parsing model (CelebAMask-HQ classes)
  *   per-class binary masks (one per: skin, hair, eyes, glasses, etc.)
  *      │
- *      ▼  potrace (per-mask raster→SVG vectorization)
+ *      ▼  VTracer (per-mask raster→SVG vectorization)
  *      ▼  + per-mask mean color sampled from the source PNG
  *   <g id="left_eye" fill="rgb(...)"><path d="..."/></g>  ×N
  *      │
@@ -33,11 +33,9 @@ import 'dotenv/config'
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { promisify } from 'node:util'
 import { InferenceClient } from '@huggingface/inference'
+import { convertPixels } from '@visioncortex/vtracer'
 import { Jimp } from 'jimp'
-// @ts-expect-error — potrace ships JS without TS types
-import potraceMod from 'potrace'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const RAW_DIR = join(HERE, 'raw')
@@ -79,20 +77,6 @@ const CLASS_MAP: Record<string, string> = {
 }
 
 const MODEL = 'jonathandinu/face-parsing'
-
-interface PotraceCallback {
-  (err: Error | null, svg: string): void
-}
-interface PotraceModule {
-  trace: (
-    buffer: Buffer,
-    options: Record<string, unknown>,
-    cb: PotraceCallback,
-  ) => void
-}
-const traceAsync = promisify(
-  (potraceMod as PotraceModule).trace.bind(potraceMod),
-) as (buffer: Buffer, options: Record<string, unknown>) => Promise<string>
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -197,19 +181,33 @@ async function parseAndLabel(slot: number, name: string): Promise<void> {
     }
     const fill = `rgb(${Math.round(rSum / count)},${Math.round(gSum / count)},${Math.round(bSum / count)})`
 
-    // Vectorize the binary mask via potrace.
-    // HF's face-parsing returns masks where WHITE pixels = the class
-    // is present. potrace's default `blackOnWhite: true` would trace
-    // the inverse (the not-class regions). Flip it.
-    const svgFromTrace = await traceAsync(maskBuffer, {
-      threshold: 128,
-      turdSize: 8,
-      optTolerance: 0.4,
-      blackOnWhite: false,
-    })
+    // Vectorize the binary mask via VTracer. Its binary mode treats dark
+    // pixels as foreground, while the face-parsing mask marks the class
+    // with white pixels. Invert the decoded RGBA pixels before tracing.
+    const tracingPixels = new Uint8Array(md)
+    for (let i = 0; i < tracingPixels.length; i += 4) {
+      const intensity = tracingPixels[i] > 128 ? 0 : 255
+      tracingPixels[i] = intensity
+      tracingPixels[i + 1] = intensity
+      tracingPixels[i + 2] = intensity
+      tracingPixels[i + 3] = 255
+    }
+    const svgFromTrace = convertPixels(
+      tracingPixels,
+      maskImage.bitmap.width,
+      maskImage.bitmap.height,
+      {
+        clustering: 'bw',
+        binaryThreshold: 128,
+        filterSpeckle: 8,
+        mode: 'spline',
+        simplify: 0.4,
+        optimize: 1,
+      },
+    )
 
-    // Pull out path data. potrace produces one or more <path d="..."/>
-    // — concatenate them.
+    // Pull out path data. VTracer produces one or more <path d="..."/>
+    // elements — concatenate them.
     const dMatches = [...svgFromTrace.matchAll(/<path[^>]+d="([^"]+)"/g)]
     if (dMatches.length === 0) {
       skipped++

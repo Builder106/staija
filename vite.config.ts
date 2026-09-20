@@ -56,6 +56,14 @@ export default defineConfig(async ({ mode }) => {
       __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
       __BUILD_ID__: JSON.stringify(buildId),
     },
+    resolve: {
+      alias: {
+        // STAIJA only uses Lottie's SVG renderer. The light build omits the
+        // optional expression engine, which avoids shipping its eval path and
+        // keeps the CSP focused on application code.
+        'lottie-web': 'lottie-web/build/player/lottie_light.min.js',
+      },
+    },
     server: {
       port: 5190,
       strictPort: true,
@@ -67,25 +75,26 @@ export default defineConfig(async ({ mode }) => {
       // Keeping them out of ordinary deployment output preserves the CI
       // bundle budget and avoids publishing source maps with the app.
       sourcemap: process.env.ANALYZE === '1',
+      // Firestore's transport bundle and Mermaid's generated parser each
+      // contain a single third-party module larger than the default 500 kB
+      // warning threshold. They are already isolated from the app-owned
+      // chunks (Firestore is initial-load infrastructure; Mermaid is lazy),
+      // so keep a 750 kB ceiling that still catches oversized application
+      // chunks without treating those unavoidable vendor modules as build
+      // failures.
+      chunkSizeWarningLimit: 750,
       // Manual chunks: carve off Tiptap (only loaded on admin content
-      // routes) to reduce main bundle size. Firebase kept in vendor
-      // because it's used across auth routes. The previous manualChunks
-      // attempt failed due to a TDZ circular dep between vendor chunks;
-      // this version is scoped to Tiptap only — a single leaf dependency
-      // with no imports back into app code — so it cannot create a
-      // cycle.
+      // routes) to reduce main bundle size. Let Rollup derive the remaining
+      // shared chunks instead of forcing every dependency into one vendor
+      // file; the old bucket produced a multi-megabyte initial payload.
       rollupOptions: {
         output: {
           manualChunks(id: string) {
-            if (id.includes('node_modules')) {
-              // Tiptap editor — only used in admin content routes
-              // (LessonEdit, AssignmentEdit). Splitting this avoids
-              // ~300KB of editor code in the main bundle for all users.
-              if (/[\\/]node_modules[\\/]@tiptap/.test(id)) {
-                return 'vendor-tiptap'
-              }
-              // All other node_modules go to vendor
-              return 'vendor'
+            // Tiptap editor — only used in admin content routes
+            // (LessonEdit, AssignmentEdit). Splitting this avoids
+            // ~300KB of editor code in the main bundle for all users.
+            if (/[\\/]node_modules[\\/]@tiptap/.test(id)) {
+              return 'vendor-tiptap'
             }
           },
           // Opaque hash-only filenames for route + component chunks.
