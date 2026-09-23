@@ -60,7 +60,7 @@
     "@tiptap/vue-3": "^3.31.3",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "@vueuse/core": "^14.4.0",
+    "@vueuse/core": "^15.0.0",
     "firebase": "^12.19.0",
     "katex": "^0.18.7",
     "lottie-web": "^5.13.0",
