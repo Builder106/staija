@@ -3,8 +3,6 @@ import { createApp } from 'vue';
 // when they overlap. legacy.css defines unscoped `.grid-cols-2` etc.
 // for the dashboard tree; if loaded after Tailwind it would override
 // `lg:grid-cols-*` and break footer / hero / other responsive grids.
-import { inject } from '@vercel/analytics';
-import { injectSpeedInsights } from '@vercel/speed-insights';
 import App from './App.vue';
 import { currentLocale, i18n } from './i18n';
 import router from './router';
@@ -13,9 +11,6 @@ import { captureReferrerFromUrl } from './services/referrals';
 import { startVersionWatcher } from './services/versionCheck';
 import './style.css';
 import './styles/legacy.css';
-
-inject();
-injectSpeedInsights();
 
 // Auto-reload long-lived tabs when a new deploy ships. Without this,
 // a tab that loaded its HTML at 9 AM keeps referencing the 9-AM chunk
