@@ -703,7 +703,7 @@ export const submitQuiz = onCall<SubmitQuizInput>(
       quizScore: number
       quizPassed: boolean
       status?: string
-      completedAt?: Date
+      completedAt?: Date | FieldValue
     }
     const progressUpdate: LessonProgressUpdate = {
       enrollmentId,
