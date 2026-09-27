@@ -24,6 +24,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "verify:a11y-matrix": "node --experimental-strip-types scripts/verify-a11y-matrix.ts",
+    "test:accessibility": "playwright test --config=playwright.accessibility.config.ts",
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "avatars:generate": "tsx tools/avatars/generate.ts",
     "avatars:trace": "tsx tools/avatars/trace.ts",
@@ -69,6 +71,7 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@huggingface/inference": "^4.13.30",
     "@playwright/test": "1.63.0",
