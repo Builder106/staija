@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AnimationItem } from 'lottie-web';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { defineProps, onBeforeUnmount, onMounted, ref, withDefaults } from 'vue';
 
 const props = withDefaults(
   defineProps<{

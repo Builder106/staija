@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import mermaid from 'mermaid';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { defineProps, nextTick, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
   code: string;

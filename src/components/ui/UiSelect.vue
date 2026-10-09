@@ -1,6 +1,15 @@
 <script setup lang="ts" generic="T extends string | number">
 import { Icon } from '@iconify/vue';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import {
+  computed,
+  defineEmits,
+  defineProps,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  watch,
+  withDefaults,
+} from 'vue';
 
 interface Option {
   value: T;

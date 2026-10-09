@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, ref } from 'vue';
+import { computed, defineEmits, defineProps, ref, withDefaults } from 'vue';
 import { compressFile, formatBytes } from '../../services/fileCompression';
 
 const props = withDefaults(
