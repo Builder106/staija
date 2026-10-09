@@ -17,7 +17,7 @@
  */
 
 import { Motion, useScroll, useTransform } from 'motion-v';
-import { ref } from 'vue';
+import { defineOptions, defineProps, ref } from 'vue';
 import { useReducedMotion } from '../../composables/useReducedMotion';
 
 interface Props {

@@ -13,7 +13,7 @@
  * network it suits.
  */
 import { Icon } from '@iconify/vue';
-import { computed, onUnmounted, ref } from 'vue';
+import { computed, defineProps, onUnmounted, ref } from 'vue';
 import { useAuth } from '../../composables/useAuth';
 import { getOrMintMyReferralId } from '../../services/referrals';
 import Body from '../ui/Body.vue';

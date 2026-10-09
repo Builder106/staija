@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { ref } from 'vue';
+import { defineProps, ref } from 'vue';
 import Container from '../ui/Container.vue';
 import Heading from '../ui/Heading.vue';
 import Section from '../ui/Section.vue';

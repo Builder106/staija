@@ -7,6 +7,7 @@ import { onMounted, ref } from 'vue';
 // home route's first paint. The hero-animation__canvas container has
 // a fixed 260 px height (see <style scoped>) so reserving it during
 // the lazy load doesn't shift layout.
+import { defineProps } from 'vue';
 import heroAnimation from '../assets/hero.json';
 
 const props = defineProps<{

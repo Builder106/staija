@@ -14,7 +14,7 @@
  * qualify". Same hub serves future applicants, mentor-curious adults,
  * and existing supporters.
  */
-import { computed, ref, watch } from 'vue';
+import { computed, defineProps, ref, watch } from 'vue';
 import { resolveReferrerDisplayName } from '../../services/referrals';
 import Body from '../ui/Body.vue';
 import Container from '../ui/Container.vue';

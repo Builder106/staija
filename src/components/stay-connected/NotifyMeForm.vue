@@ -13,7 +13,7 @@
  * sees "StepUp — next cycle" preselected.
  */
 import { Icon } from '@iconify/vue';
-import { ref, watch } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 import { trackNewsletterSignup } from '../../services/analytics';
 import { getCapturedReferrerId } from '../../services/referrals';
 import { getAppConfig } from '../../utils/env';

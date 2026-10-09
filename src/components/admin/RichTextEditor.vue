@@ -6,7 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
-import { onBeforeUnmount, watch } from 'vue';
+import { defineEmits, defineProps, onBeforeUnmount, watch } from 'vue';
 import {
   contentfulToTipTap,
   tipTapToContentful,

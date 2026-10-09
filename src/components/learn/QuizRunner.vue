@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
 import { QuizService, submitQuiz, type QuizSubmitResult } from '../../services/learn';
 import type { CmsQuiz, QuizAttempt } from '../../services/types';
 import UiButton from '../ui/UiButton.vue';

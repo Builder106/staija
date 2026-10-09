@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, defineEmits, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { avatarThumbForSeed, avatarThumbForSlot, PORTRAIT_SLOT_COUNT } from '../../services/avatar';
 
 /**

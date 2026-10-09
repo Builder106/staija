@@ -2,7 +2,7 @@
 import { Icon } from '@iconify/vue';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import { nextTick, ref, watch } from 'vue';
+import { defineEmits, defineProps, nextTick, ref, watch } from 'vue';
 import { askLmsTutor, type AskLmsTutorResult } from '../../services/learn';
 import UiButton from '../ui/UiButton.vue';
 import MermaidViewer from './MermaidViewer.vue';

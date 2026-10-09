@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
 import { BLOCKS, INLINES, MARKS, type Document } from '@contentful/rich-text-types';
-import { computed } from 'vue';
+import { computed, defineProps } from 'vue';
 
 // Single shared Contentful Rich-Text renderer for the whole app — used by
 // the LMS LessonView/AssignmentView and (going forward) BlogPost.vue.

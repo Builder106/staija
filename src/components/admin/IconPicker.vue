@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, defineEmits, defineProps, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps<{
   modelValue: string;

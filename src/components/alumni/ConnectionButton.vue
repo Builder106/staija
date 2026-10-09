@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, toRefs, watch } from 'vue';
+import { defineProps, onMounted, ref, toRefs, watch } from 'vue';
 import { ConnectionService } from '../../services/connectionService';
 import { AuthService } from '../../services/firebase';
 
