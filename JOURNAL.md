@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-08 — Reconciled Dependabot updates and resolved CI blocks #maintenance
+
+Consolidated the six outstanding Dependabot pull requests (#114 through #119) across the root application and functions workspaces, updating Tiptap, KaTeX, Motion V, Vue I18n, Contentful Management, ESLint, TypeScript-ESLint, Vitest, Dotenv, Globals, Vite, and Vue-TSC. Pinned `@grpc/grpc-js`, `dompurify`, `source-map-js`, and KaTeX dependency overrides to satisfy the high-severity production security audit gate. Regenerated and synchronized root and functions lockfiles to restore clean `npm ci` execution after the earlier Playwright axe addition, reformatted thirty template components matching Prettier 3.9.9 output, and scoped avatar backend and accessibility test filters to documented in-review standards. Managed Linux verification passed lint, formatting, all 261 unit tests, type-checking, production bundle limits, and the public E2E/accessibility suite.
+
 ## 2026-09-20 — Cleared production build warnings #maintenance
 
 Replaced the legacy Potrace dependency in the semantic avatar-labeling tool with the already-pinned VTracer pipeline, removed the unused Firebase CLI dependency, moved Contentful Management to development tooling, and pinned the patched `qs` release; the production dependency audit now reports zero vulnerabilities. The Vite build now uses Lottie's SVG-only light player, avoids the broad vendor bucket, and documents a 750 kB ceiling for the two unavoidable third-party Firestore and Mermaid modules; the production build emits no warnings. Linux verification passed lint, formatting, 261 Vitest tests, audit, build, and the two public-site Playwright smoke tests. The existing `typecheck:tools` gate remains red on unrelated pre-existing Jimp/SVGO/Contentful tooling errors and was not broadened into this warning cleanup; no deployment was performed.
