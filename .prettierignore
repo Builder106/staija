@@ -19,3 +19,4 @@ take_screens.mjs
 *.jsonc
 *.yaml
 *.yml
+assets/
