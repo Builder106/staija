@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-13: Redrew the README flow #decision
+
+The README applicant-to-alumni sequence is split at staff approval. The source had six participants and 17 messages; the two panels keep all 17 exchanges, with the applicant renamed student in the second panel after approval. The text keeps the application programs, notes, LMS records, mentor work, and graduation email explicit.
+
 ## 2026-09-20 — Cleared production build warnings #maintenance
 
 Replaced the legacy Potrace dependency in the semantic avatar-labeling tool with the already-pinned VTracer pipeline, removed the unused Firebase CLI dependency, moved Contentful Management to development tooling, and pinned the patched `qs` release; the production dependency audit now reports zero vulnerabilities. The Vite build now uses Lottie's SVG-only light player, avoids the broad vendor bucket, and documents a 750 kB ceiling for the two unavoidable third-party Firestore and Mermaid modules; the production build emits no warnings. Linux verification passed lint, formatting, 261 Vitest tests, audit, build, and the two public-site Playwright smoke tests. The existing `typecheck:tools` gate remains red on unrelated pre-existing Jimp/SVGO/Contentful tooling errors and was not broadened into this warning cleanup; no deployment was performed.

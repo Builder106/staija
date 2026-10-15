@@ -27,53 +27,11 @@ This platform serves as the central digital hub for STAIJA's scholarship program
 
 The applicant → student → alumni loop, end-to-end:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Applicant
-    actor Staff
-    actor Mentor
-    participant STAIJA
-    participant Firestore
-    participant Mailgun
+![Applicant sign-up, application submission, and staff review](assets/diagrams/application-review.png)
 
-    rect rgba(128, 128, 128, 0.12)
-        Note over Applicant,Mailgun: Sign up & apply
-        Applicant->>STAIJA: Sign up (email or Google)
-        STAIJA->>Firestore: users.create (role=applicant)
-        Applicant->>STAIJA: Submit StepUp Scholars / Dynamerge form
-        STAIJA->>Firestore: applications.create (status=pending)
-        STAIJA->>Mailgun: "We received your application"
-    end
+![Cohort enrollment, mentoring, LMS work, and alumni transition](assets/diagrams/student-alumni.png)
 
-    rect rgba(128, 128, 128, 0.12)
-        Note over Applicant,Mailgun: Staff review
-        Staff->>STAIJA: Open admin review queue
-        STAIJA->>Firestore: applications where status=pending
-        Staff->>STAIJA: Approve / reject (with notes)
-        STAIJA->>Firestore: applications.update + roleTransition (applicant → student)
-    end
-
-    rect rgba(128, 128, 128, 0.12)
-        Note over Applicant,Mailgun: Cohort & mentor pairing
-        STAIJA->>Firestore: enrollments.create (cohort)
-        STAIJA->>Firestore: mentors.match (assignment)
-        STAIJA->>Mailgun: "You're in" + mentor intro
-    end
-
-    rect rgba(128, 128, 128, 0.12)
-        Note over Applicant,Mailgun: Program (LMS)
-        Applicant->>STAIJA: Lessons, assignments, sessions
-        Mentor->>STAIJA: Schedule sessions, leave feedback
-        STAIJA->>Firestore: progress, sessionNotes, feedback
-    end
-
-    rect rgba(128, 128, 128, 0.12)
-        Note over Applicant,Mailgun: Alumni
-        STAIJA->>Firestore: roleTransition (student → alumni)
-        STAIJA->>Mailgun: Graduation email + alumni resources
-    end
-```
+An applicant signs up and submits a StepUp Scholars or Dynamerge form. Firestore stores the user and pending application, and Mailgun confirms receipt. Staff review the application and approve or reject it with notes. Approval moves the applicant to student, creates a cohort enrollment and mentor assignment, and sends an introduction. Students and mentors use the LMS for lessons, assignments, sessions, notes, and feedback. Graduation changes the role to alumni and sends resources by email. Edit the [application](assets/diagrams/application-review.html) or [program](assets/diagrams/student-alumni.html) diagram.
 
 Side flows (donations via Paystack, newsletter via Mailgun, CMS content from Contentful → Firestore via webhook) feed the same Firestore + Functions backbone.
 
