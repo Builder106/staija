@@ -48,6 +48,7 @@
     "lms:seed": "tsx tools/lms-seed/seed.ts seed",
     "lms:clear": "tsx tools/lms-seed/seed.ts clear",
     "lms:republish": "tsx tools/lms-seed/seed.ts republish",
+    "blog:draft": "tsx tools/blog/draft-post.ts",
     "demo": "DEMO=1 bddgen --config playwright.demo.config.ts && DEMO=1 playwright test --config playwright.demo.config.ts"
   },
   "dependencies": {

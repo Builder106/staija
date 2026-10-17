@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-17: Blog posts can come from Markdown files #implementation
+
+Added `npm run blog:draft`, which turns a Markdown file under `tools/blog/posts/` into a Contentful `blogPost` entry. It saves a draft by default (`--publish` is opt-in) and refuses to write to master without `--force`. The first post, a month-by-month walk through StepUp, uses only facts the live site already states and is now a draft in the staging environment. Three things about the staging model shaped the script. `author` and `category` are links with no content-type validation. `status` is required and only accepts `draft` or `published`. The existing "StepUp Scholars" category uses the slug `stepup`, so the script matches authors and categories by name, not by a derived slug. Separately, the shared `contentful-client.ts` default import broke under `contentful-management` 12, which took down `lms:seed` and every other script built on that client. `typecheck:tools` is still red on 22 older errors in the avatar tools, the webhook scripts, and `seed.ts`; none are in `tools/blog/`.
+
 ## 2026-10-13: Redrew the README flow #decision
 
 The README applicant-to-alumni sequence is split at staff approval. The source had six participants and 17 messages; the two panels keep all 17 exchanges, with the applicant renamed student in the second panel after approval. The text keeps the application programs, notes, LMS records, mentor work, and graduation email explicit.
