@@ -97,7 +97,12 @@ const contentLoaded = ref(false);
 const featuredEyebrow = computed(() => {
   if (!featuredStory.value) return '';
   const d = new Date(featuredStory.value.publishedAt);
-  return d.toLocaleDateString(locale.value, { month: 'short', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString(locale.value, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 });
 
 function eventDateParts(iso: string) {

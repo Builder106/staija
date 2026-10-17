@@ -38,13 +38,17 @@ const gridPosts = computed<BlogPost[]>(() => items.value.slice(1));
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
 
 function eyebrowFor(p: BlogPost): string {
-  const d = new Date(p.publishedAt);
-  const month = d.toLocaleString('en-US', { month: 'short' });
-  const day = d.getDate();
+  // publishDate is a date-only string, parsed as UTC midnight; format in
+  // UTC so viewers west of Greenwich don't see the previous day.
+  const date = new Date(p.publishedAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
   const programLabel =
     p.program === 'stepup' ? 'StepUp' : p.program === 'dynamerge' ? 'Dynamerge' : '';
   const topicLabel = p.topic.charAt(0).toUpperCase() + p.topic.slice(1);
-  return [programLabel, topicLabel, `${month} ${day}`].filter(Boolean).join(' | ');
+  return [programLabel, topicLabel, date].filter(Boolean).join(' | ');
 }
 
 async function load() {

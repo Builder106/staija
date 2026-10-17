@@ -23,7 +23,12 @@ const notFound = ref(false);
 const eyebrow = computed(() => {
   if (!post.value) return '';
   const d = new Date(post.value.publishedAt);
-  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const date = d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
   const programLabel =
     post.value.program === 'stepup'
       ? 'StepUp'
