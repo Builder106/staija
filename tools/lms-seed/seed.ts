@@ -45,9 +45,6 @@ if (cliEnvFlag) {
   process.env.VITE_CONTENTFUL_ENV_ID = cliEnvFlag.slice('--env='.length)
 }
 
-// contentful-management ships a CJS default export; under ESM (Node's
-// "type": "module"), named imports aren't synthesized, so we grab
-// createClient off the default. Types still come from the named exports.
 import type { PlainClientAPI, EntryProps } from 'contentful-management'
 import type { Document } from '@contentful/rich-text-types'
 import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'

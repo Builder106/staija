@@ -1,7 +1,5 @@
-import contentful from 'contentful-management'
+import { createClient } from 'contentful-management'
 import type { PlainClientAPI } from 'contentful-management'
-
-const { createClient } = contentful
 
 export interface ContentfulConfig {
   readonly spaceId: string
