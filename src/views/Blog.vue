@@ -113,10 +113,14 @@ onMounted(load);
                   class="absolute inset-0 bg-ink/10 group-hover:bg-transparent transition-colors z-10"
                 />
                 <img
+                  v-if="featured.hero"
                   :src="featured.hero"
                   :alt="featured.title"
                   class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
+                <!-- No cover image: fill with the brand gradient rather than
+                     an empty-src <img>, which renders a broken icon + alt. -->
+                <div v-else class="absolute inset-0 bg-gradient-hero" aria-hidden="true" />
               </div>
               <div class="lg:col-span-2 p-8 md:p-12 flex flex-col justify-center bg-surface h-full">
                 <Eyebrow class="text-brand-violet mb-4">{{ eyebrowFor(featured) }}</Eyebrow>
@@ -227,11 +231,13 @@ onMounted(load);
                   class="absolute inset-0 bg-ink/5 group-hover:bg-transparent transition-colors z-10 pointer-events-none"
                 />
                 <img
+                  v-if="post.hero"
                   :src="post.hero"
                   :alt="post.title"
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
+                <div v-else class="absolute inset-0 bg-gradient-hero" aria-hidden="true" />
               </div>
               <div class="flex flex-col flex-1 gap-3">
                 <Eyebrow class="text-ink/50">{{ eyebrowFor(post) }}</Eyebrow>

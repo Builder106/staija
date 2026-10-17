@@ -436,6 +436,7 @@ onMounted(async () => {
                 class="w-full h-full object-cover"
                 decoding="async"
               />
+              <div v-else class="absolute inset-0 bg-gradient-hero" aria-hidden="true" />
             </Motion>
             <Motion
               class="lg:col-span-5 flex flex-col gap-6"
