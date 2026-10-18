@@ -210,7 +210,9 @@ onMounted(load);
           </div>
         </div>
 
-        <div v-else-if="gridPosts.length === 0 && !loading" class="py-24 text-center text-ink/60">
+        <!-- Check every result, not just the grid: the newest post renders as
+             the featured card, so a single match leaves the grid empty. -->
+        <div v-else-if="items.length === 0 && !loading" class="py-24 text-center text-ink/60">
           <Heading :level="3" class="mb-2">No stories match.</Heading>
           <Body>Try a different filter or clear the search.</Body>
         </div>
