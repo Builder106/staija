@@ -60,6 +60,7 @@ describe('OAuth security headers', () => {
         'https://firebase.googleapis.com',
         'https://firebaseremoteconfig.googleapis.com',
         'https://firebaselogging.googleapis.com',
+        'https://firebaselogging-pa.googleapis.com',
         'https://*.google-analytics.com',
       ]),
     )
