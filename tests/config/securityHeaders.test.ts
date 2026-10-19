@@ -45,6 +45,7 @@ describe('OAuth security headers', () => {
     expect(directiveSources(contentSecurityPolicy, 'frame-src')).toEqual(
       expect.arrayContaining([
         'https://accounts.google.com/gsi/',
+        'https://staija.firebaseapp.com',
         'https://staija-staging.firebaseapp.com',
       ]),
     )
