@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Restored the original gallery portraits #fix #decision
+
+The avatar picker had been serving the simplified PNGs promoted with the layered-avatar work in September. Restored all ten 256×256 gallery images from their first commit, `f32c10e`; each file matches its historical Git blob. The Settings profile preview now uses the same PNG as the picker, so applying a portrait no longer swaps it for a different Lottie drawing. The layered sources and Lottie files remain in the repository for the separate avatar pipeline.
+
 ## 2026-10-19: Dropped the name-only Trusted Types rule #decision
 
 The CSP carried `trusted-types` without `require-trusted-types-for 'script'`, so no DOM sink was ever enforced. The rule only rejected policy names: Vue's `vue`, reCAPTCHA's `goog#html`, the Google sign-in client's `gapi#gapi`, and Firebase Analytics' `firebase-js-sdk-policy`. Vue and reCAPTCHA catch the rejection and fall back to plain strings, so nothing broke, but each one filled the console, and Analytics would have failed to load. Removing the rule changes no protection. The header test now allows a `trusted-types` rule only alongside `require-trusted-types-for 'script'`. Full enforcement would mean auditing Vue, reCAPTCHA, the Google sign-in client, Analytics, and the three raw-HTML spots in `src/`, so it's a separate project. The same check found the three preloaded fonts in `index.html` are all above the fold on the home page; on `/login` only IBM Plex Sans is used, which wastes about 52 KB on inner pages. That's small enough to leave alone.
