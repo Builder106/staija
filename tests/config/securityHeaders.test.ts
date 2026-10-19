@@ -51,6 +51,23 @@ describe('OAuth security headers', () => {
     )
   })
 
+  it('allows the Firebase Analytics and Performance Monitoring endpoints', () => {
+    expect(directiveSources(contentSecurityPolicy, 'script-src')).toContain(
+      'https://*.googletagmanager.com',
+    )
+    expect(directiveSources(contentSecurityPolicy, 'connect-src')).toEqual(
+      expect.arrayContaining([
+        'https://firebase.googleapis.com',
+        'https://firebaseremoteconfig.googleapis.com',
+        'https://firebaselogging.googleapis.com',
+        'https://*.google-analytics.com',
+      ]),
+    )
+    expect(directiveSources(contentSecurityPolicy, 'trusted-types')).toContain(
+      'firebase-js-sdk-policy',
+    )
+  })
+
   it('keeps the opener relationship required for OAuth popups', () => {
     expect(headerValue('Cross-Origin-Opener-Policy')).toBe('same-origin-allow-popups')
   })
