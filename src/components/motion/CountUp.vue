@@ -8,7 +8,7 @@
  */
 
 import { useInView } from 'motion-v';
-import { ref, watch } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 import { useReducedMotion } from '../../composables/useReducedMotion';
 
 interface Props {

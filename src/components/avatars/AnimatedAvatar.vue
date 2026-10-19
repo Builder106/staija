@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Motion } from 'motion-v';
-import { computed, ref } from 'vue';
+import { computed, defineProps, ref, withDefaults } from 'vue';
 import {
   AVATAR_BREATH_AMPLITUDE,
   AVATAR_DURATIONS,

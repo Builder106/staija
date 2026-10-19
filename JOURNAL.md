@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Restored the original gallery portraits #fix #decision
+
+The avatar picker had been serving the simplified PNGs promoted with the layered-avatar work in September. Restored all ten 256×256 gallery images from their first commit, `f32c10e`; each file matches its historical Git blob. The Settings profile preview now uses the same PNG as the picker, so applying a portrait no longer swaps it for a different Lottie drawing. The layered sources and Lottie files remain in the repository for the separate avatar pipeline.
+
 ## 2026-10-19: Dropped the name-only Trusted Types rule #decision
 
 The CSP carried `trusted-types` without `require-trusted-types-for 'script'`, so no DOM sink was ever enforced. The rule only rejected policy names: Vue's `vue`, reCAPTCHA's `goog#html`, the Google sign-in client's `gapi#gapi`, and Firebase Analytics' `firebase-js-sdk-policy`. Vue and reCAPTCHA catch the rejection and fall back to plain strings, so nothing broke, but each one filled the console, and Analytics would have failed to load. Removing the rule changes no protection. The header test now allows a `trusted-types` rule only alongside `require-trusted-types-for 'script'`. Full enforcement would mean auditing Vue, reCAPTCHA, the Google sign-in client, Analytics, and the three raw-HTML spots in `src/`, so it's a separate project. The same check found the three preloaded fonts in `index.html` are all above the fold on the home page; on `/login` only IBM Plex Sans is used, which wastes about 52 KB on inner pages. That's small enough to leave alone.
@@ -19,6 +23,10 @@ Added `npm run blog:draft`, which turns a Markdown file under `tools/blog/posts/
 ## 2026-10-13: Redrew the README flow #decision
 
 The README applicant-to-alumni sequence is split at staff approval. The source had six participants and 17 messages; the two panels keep all 17 exchanges, with the applicant renamed student in the second panel after approval. The text keeps the application programs, notes, LMS records, mentor work, and graduation email explicit.
+
+## 2026-10-08 — Reconciled Dependabot updates and resolved CI blocks #maintenance
+
+Consolidated the six outstanding Dependabot pull requests (#114 through #119) across the root application and functions workspaces, updating Tiptap, KaTeX, Motion V, Vue I18n, Contentful Management, ESLint, TypeScript-ESLint, Vitest, Dotenv, Globals, Vite, and Vue-TSC. Pinned `@grpc/grpc-js`, `dompurify`, `source-map-js`, and KaTeX dependency overrides to satisfy the high-severity production security audit gate. Regenerated and synchronized root and functions lockfiles to restore clean `npm ci` execution after the earlier Playwright axe addition, reformatted thirty template components matching Prettier 3.9.9 output, and scoped avatar backend and accessibility test filters to documented in-review standards. Managed Linux verification passed lint, formatting, all 261 unit tests, type-checking, production bundle limits, and the public E2E/accessibility suite.
 
 ## 2026-09-20 — Cleared production build warnings #maintenance
 

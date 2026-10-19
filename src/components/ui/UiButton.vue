@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineEmits, defineProps, withDefaults } from 'vue';
 import { RouterLink, type RouteLocationRaw } from 'vue-router';
 
 type Variant =

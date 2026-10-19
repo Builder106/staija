@@ -11,7 +11,6 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import AnimatedAvatar from '../../components/avatars/AnimatedAvatar.vue';
 import AvatarPicker from '../../components/avatars/AvatarPicker.vue';
-import LottieAvatar from '../../components/avatars/LottieAvatar.vue';
 import Body from '../../components/ui/Body.vue';
 import Container from '../../components/ui/Container.vue';
 import Eyebrow from '../../components/ui/Eyebrow.vue';
@@ -23,11 +22,6 @@ import { useAuth } from '../../composables/useAuth';
 import { functions } from '../../config/firebase';
 import { AuthService } from '../../services/auth';
 import { avatarSeedFor, resolveAvatarSrc } from '../../services/avatar';
-import {
-  hasLottieForSlot,
-  loadLottieForSlot,
-  type LottieAnimationData,
-} from '../../services/avatar/lotties';
 import { DatabaseService } from '../../services/database';
 import { StorageService } from '../../services/storageService';
 import type { EmailPreferences } from '../../services/types';
@@ -283,40 +277,6 @@ const resolvedAvatarSrc = computed(() => {
 // True when the resolved avatar is the user's uploaded photo (vs.
 // generated). Affects which display container the markup uses.
 const showingUploadedPhoto = computed(() => Boolean(form.value.photoURL));
-
-// The actual slot whose portrait is currently displayed. Used to
-// decide whether to swap in the Lottie variant. `null` when no
-// generated avatar applies (uploaded photo or pre-load).
-const UNIVERSAL_DEFAULT_SLOT = 6;
-const displayedSlot = computed<number | null>(() => {
-  if (!user.value || form.value.photoURL) return null;
-  return typeof form.value.avatarSlot === 'number' ? form.value.avatarSlot : UNIVERSAL_DEFAULT_SLOT;
-});
-
-const lottieAvailable = computed(
-  () => displayedSlot.value !== null && hasLottieForSlot(displayedSlot.value),
-);
-
-// Lazily-loaded Lottie JSON for the displayed slot. Reloaded when
-// the slot changes (picker apply, photo upload/clear).
-const lottieAnimation = ref<LottieAnimationData | null>(null);
-let lottieRequestId = 0;
-watch(
-  displayedSlot,
-  async (slot) => {
-    const requestId = ++lottieRequestId;
-    const requestedSlot = slot;
-    if (slot === null || !hasLottieForSlot(slot)) {
-      lottieAnimation.value = null;
-      return;
-    }
-    const animation = await loadLottieForSlot(slot);
-    if (requestId === lottieRequestId && displayedSlot.value === requestedSlot) {
-      lottieAnimation.value = animation;
-    }
-  },
-  { immediate: true },
-);
 
 type DateInput = Date | { toDate?: () => Date } | string | number | null | undefined;
 
@@ -608,24 +568,9 @@ async function handleDelete() {
 
           <div class="flex flex-col gap-6">
             <div class="flex items-center gap-5">
-              <!--
-                Lottie variant when an animation exists for the user's
-                slot, otherwise AnimatedAvatar. state="idle" runs the
-                shared breath cycle (1.8% scale, 4.2s sine, infinite,
-                phase-jittered per mount). Now safe to leave on with
-                PNG rendering — the bitmap is rasterized once and
-                composited via GPU.
-              -->
-              <LottieAvatar
-                v-if="lottieAvailable && lottieAnimation && !showingUploadedPhoto"
-                :animation-data="lottieAnimation"
-                :fallback-src="resolvedAvatarSrc!"
-                :alt="`${displayName ?? 'Your'} avatar`"
-                :size="80"
-                class="flex-shrink-0"
-              />
+              <!-- Use the same portrait in the picker and the profile preview. -->
               <AnimatedAvatar
-                v-else-if="resolvedAvatarSrc && !showingUploadedPhoto"
+                v-if="resolvedAvatarSrc && !showingUploadedPhoto"
                 :src="resolvedAvatarSrc"
                 :alt="`${displayName ?? 'Your'} avatar`"
                 state="idle"

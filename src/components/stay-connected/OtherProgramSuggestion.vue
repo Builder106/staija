@@ -14,7 +14,7 @@
  * StepUp on the time-commitment row.
  */
 import { Icon } from '@iconify/vue';
-import { computed } from 'vue';
+import { computed, defineProps } from 'vue';
 import Body from '../ui/Body.vue';
 import Heading from '../ui/Heading.vue';
 import UiButton from '../ui/UiButton.vue';

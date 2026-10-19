@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
 import { listEntries, type EntrySummary, type LmsContentType } from '../../services/lmsContent';
 
 // A multi-select picker for entries of a given content type. v-model is

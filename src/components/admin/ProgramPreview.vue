@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
+import { defineProps } from 'vue';
 import type { ProgramStat } from '../../services/firebase';
 import UiChip from '../ui/UiChip.vue';
 

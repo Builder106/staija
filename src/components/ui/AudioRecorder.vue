@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, defineEmits, defineProps, onBeforeUnmount, ref, withDefaults } from 'vue';
 import UiButton from './UiButton.vue';
 
 // In-browser audio recorder. Caps recording length, exposes a Blob via

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { Motion } from 'motion-v';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import { trackApplyClick } from '../services/analytics';
 import type { Program } from '../services/firebase';
 import { ProgramService } from '../services/programService';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
-import { computed, ref } from 'vue';
+import { computed, defineEmits, defineProps, ref } from 'vue';
 import { publicStorage } from '../../config/firebase';
 
 const props = defineProps<{

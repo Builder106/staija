@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import lottie, { type AnimationItem } from 'lottie-web';
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { defineProps, onBeforeUnmount, onMounted, ref, watch, withDefaults } from 'vue';
 import type { LottieAnimationData } from '../../services/avatar/lotties';
 
 /**

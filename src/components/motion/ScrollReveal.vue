@@ -9,6 +9,7 @@
  */
 
 import { Motion } from 'motion-v';
+import { defineProps } from 'vue';
 import { useReducedMotion } from '../../composables/useReducedMotion';
 
 interface Props {

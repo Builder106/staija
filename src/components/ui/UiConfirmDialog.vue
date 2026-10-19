@@ -25,7 +25,16 @@ function nextDialogUid(): string {
  * is neutral and fine for "are you sure?" / "save changes?" prompts.
  */
 import { Icon } from '@iconify/vue';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import {
+  computed,
+  defineEmits,
+  defineProps,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  watch,
+  withDefaults,
+} from 'vue';
 
 const uid = nextDialogUid();
 

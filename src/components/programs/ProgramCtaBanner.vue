@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { defineProps } from 'vue';
 import { trackApplyClick } from '../../services/analytics';
 import type { ProgramSlug } from '../../services/programContent';
 import Container from '../ui/Container.vue';
