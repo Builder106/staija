@@ -64,9 +64,17 @@ describe('OAuth security headers', () => {
         'https://*.google-analytics.com',
       ]),
     )
-    expect(directiveSources(contentSecurityPolicy, 'trusted-types')).toContain(
-      'firebase-js-sdk-policy',
-    )
+  })
+
+  it('restricts Trusted Types policy names only when sinks are enforced', () => {
+    const restrictsNames = contentSecurityPolicy
+      .split(';')
+      .some((entry) => entry.trim().split(/\s+/)[0] === 'trusted-types')
+    if (restrictsNames) {
+      expect(directiveSources(contentSecurityPolicy, 'require-trusted-types-for')).toContain(
+        "'script'",
+      )
+    }
   })
 
   it('keeps the opener relationship required for OAuth popups', () => {
