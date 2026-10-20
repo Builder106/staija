@@ -2,6 +2,35 @@
 
 High-level roadmap and feature development goals for STAIJA.
 
+## LMS production readiness
+
+The LMS has course, lesson, assignment, session, quiz, and authoring code, but
+the live learner flow is not ready to call complete. As of 2026-10-20, the
+production staff content page cannot load its course tree. The client calls
+`us-central1`, while the Functions backend is configured for `africa-south1`,
+and the site's Content Security Policy blocks the request. Contentful has no
+`quiz` content type in either environment, although the content tree requests
+it. Production's two published courses are demo content; a third course has
+its `published` field set to `false`.
+
+- Set the client Functions region to `africa-south1` and allow the production
+  and staging Functions origins in the site's Content Security Policy. Confirm
+  the deployed callable endpoints match those settings.
+- Add and publish the `quiz` content type in both Contentful environments.
+  Check its fields against the quiz editor, lesson references, and grading
+  flow, then confirm the staff content tree loads without errors.
+- Prepare reviewed curriculum and cohort assignments for production. Keep
+  demo courses out of the production learner catalog.
+- Run authenticated staff, student, and mentor checks from authoring and
+  publication through the Firestore mirror, enrollment, lesson unlock,
+  assignment submission and grading, sessions and RSVPs, and quiz completion.
+  Check App Check, browser console errors, and callable responses in staging
+  before repeating the release checks in production.
+
+Complete this before expanding the tutor in v1.3. The milestone is done when
+those flows work with real course content and the staff content page loads
+without the current callable or schema errors.
+
 ## v1.1 — Brand Asset Kit & Marketing Automation
 
 - **Vectorized Brand Asset Pipeline**: Full integration of high-resolution SVGs, dark/light variations, and automated export workflows.
