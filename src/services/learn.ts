@@ -439,7 +439,7 @@ export interface QuizSubmitResult {
   totalQuestions: number;
   questionFeedback: Record<
     string,
-    { correct: boolean; correctOptionId: string; explanation?: string }
+    { correct: boolean; correctOptionId?: string; explanation?: string }
   >;
 }
 

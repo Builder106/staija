@@ -388,8 +388,6 @@ export interface QuizQuestion {
   id: string;
   questionText: string;
   options: QuizOption[];
-  correctOptionId: string;
-  explanation?: string;
 }
 
 export interface CmsQuiz {

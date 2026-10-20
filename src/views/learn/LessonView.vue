@@ -217,7 +217,6 @@ onUnmounted(() => {
             :quizId="quizId"
             :lessonSlug="lesson.slug"
             :enrollmentId="enrollment.id!"
-            @passed="markComplete"
           />
 
           <!-- Completion and AI Tutor action bar -->
