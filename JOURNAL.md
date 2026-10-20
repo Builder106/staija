@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-20: Prepared LMS quiz and callable release #implementation #decision
+
+The LMS client now targets the deployed Functions region, and the CSP allows both project origins. Quiz authoring separates private answer keys from Contentful questions and the learner Firestore mirror; quiz submissions check enrollment and course membership before grading. The demo seeder no longer writes answer keys into Contentful. The quiz type and lesson link were published and read back in staging Contentful on October 20; production's schema remains unchanged. Deployment, approved curriculum publication, and authenticated staging and production checks remain release gates.
+
 ## 2026-10-19: Merge the README diagrams into one lifecycle #decision
 
 The two sequence diagrams are now one lifecycle figure: applicant, offered, student, alumni, with reject and decline exits. Roles and transitions come from `permissions.ts`, `respondToOffer`, and `graduateCohort`. The README no longer mentions a graduation email, which `graduateCohort` does not send.

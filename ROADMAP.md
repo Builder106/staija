@@ -8,20 +8,28 @@ The LMS has course, lesson, assignment, session, quiz, and authoring code, but
 the live learner flow is not ready to call complete. As of 2026-10-20, the
 production staff content page cannot load its course tree. The client calls
 `us-central1`, while the Functions backend is configured for `africa-south1`,
-and the site's Content Security Policy blocks the request. Contentful has no
-`quiz` content type in either environment, although the content tree requests
-it. Production's two published courses are demo content; a third course has
-its `published` field set to `false`.
+and the site's Content Security Policy blocks the request. The client and CSP
+fixes are prepared in source but have not been deployed. The `quiz` content
+type and lesson reference are published in staging Contentful; production
+still lacks them. Production's two published courses are demo content; a
+third course has its `published` field set to `false`.
 
-- Set the client Functions region to `africa-south1` and allow the production
-  and staging Functions origins in the site's Content Security Policy. Confirm
-  the deployed callable endpoints match those settings.
-- Add and publish the `quiz` content type in both Contentful environments.
-  Check its fields against the quiz editor, lesson references, and grading
-  flow, then confirm the staff content tree loads without errors.
-- Prepare reviewed curriculum and cohort assignments for production. Keep
-  demo courses out of the production learner catalog.
-- Run authenticated staff, student, and mentor checks from authoring and
+- [x] Set the client Functions region to `africa-south1` and allow the production
+  and staging Functions origins in the site's Content Security Policy.
+- [x] Prepare the `quiz` schema migration for both Contentful environments.
+  Keep quiz answer keys in server-only Firestore documents, exclude them from
+  Contentful and the learner mirror, and check lesson and course membership
+  before granting progress.
+- [x] Apply and verify the `quiz` content type and `lesson.quiz` reference in
+  staging Contentful. No curriculum entries were published.
+- [ ] Deploy the Functions, rules, and site changes to staging, then confirm
+  the staff content tree loads without callable or schema errors.
+- [ ] Apply the schema migration to production Contentful during the production
+  release, after staging checks pass.
+- [ ] Prepare reviewed curriculum and cohort assignments for production. Keep
+  demo courses out of the production learner catalog. Curriculum publication
+  is a release gate.
+- [ ] Run authenticated staff, student, and mentor checks from authoring and
   publication through the Firestore mirror, enrollment, lesson unlock,
   assignment submission and grading, sessions and RSVPs, and quiz completion.
   Check App Check, browser console errors, and callable responses in staging
