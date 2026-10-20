@@ -1,5 +1,11 @@
 # LMS demo seeder
 
+The seeder creates course and lesson demos without quizzes. Author quizzes in
+the staff editor so answer keys stay in server-only Firestore documents.
+Before using the quiz editor, preview the Contentful model changes with
+`npm run lms:schema -- --env=staging`; applying them requires a separate
+`--apply` run. Repeat for `master` during the approved release.
+
 Populate the LMS with editable demo courses so you can iterate on the
 admin UI and the learner views without writing curriculum from scratch.
 
