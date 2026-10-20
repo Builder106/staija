@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Merge the README diagrams into one lifecycle #decision
+
+The two sequence diagrams are now one lifecycle figure: applicant, offered, student, alumni, with reject and decline exits. Roles and transitions come from `permissions.ts`, `respondToOffer`, and `graduateCohort`. The README no longer mentions a graduation email, which `graduateCohort` does not send.
+
 ## 2026-10-19: Restored the original gallery portraits #fix #decision
 
 The avatar picker had been serving the simplified PNGs promoted with the layered-avatar work in September. Restored all ten 256×256 gallery images from their first commit, `f32c10e`; each file matches its historical Git blob. The Settings profile preview now uses the same PNG as the picker, so applying a portrait no longer swaps it for a different Lottie drawing. The layered sources and Lottie files remain in the repository for the separate avatar pipeline.

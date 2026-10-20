@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STAIJA applicant to alumni lifecycle</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --edge: #59636e; --box: #8c959f; --group: #d1d9e0; --groupfill: #f6f8fa; --accent: #0969da; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --ink: #f0f6fc; --muted: #9198a1; --edge: #9198a1; --box: #656c76; --group: #3d444d; --groupfill: #151b23; --accent: #4493f8; } }
+html, body { margin: 0; background: var(--bg); }
+main { max-width: 632px; margin: 0 auto; }
+svg { display: block; width: 100%; height: auto; }
+text { font-family: "IBM Plex Sans", system-ui, sans-serif; fill: var(--ink); }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.muted { fill: var(--muted); }
+.accent-text { fill: var(--accent); }
+.bg, .halo { fill: var(--bg); }
+.node { fill: var(--bg); stroke-width: 1.25; }
+.node.box { stroke: var(--box); }
+.node.accent { stroke: var(--accent); stroke-width: 2; }
+.group { fill: var(--groupfill); stroke: var(--group); }
+.boundary { fill: none; stroke: var(--box); stroke-dasharray: 6 6; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1.5; }
+.edge.accent { stroke: var(--accent); stroke-width: 2; }
+.edge.dashed { stroke-dasharray: 6 5; }
+.lifeline { fill: none; stroke: var(--group); stroke-dasharray: 4 5; }
+.tip { fill: var(--edge); }
+.tip-accent { fill: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 632 426" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">STAIJA applicant to alumni lifecycle</title>
+<desc id="diagram-desc">An applicant submits an application. Staff accept or reject it. An accepted applicant is offered a spot and can accept, decline, or defer it. After the applicant accepts, staff enroll them in a cohort with a mentor and their role becomes student. When every cohort they are in completes, their role becomes alumni. Rejected, declined, and deferred applicants keep the applicant role.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip" d="M0,0 L10,5 L0,10 Z"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip-accent" d="M0,0 L10,5 L0,10 Z"/></marker>
+</defs>
+<rect class="bg" width="632" height="426"/>
+<rect class="node box" x="16" y="16" width="260" height="67" rx="6"/>
+<text x="30" y="43" font-size="16" font-weight="600">Applicant</text>
+<text x="30" y="64" font-size="14" class="muted">application submitted</text>
+<rect class="node box" x="16" y="125" width="260" height="67" rx="6"/>
+<text x="30" y="152" font-size="16" font-weight="600">Offered a spot</text>
+<text x="30" y="173" font-size="14" class="muted">application accepted</text>
+<rect class="node box" x="16" y="234" width="260" height="67" rx="6"/>
+<text x="30" y="261" font-size="16" font-weight="600">Student</text>
+<text x="30" y="282" font-size="14" class="muted">enrolled, mentor assigned</text>
+<rect class="node box" x="16" y="343" width="260" height="67" rx="6"/>
+<text x="30" y="370" font-size="16" font-weight="600">Alumni</text>
+<text x="30" y="391" font-size="14" class="muted">every cohort completed</text>
+<rect class="node box" x="396" y="16" width="220" height="67" rx="6"/>
+<text x="410" y="43" font-size="16" font-weight="600">Rejected</text>
+<text x="410" y="64" font-size="14" class="muted">rejection email sent</text>
+<rect class="node box" x="396" y="125" width="220" height="67" rx="6"/>
+<text x="410" y="152" font-size="16" font-weight="600">Declined or deferred</text>
+<text x="410" y="173" font-size="14" class="muted">role stays applicant</text>
+<path class="edge" d="M146,83 L146,125" marker-end="url(#arrow)"/>
+<rect class="halo" x="150" y="96" width="102.08" height="19"/>
+<text x="154" y="109" font-size="14" class="label">staff accept</text>
+<path class="edge" d="M146,192 L146,234" marker-end="url(#arrow)"/>
+<rect class="halo" x="150" y="205" width="172.64" height="19"/>
+<text x="154" y="218" font-size="14" class="label">accepts; staff enroll</text>
+<path class="edge" d="M146,301 L146,343" marker-end="url(#arrow)"/>
+<rect class="halo" x="150" y="314" width="133.44" height="19"/>
+<text x="154" y="327" font-size="14" class="label">cohort graduates</text>
+<path class="edge dashed" d="M276,49.5 L396,49.5" marker-end="url(#arrow)"/>
+<rect class="halo" x="284.96" y="28.5" width="102.08" height="19"/>
+<text x="336" y="41.5" font-size="14" class="label" text-anchor="middle">staff reject</text>
+<path class="edge dashed" d="M276,158.5 L396,158.5" marker-end="url(#arrow)"/>
+<rect class="halo" x="300.64" y="137.5" width="70.72" height="19"/>
+<text x="336" y="150.5" font-size="14" class="label" text-anchor="middle">declines</text>
+</svg>
+</main>
+<script type="application/json" id="diagram-spec">
+{
+  "title": "STAIJA applicant to alumni lifecycle",
+  "desc": "An applicant submits an application. Staff accept or reject it. An accepted applicant is offered a spot and can accept, decline, or defer it. After the applicant accepts, staff enroll them in a cohort with a mentor and their role becomes student. When every cohort they are in completes, their role becomes alumni. Rejected, declined, and deferred applicants keep the applicant role.",
+  "width": 720,
+  "nodes": [
+    {
+      "id": "applicant",
+      "x": 16,
+      "y": 16,
+      "w": 260,
+      "title": "Applicant",
+      "lines": [
+        "application submitted"
+      ]
+    },
+    {
+      "id": "offered",
+      "x": 16,
+      "y": 125,
+      "w": 260,
+      "title": "Offered a spot",
+      "lines": [
+        "application accepted"
+      ]
+    },
+    {
+      "id": "student",
+      "x": 16,
+      "y": 234,
+      "w": 260,
+      "title": "Student",
+      "lines": [
+        "enrolled, mentor assigned"
+      ]
+    },
+    {
+      "id": "alumni",
+      "x": 16,
+      "y": 343,
+      "w": 260,
+      "title": "Alumni",
+      "lines": [
+        "every cohort completed"
+      ]
+    },
+    {
+      "id": "rejected",
+      "x": 396,
+      "y": 16,
+      "w": 220,
+      "title": "Rejected",
+      "lines": [
+        "rejection email sent"
+      ]
+    },
+    {
+      "id": "declined",
+      "x": 396,
+      "y": 125,
+      "w": 220,
+      "title": "Declined or deferred",
+      "lines": [
+        "role stays applicant"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "applicant.b",
+      "to": "offered.t",
+      "label": "staff accept"
+    },
+    {
+      "from": "offered.b",
+      "to": "student.t",
+      "label": "accepts; staff enroll"
+    },
+    {
+      "from": "student.b",
+      "to": "alumni.t",
+      "label": "cohort graduates"
+    },
+    {
+      "from": "applicant.r",
+      "to": "rejected.l",
+      "label": "staff reject",
+      "dashed": true
+    },
+    {
+      "from": "offered.r",
+      "to": "declined.l",
+      "label": "declines",
+      "dashed": true
+    }
+  ]
+}
+</script>
+</body>
+</html>

@@ -25,13 +25,14 @@ This platform serves as the central digital hub for STAIJA's scholarship program
 
 ## How it works
 
-The applicant → student → alumni loop, end-to-end:
+A person moves from applicant to student to alumni, and staff make each move:
 
-![Applicant sign-up, application submission, and staff review](assets/diagrams/application-review.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/lifecycle-dark.png">
+  <img src="assets/diagrams/lifecycle.png" alt="An applicant submits an application. Staff accept or reject it. An accepted applicant is offered a spot, and can accept, decline, or defer. After they accept, staff enroll them with a mentor and they become a student. When their cohort graduates they become alumni. Rejected, declined, and deferred applicants stay applicants." width="632">
+</picture>
 
-![Cohort enrollment, mentoring, LMS work, and alumni transition](assets/diagrams/student-alumni.png)
-
-An applicant signs up and submits a StepUp Scholars or Dynamerge form. Firestore stores the user and pending application, and Mailgun confirms receipt. Staff review the application and approve or reject it with notes. Approval moves the applicant to student, creates a cohort enrollment and mentor assignment, and sends an introduction. Students and mentors use the LMS for lessons, assignments, sessions, notes, and feedback. Graduation changes the role to alumni and sends resources by email. Edit the [application](assets/diagrams/application-review.html) or [program](assets/diagrams/student-alumni.html) diagram.
+An applicant signs up and submits a StepUp Scholars or Dynamerge form, and Mailgun confirms receipt. Staff accept or reject the application. An accepted applicant can take the spot, decline it, or defer to the next cycle. Once they accept, staff enroll them in a cohort with a mentor and their role becomes student. Students and mentors use the LMS for lessons, assignments, sessions, notes, and feedback. When every cohort a student is in has graduated, their role becomes alumni. [Edit the diagram](assets/diagrams/lifecycle.html).
 
 Side flows (donations via Paystack, newsletter via Mailgun, CMS content from Contentful → Firestore via webhook) feed the same Firestore + Functions backbone.
 
