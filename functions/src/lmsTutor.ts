@@ -111,7 +111,7 @@ export const askLmsTutor = onCall(
     try {
       const completion = await groq.chat.completions.create({
         messages,
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         temperature: 0.6,
         max_tokens: 1500,
       })

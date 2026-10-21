@@ -91,7 +91,7 @@ Constraints:
 - All copy must be safe for ages 15-19, factual, and grounded in the lesson body provided.`
 
   const response = await client.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     temperature: 0.4,
     max_tokens: 2000,
     response_format: { type: 'json_object' },
