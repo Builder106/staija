@@ -103,6 +103,7 @@ async function load() {
       enrollment.value = enrollments[0];
       progressUnsub = ProgressService.subscribeProgressForEnrollment(
         enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`,
+        enrollment.value.studentId,
         (p) => (progress.value = p),
       );
     }
@@ -217,6 +218,7 @@ onUnmounted(() => {
             :quizId="quizId"
             :lessonSlug="lesson.slug"
             :enrollmentId="enrollment.id!"
+            :studentId="enrollment.studentId"
           />
 
           <!-- Completion and AI Tutor action bar -->

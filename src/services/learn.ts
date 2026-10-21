@@ -222,8 +222,16 @@ export class EnrollmentService {
 // --- Progress ---------------------------------------------------------
 
 export class ProgressService {
-  static async getProgressForEnrollment(enrollmentId: string): Promise<LessonProgress[]> {
-    const q = query(collection(db, 'lesson_progress'), where('enrollmentId', '==', enrollmentId));
+  static async getProgressForEnrollment(
+    enrollmentId: string,
+    ownerField: 'studentId' | 'mentorId',
+    ownerId: string,
+  ): Promise<LessonProgress[]> {
+    const q = query(
+      collection(db, 'lesson_progress'),
+      where('enrollmentId', '==', enrollmentId),
+      where(ownerField, '==', ownerId),
+    );
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonProgress);
   }
@@ -233,9 +241,14 @@ export class ProgressService {
   // refetching.
   static subscribeProgressForEnrollment(
     enrollmentId: string,
+    studentId: string,
     cb: (progress: LessonProgress[]) => void,
   ): Unsubscribe {
-    const q = query(collection(db, 'lesson_progress'), where('enrollmentId', '==', enrollmentId));
+    const q = query(
+      collection(db, 'lesson_progress'),
+      where('enrollmentId', '==', enrollmentId),
+      where('studentId', '==', studentId),
+    );
     return onSnapshot(q, (snap) => {
       cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonProgress));
     });
@@ -464,11 +477,13 @@ export class QuizService {
   static async getAttemptsForStudent(
     enrollmentId: string,
     lessonSlug: string,
+    studentId: string,
   ): Promise<QuizAttempt[]> {
     const q = query(
       collection(db, 'quiz_attempts'),
       where('enrollmentId', '==', enrollmentId),
       where('lessonSlug', '==', lessonSlug),
+      where('studentId', '==', studentId),
       orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);

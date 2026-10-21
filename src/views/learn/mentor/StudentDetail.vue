@@ -70,7 +70,7 @@ async function load() {
       enrollment.value = own;
       const enrollmentId = own.id ?? `${own.studentId}_${own.cohortId}`;
       const [p, subs, fb] = await Promise.all([
-        ProgressService.getProgressForEnrollment(enrollmentId),
+        ProgressService.getProgressForEnrollment(enrollmentId, 'mentorId', user.value!.uid),
         SubmissionService.getSubmissionsForEnrollmentAndAssignmentAll(enrollmentId),
         MentorService.getFeedbackForStudent(user.value.uid, studentId),
       ]);

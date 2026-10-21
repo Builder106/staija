@@ -10,6 +10,7 @@ const props = defineProps<{
   quizId: string;
   lessonSlug: string;
   enrollmentId: string;
+  studentId: string;
   moduleSlug?: string;
 }>();
 
@@ -48,7 +49,7 @@ async function load() {
         if (q) return q;
         return QuizService.getQuizBySlug(props.quizId);
       }),
-      QuizService.getAttemptsForStudent(props.enrollmentId, props.lessonSlug),
+      QuizService.getAttemptsForStudent(props.enrollmentId, props.lessonSlug, props.studentId),
     ]);
     quiz.value = fetchedQuiz;
     attempts.value = fetchedAttempts;
@@ -80,7 +81,11 @@ async function handleSubmit() {
       emit('passed', res.score);
     }
     // Refresh attempt history
-    attempts.value = await QuizService.getAttemptsForStudent(props.enrollmentId, props.lessonSlug);
+    attempts.value = await QuizService.getAttemptsForStudent(
+      props.enrollmentId,
+      props.lessonSlug,
+      props.studentId,
+    );
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Quiz submission failed.';
   } finally {

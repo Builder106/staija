@@ -91,6 +91,7 @@ async function load() {
 
     progressUnsub = ProgressService.subscribeProgressForEnrollment(
       enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`,
+      enrollment.value.studentId,
       (p) => (progress.value = p),
     );
   } catch (err) {
