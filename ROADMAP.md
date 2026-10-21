@@ -6,8 +6,10 @@ High-level roadmap and feature development goals for STAIJA.
 
 The LMS has course, lesson, assignment, session, quiz, and authoring code, but
 the live learner flow is not ready to call complete. The client region and
-Content Security Policy fixes are live on the staging site. The four changed
-LMS Functions and Firestore rules were deployed to staging on 2026-10-21.
+Content Security Policy fixes are live on the staging site. The LMS Functions
+and Firestore rules were deployed to staging on 2026-10-21. The AI authoring,
+lesson media, and tutor callables were refreshed after the outliner smoke test
+found a retired Groq model ID.
 The `quiz` content type and lesson reference are published in staging
 Contentful; production still lacks them. Production's two published courses
 are demo content; a third course has its `published` field set to `false`.
@@ -21,6 +23,8 @@ are demo content; a third course has its `published` field set to `false`.
 - [x] Apply and verify the `quiz` content type and `lesson.quiz` reference in
   staging Contentful. No curriculum entries were published.
 - [x] Deploy the Functions, rules, and site changes to staging.
+- [x] Deploy the AI callables and confirm a one-module outline creates only
+  unpublished entries in staging Contentful.
 - [ ] Confirm the authenticated staff content tree loads without callable or
   schema errors.
 - [ ] Apply the schema migration to production Contentful during the production

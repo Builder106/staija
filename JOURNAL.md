@@ -6,11 +6,11 @@
 
 ## 2026-10-21: Replace unavailable Groq model ID #incident
 
-The staging course outliner returned `INTERNAL [500]`. Its function log showed valid Auth and App Check followed by Groq's `model_not_found` for `llama-3.3-70b-versatile`. The outliner, lesson media assistant, and LMS tutor now use Groq's recommended `openai/gpt-oss-120b` model. The Functions build and repository lint pass; the model change has not been deployed or checked through the staging browser.
+The staging course outliner returned `INTERNAL [500]`. Its function log showed valid Auth and App Check followed by Groq's `model_not_found` for `llama-3.3-70b-versatile`. The outliner, lesson media assistant, and LMS tutor now use Groq's recommended `openai/gpt-oss-120b` model. All three callables were deployed to staging. An authenticated browser test created a one-module outline with one lesson and one assignment; Contentful readback confirmed all entries are unpublished drafts in the `staging` environment.
 
 ## 2026-10-21: Isolate outline writes by Firebase project #security
 
-The outliner used Contentful `master` when the request omitted `env`, so a staging request could write draft entries into production. It now uses the existing Firebase-project mapping and rejects a supplied environment that does not match the caller's app. The Functions build and lint pass; this change has not been deployed.
+The outliner used Contentful `master` when the request omitted `env`, so a staging request could write draft entries into production. It now uses the existing Firebase-project mapping and rejects a supplied environment that does not match the caller's app. The staging test confirmed the generated course and linked entries were created in `staging`, not `master`.
 
 ## 2026-10-21: Deployed LMS quiz backend to staging #milestone
 
