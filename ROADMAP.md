@@ -13,6 +13,35 @@ found a retired Groq model ID.
 The `quiz` content type and lesson reference are published in staging
 Contentful; production still lacks them. Production's two published courses
 are demo content; a third course has its `published` field set to `false`.
+On 2026-10-21, the authenticated staff content tree loaded in staging. All nine
+`lmsContentAdmin` requests returned HTTP 200, and the page showed the QA draft
+alongside the two published demo courses.
+Staging now has dedicated student and mentor QA accounts. User management shows
+the student role, and the student is enrolled in both planned demo cohorts.
+The mentor accepted the email-restricted invite; the mentor portal shows both
+assignments. The student can sign in, and the Security panel confirms the
+student email is verified. The mentor email is still unconfirmed. Both
+verification emails arrived, but the mentor action page said the link was
+expired or already used. The two existing staging course entries and 19
+linked demo entries were republished: four modules, eleven lessons, and four
+assignment specs. The learner page now lists five Dynamerge lessons, and the
+"Hello, world!" lesson opens. The StepUp Lab Safety lesson body also opens
+directly. Browser traces identified progress and quiz-attempt reads that
+omitted owner filters required by Firestore rules. Commit
+[`61fcd2d`](https://github.com/Builder106/staija/commit/61fcd2d63bb661e37229db9ec055e40fa65a440f)
+adds the owner filters and supporting indexes. The commit is deployed to
+staging, and the version endpoint reports that SHA. The learner course now
+loads five lessons and displays `0 of 5` progress. The StepUp lesson opens
+without a Firestore permissions error, but shows "Quiz details could not be
+found." No quiz entry exists for that lesson, so quiz-attempt history and
+completion remain unverified.
+`CourseHome` chooses the first active enrollment, so opening the StepUp course
+URL still shows Dynamerge.
+The published StepUp summary also contains the test text "Testing, testing".
+Profile creation invokes the welcome-email trigger for each account, and each
+cohort enrollment attempted another email to the student. Delivery is
+unconfirmed. The cohort list still shows dates one day earlier than entered in
+New York. Production curriculum publication remains a release gate.
 
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
@@ -25,13 +54,38 @@ are demo content; a third course has its `published` field set to `false`.
 - [x] Deploy the Functions, rules, and site changes to staging.
 - [x] Deploy the AI callables and confirm a one-module outline creates only
   unpublished entries in staging Contentful.
-- [ ] Confirm the authenticated staff content tree loads without callable or
+- [x] Confirm the authenticated staff content tree loads without callable or
   schema errors.
 - [ ] Apply the schema migration to production Contentful during the production
   release, after staging checks pass.
 - [ ] Prepare reviewed curriculum and cohort assignments for production. Keep
   demo courses out of the production learner catalog. Curriculum publication
   is a release gate.
+- [x] Register a staging-only student account and assign the student role
+  through user management.
+- [x] Register a staging-only mentor account, accept the restricted invite,
+  and add the mentor to both QA cohorts.
+- [x] Confirm the student email is verified in account settings.
+- [ ] Confirm the mentor email is verified in account settings.
+- [x] Create planned QA cohorts from the published StepUp and Dynamerge demo
+  courses, pinned to their current versions.
+- [x] Enroll the test student in both QA cohorts.
+- [ ] Confirm delivery status of the account and enrollment welcome emails.
+- [x] Republish the two existing staging demo course entries.
+- [x] Republish the linked staging demo modules, lessons, and assignments.
+- [x] Add student/mentor owner filters to progress reads and student filters
+  to quiz-attempt reads; define supporting Firestore indexes.
+- [x] Deploy the owner-filter and index changes to staging; verify the
+  learner course and progress reads.
+- [ ] Verify quiz-attempt reads and completion after reviewed StepUp quiz
+  content is available.
+- [ ] Prepare reviewed staging quiz content for StepUp Lab Safety; no matching
+  quiz entry exists, so quiz completion cannot be tested yet.
+- [ ] Verify StepUp separately. `CourseHome` selects the first active
+  enrollment, so the course URL does not switch between a student's courses.
+- [ ] Remove the "Testing, testing" placeholder from the StepUp demo summary
+  before using it as learner-facing test content.
+- [ ] Verify date-only cohort rendering across time zones before production.
 - [ ] Run authenticated staff, student, and mentor checks from authoring and
   publication through the Firestore mirror, enrollment, lesson unlock,
   assignment submission and grading, sessions and RSVPs, and quiz completion.

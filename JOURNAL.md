@@ -4,6 +4,26 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Deployed and verified LMS owner-filter fix #verification
+
+Pushed signed commit `61fcd2d` to staging; GitHub marks it Verified and its checks pass. Deployed the Firestore indexes to the staging project, and `/version.txt` reports the commit SHA. The signed-in student course page loads five Dynamerge lessons and displays `0 of 5` progress. The StepUp Lab Safety lesson opens without a Firestore permissions error, but reports "Quiz details could not be found." No matching quiz entry exists, so quiz-attempt history and completion remain unverified. No curriculum was published.
+
+## 2026-10-21: Republished linked staging demo content #verification
+
+Republished 19 Contentful entries linked to the two staging demo courses: four modules, eleven lessons, and four assignment specs. The student course page lists five Dynamerge lessons, and the "Hello, world!" lesson opens. The StepUp Lab Safety lesson body opens directly, but its quiz panel reports a Firestore permissions error. Chrome network traces show the student progress listener filters only by enrollment ID and the quiz-attempt query filters by enrollment and lesson; the Firestore rules also require owner IDs. The working tree now adds student/mentor owner filters and supporting indexes. Contentful has no quiz entry for the StepUp Lab Safety slug, so quiz completion remains unverified. Lint, format, Vue type-check, the full unit suite, and the production build passed in the Linux verification environment. The parallel build matrix was rejected by its storage reserve preflight; the checks passed in serial runs. No staging deployment was completed.
+
+## 2026-10-21: Completed the staging learner and mentor setup #verification
+
+Created the staging student and mentor accounts, assigned the student role, and enrolled the student in both planned demo cohorts. The mentor accepted the restricted invite, and the mentor portal shows both cohort assignments. The student Security panel confirms email verification; the mentor link reported expired or already used, so mentor verification remains unconfirmed. Republished only the two existing staging course entries with their existing fields. The learner page now shows the Dynamerge course title but reports `0 of 0 lessons`. `CourseHome` picks the first active enrollment, so the StepUp URL still shows Dynamerge. Linked modules, lessons, and assignments remain to be mirrored. The published StepUp summary contains the test text "Testing, testing"; it was left unchanged. Profile creation invokes the welcome-email trigger for each account, and both cohort enrollments attempted another email to the student. Delivery is unconfirmed. No curriculum was published.
+
+## 2026-10-21: Prepared the staging mentor QA invite #verification
+
+A single-use mentor invite was created in staging with a 30-day expiry and an email restriction for the test mentor account. The invite is still pending. Two planned QA cohorts were created from published demos: StepUp Research Foundations (`2026-spring`) and Dynamerge Bootcamp Week 1 (`2026-summer`). Both have empty mentor pools until the mentor account is registered, verified, and accepts the invite. The student account still needs to be registered. Each new applicant signup sends a Firebase verification email and an app welcome email; the approved student enrollment test will send one more welcome email. In the current New York timezone, the cohort list shows each date one day earlier than entered; verify date-only rendering before production.
+
+## 2026-10-21: Verified the authenticated LMS content tree #verification
+
+The signed-in admin opened `/admin/content` on staging. The page listed the unpublished computational chemistry QA draft and two published demo courses. All nine `lmsContentAdmin` requests returned HTTP 200, with no callable or schema errors. Chrome also reported `ERR_BLOCKED_BY_CLIENT` and a form-field `id`/`name` issue; neither stopped the tree from loading. The staging cohort page is empty, and there are no dedicated student or mentor test accounts. Enrollment testing needs test users and cohorts, and the enrollment callable attempts to send a welcome email to the student's profile address. Student and mentor workflows, real-mode App Check, and production release checks remain open.
+
 ## 2026-10-21: Replace unavailable Groq model ID #incident
 
 The staging course outliner returned `INTERNAL [500]`. Its function log showed valid Auth and App Check followed by Groq's `model_not_found` for `llama-3.3-70b-versatile`. The outliner, lesson media assistant, and LMS tutor now use Groq's recommended `openai/gpt-oss-120b` model. All three callables were deployed to staging. An authenticated browser test created a one-module outline with one lesson and one assignment; Contentful readback confirmed all entries are unpublished drafts in the `staging` environment.
