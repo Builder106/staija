@@ -5,14 +5,12 @@ High-level roadmap and feature development goals for STAIJA.
 ## LMS production readiness
 
 The LMS has course, lesson, assignment, session, quiz, and authoring code, but
-the live learner flow is not ready to call complete. As of 2026-10-20, the
-production staff content page cannot load its course tree. The client calls
-`us-central1`, while the Functions backend is configured for `africa-south1`,
-and the site's Content Security Policy blocks the request. The client and CSP
-fixes are prepared in source but have not been deployed. The `quiz` content
-type and lesson reference are published in staging Contentful; production
-still lacks them. Production's two published courses are demo content; a
-third course has its `published` field set to `false`.
+the live learner flow is not ready to call complete. The client region and
+Content Security Policy fixes are live on the staging site. The four changed
+LMS Functions and Firestore rules were deployed to staging on 2026-10-21.
+The `quiz` content type and lesson reference are published in staging
+Contentful; production still lacks them. Production's two published courses
+are demo content; a third course has its `published` field set to `false`.
 
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
@@ -22,8 +20,9 @@ third course has its `published` field set to `false`.
   before granting progress.
 - [x] Apply and verify the `quiz` content type and `lesson.quiz` reference in
   staging Contentful. No curriculum entries were published.
-- [ ] Deploy the Functions, rules, and site changes to staging, then confirm
-  the staff content tree loads without callable or schema errors.
+- [x] Deploy the Functions, rules, and site changes to staging.
+- [ ] Confirm the authenticated staff content tree loads without callable or
+  schema errors.
 - [ ] Apply the schema migration to production Contentful during the production
   release, after staging checks pass.
 - [ ] Prepare reviewed curriculum and cohort assignments for production. Keep

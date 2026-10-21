@@ -4,6 +4,18 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Replace unavailable Groq model ID #incident
+
+The staging course outliner returned `INTERNAL [500]`. Its function log showed valid Auth and App Check followed by Groq's `model_not_found` for `llama-3.3-70b-versatile`. The outliner, lesson media assistant, and LMS tutor now use Groq's recommended `openai/gpt-oss-120b` model. The Functions build and repository lint pass; the model change has not been deployed or checked through the staging browser.
+
+## 2026-10-21: Isolate outline writes by Firebase project #security
+
+The outliner used Contentful `master` when the request omitted `env`, so a staging request could write draft entries into production. It now uses the existing Firebase-project mapping and rejects a supplied environment that does not match the caller's app. The Functions build and lint pass; this change has not been deployed.
+
+## 2026-10-21: Deployed LMS quiz backend to staging #milestone
+
+Deployed the staging Firestore rules and four LMS Functions: `lmsContentAdmin`, `contentfulWebhook`, `completeLesson`, and the new `submitQuiz`. Firebase compiled and released the rules, then reported successful create or update operations for each function. A fresh listing showed `submitQuiz` in `africa-south1` on Node.js 24. The staging site was already serving commit `a79c12d`; authenticated staff and learner checks, production schema migration, and approved curriculum publication remain release gates.
+
 ## 2026-10-20: Prepared LMS quiz and callable release #implementation #decision
 
 The LMS client now targets the deployed Functions region, and the CSP allows both project origins. Quiz authoring separates private answer keys from Contentful questions and the learner Firestore mirror; quiz submissions check enrollment and course membership before grading. The demo seeder no longer writes answer keys into Contentful. The quiz type and lesson link were published and read back in staging Contentful on October 20; production's schema remains unchanged. Deployment, approved curriculum publication, and authenticated staging and production checks remain release gates.
