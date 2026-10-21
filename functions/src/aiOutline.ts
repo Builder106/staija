@@ -18,6 +18,7 @@ import { getFirestore } from 'firebase-admin/firestore'
 import Groq from 'groq-sdk'
 import * as contentful from 'contentful-management'
 import { z } from 'zod'
+import { contentfulEnvironmentForProject } from './contentfulEnvironment'
 
 const GROQ_API_KEY = defineSecret('GROQ_API_KEY')
 const CONTENTFUL_MANAGEMENT_TOKEN = defineSecret('CONTENTFUL_MANAGEMENT_TOKEN')
@@ -40,7 +41,7 @@ interface OutlineInput {
   audience?: string
   /** Course version, e.g. "2026-spring". Defaults to current term. */
   version?: string
-  /** Contentful environment to write into. Defaults to master. */
+  /** Optional Contentful environment; must match the Firebase project. */
   env?: string
 }
 
@@ -347,6 +348,15 @@ export const outlineCourse = onCall<OutlineInput>(
     if (!Number.isInteger(input.weeks) || input.weeks < 1 || input.weeks > 16) {
       throw new HttpsError('invalid-argument', 'weeks must be an integer between 1 and 16.')
     }
+    let envId: 'master' | 'staging'
+    try {
+      envId = contentfulEnvironmentForProject(process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT)
+    } catch {
+      throw new HttpsError('failed-precondition', 'LMS content environment is not configured.')
+    }
+    if (input.env && input.env !== envId) {
+      throw new HttpsError('permission-denied', 'Contentful environment does not match this app.')
+    }
 
     // 1. Generate outline.
     const groq = new Groq({ apiKey: GROQ_API_KEY.value() })
@@ -358,7 +368,7 @@ export const outlineCourse = onCall<OutlineInput>(
       {
         defaults: {
           spaceId: CONTENTFUL_SPACE_ID.value(),
-          environmentId: input.env ?? 'master',
+          environmentId: envId,
         },
       },
     )
