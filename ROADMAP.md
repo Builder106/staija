@@ -44,8 +44,11 @@ quiz panel still cannot find quiz details.
 The published StepUp summary also contains the test text "Testing, testing".
 Profile creation invokes the welcome-email trigger for each account, and each
 cohort enrollment attempted another email to the student. Delivery is
-unconfirmed. The cohort list still shows dates one day earlier than entered in
-New York. Production curriculum publication remains a release gate.
+unconfirmed. Signed commit
+[`27bb46e`](https://github.com/Builder106/staija/commit/27bb46ee494b10fc3a8e251d6202d4ed9f314f81)
+formats these dates in UTC. Component tests confirm May 1 through May 28 stays
+unchanged in New York and Los Angeles. The commit is deployed to staging.
+Production curriculum publication remains a release gate.
 
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
@@ -91,7 +94,8 @@ New York. Production curriculum publication remains a release gate.
   reviewed quiz content is available.
 - [ ] Remove the "Testing, testing" placeholder from the StepUp demo summary
   before using it as learner-facing test content.
-- [ ] Verify date-only cohort rendering across time zones before production.
+- [x] Format date-only cohort values in UTC and verify their display in New
+  York and Los Angeles before production.
 - [ ] Run authenticated staff, student, and mentor checks from authoring and
   publication through the Firestore mirror, enrollment, lesson unlock,
   assignment submission and grading, sessions and RSVPs, and quiz completion.

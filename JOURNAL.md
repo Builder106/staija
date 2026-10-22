@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Fixed cohort date display #verification
+
+Signed commit `27bb46e` formats cohort calendar dates in UTC, so they no longer shift to the prior day in New York or Los Angeles. Component tests cover both zones. All GitHub CI jobs passed: 267 unit tests, two E2E tests, 38 accessibility checks, and the bundle budget check. Sixteen accessibility cases were skipped. Staging `/version.txt` reports the new commit SHA.
+
 ## 2026-10-21: Verified LMS course switching #verification
 
 Signed commit `73e0241` passed CI run #465 and is live on staging. The signed-in student switched from Dynamerge to StepUp, saw six StepUp lessons, opened Lab Safety with the StepUp course in the URL, returned to StepUp, then switched back to Dynamerge and saw its five lessons. The Lab Safety quiz panel still cannot find quiz details because no matching quiz entry exists; quiz attempts and completion remain unverified. Production curriculum publication remains a release gate.
