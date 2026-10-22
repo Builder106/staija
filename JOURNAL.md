@@ -8,6 +8,10 @@
 
 Signed commit `27bb46e` formats cohort calendar dates in UTC, so they no longer shift to the prior day in New York or Los Angeles. Component tests cover both zones. All GitHub CI jobs passed: 267 unit tests, two E2E tests, 38 accessibility checks, and the bundle budget check. Sixteen accessibility cases were skipped. Staging `/version.txt` reports the new commit SHA.
 
+## 2026-10-22: Stabilized avatar promotion coverage #maintenance
+
+Full coverage validates ten image composites twice in the dry-run test. Under parallel load, it took 20.46 seconds and exceeded its 20-second timeout, while the focused run passed. Raised that test's timeout to 30 seconds so the coverage suite can finish it under load.
+
 ## 2026-10-22: Reconciled staging with main #maintenance
 
 Merged the current `main` tip into `staging` without conflicts. The merge adds `main` to staging's history and leaves the existing LMS files unchanged. Production `main` remains unchanged. Final Linux verification and the staging push are pending.
