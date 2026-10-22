@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Verified LMS course switching #verification
+
+Signed commit `73e0241` passed CI run #465 and is live on staging. The signed-in student switched from Dynamerge to StepUp, saw six StepUp lessons, opened Lab Safety with the StepUp course in the URL, returned to StepUp, then switched back to Dynamerge and saw its five lessons. The Lab Safety quiz panel still cannot find quiz details because no matching quiz entry exists; quiz attempts and completion remain unverified. Production curriculum publication remains a release gate.
+
 ## 2026-10-21: Deployed and verified LMS owner-filter fix #verification
 
 Pushed signed commit `61fcd2d` to staging; GitHub marks it Verified and its checks pass. Deployed the Firestore indexes to the staging project, and `/version.txt` reports the commit SHA. The signed-in student course page loads five Dynamerge lessons and displays `0 of 5` progress. The StepUp Lab Safety lesson opens without a Firestore permissions error, but reports "Quiz details could not be found." No matching quiz entry exists, so quiz-attempt history and completion remain unverified. No curriculum was published.

@@ -34,9 +34,13 @@ staging, and the version endpoint reports that SHA. The learner course now
 loads five lessons and displays `0 of 5` progress. The StepUp lesson opens
 without a Firestore permissions error, but shows "Quiz details could not be
 found." No quiz entry exists for that lesson, so quiz-attempt history and
-completion remain unverified.
-`CourseHome` chooses the first active enrollment, so opening the StepUp course
-URL still shows Dynamerge.
+completion remain unverified. Signed commit
+[`73e0241`](https://github.com/Builder106/staija/commit/73e0241eabc254f79cdbe07fb44703a800906151)
+adds a course chooser and carries the selected course into lesson links. The
+commit is deployed to staging, and the version endpoint reports that SHA. The
+signed-in student can switch between StepUp, with six lessons, and Dynamerge,
+with five. The StepUp Lab Safety lesson returns to the StepUp course, but its
+quiz panel still cannot find quiz details.
 The published StepUp summary also contains the test text "Testing, testing".
 Profile creation invokes the welcome-email trigger for each account, and each
 cohort enrollment attempted another email to the student. Delivery is
@@ -81,8 +85,10 @@ New York. Production curriculum publication remains a release gate.
   content is available.
 - [ ] Prepare reviewed staging quiz content for StepUp Lab Safety; no matching
   quiz entry exists, so quiz completion cannot be tested yet.
-- [ ] Verify StepUp separately. `CourseHome` selects the first active
-  enrollment, so the course URL does not switch between a student's courses.
+- [x] Verify StepUp course selection in staging. The course chooser switches
+  between the student's StepUp and Dynamerge enrollments, and StepUp lesson
+  links retain the selected course. Quiz completion remains unverified until
+  reviewed quiz content is available.
 - [ ] Remove the "Testing, testing" placeholder from the StepUp demo summary
   before using it as learner-facing test content.
 - [ ] Verify date-only cohort rendering across time zones before production.
