@@ -46,6 +46,7 @@ const lessonBodyPlain = computed(() => {
 });
 
 let progressUnsub: (() => void) | null = null;
+let loadSequence = 0;
 
 const completed = computed(() =>
   progress.value.some((p) => p.lessonSlug === lesson.value?.slug && p.status === 'completed'),
@@ -87,30 +88,52 @@ const embedUrl = computed(() => {
 
 async function load() {
   if (!user.value) return;
+  const sequence = ++loadSequence;
+  progressUnsub?.();
+  progressUnsub = null;
   loading.value = true;
   error.value = null;
+  lesson.value = null;
+  enrollment.value = null;
+  progress.value = [];
   const slug = route.params.slug as string;
   try {
     const [l, enrollments] = await Promise.all([
       CourseService.getLessonBySlug(slug),
       EnrollmentService.getActiveForStudent(user.value.uid),
     ]);
+    if (sequence !== loadSequence) return;
     lesson.value = l;
-    if (!l) error.value = `Lesson "${slug}" not found.`;
+    if (!l) {
+      error.value = `Lesson "${slug}" not found.`;
+      return;
+    }
     if (enrollments.length === 0) {
       error.value = 'You are not enrolled in any active course.';
-    } else {
-      enrollment.value = enrollments[0];
-      progressUnsub = ProgressService.subscribeProgressForEnrollment(
-        enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`,
-        enrollment.value.studentId,
-        (p) => (progress.value = p),
-      );
+      return;
     }
+    const requestedCourse = typeof route.query.course === 'string' ? route.query.course : null;
+    const selectedEnrollment = requestedCourse
+      ? enrollments.find((item) => item.courseSlug === requestedCourse)
+      : enrollments[0];
+    if (!selectedEnrollment) {
+      error.value = `You are not enrolled in "${requestedCourse}".`;
+      return;
+    }
+    enrollment.value = selectedEnrollment;
+    progressUnsub = ProgressService.subscribeProgressForEnrollment(
+      selectedEnrollment.id ?? `${selectedEnrollment.studentId}_${selectedEnrollment.cohortId}`,
+      selectedEnrollment.studentId,
+      (p) => {
+        if (sequence === loadSequence) progress.value = p;
+      },
+    );
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load lesson.';
+    if (sequence === loadSequence) {
+      error.value = (err as { message?: string }).message ?? 'Failed to load lesson.';
+    }
   } finally {
-    loading.value = false;
+    if (sequence === loadSequence) loading.value = false;
   }
 }
 
@@ -131,13 +154,11 @@ async function markComplete() {
   }
 }
 
-watch(
-  () => route.params.slug,
-  () => load(),
-);
+watch([() => route.params.slug, () => route.query.course], () => void load());
 
 onMounted(load);
 onUnmounted(() => {
+  loadSequence++;
   if (progressUnsub) progressUnsub();
 });
 </script>
@@ -147,7 +168,11 @@ onUnmounted(() => {
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container>
         <RouterLink
-          to="/learn"
+          :to="
+            enrollment
+              ? { name: 'learn-course', params: { slug: enrollment.courseSlug } }
+              : '/learn'
+          "
           class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
         >
           <Icon icon="lucide:arrow-left" width="12" /> Back to course
