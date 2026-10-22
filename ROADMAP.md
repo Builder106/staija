@@ -50,6 +50,13 @@ formats these dates in UTC. Component tests confirm May 1 through May 28 stays
 unchanged in New York and Los Angeles. The commit is deployed to staging.
 Production curriculum publication remains a release gate.
 
+On 2026-10-22, signed merge `c45fc9a` was pushed to staging and its version
+endpoint returned that SHA. GitHub CI passed. The signed-in QA student can open
+both demo courses, see six StepUp lessons, and open Lab Safety without a
+Firestore permission error. The lesson still has no quiz entry, so quiz
+completion remains unverified. The StepUp summary still contains the
+"Testing, testing" placeholder.
+
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
 - [x] Prepare the `quiz` schema migration for both Contentful environments.

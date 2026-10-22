@@ -14,7 +14,7 @@ Full coverage validates ten image composites twice in the dry-run test. Under pa
 
 ## 2026-10-22: Reconciled staging with main #maintenance
 
-Merged the current `main` tip into `staging` without conflicts. The merge adds `main` to staging's history and leaves the existing LMS files unchanged. Production `main` remains unchanged. Final Linux verification and the staging push are pending.
+Merged the current `main` tip into `staging` without conflicts. The merge adds `main` to staging's history and leaves the existing LMS files unchanged. Production `main` remains unchanged. Linux E2E, accessibility, and matrix checks passed. GitHub CI passed, and staging `/version.txt` reports `c45fc9a`.
 
 ## 2026-10-21: Verified LMS course switching #verification
 
