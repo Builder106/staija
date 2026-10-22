@@ -57,6 +57,15 @@ Firestore permission error. The lesson still has no quiz entry, so quiz
 completion remains unverified. The StepUp summary still contains the
 "Testing, testing" placeholder.
 
+On 2026-10-22, the QA student completed "What is research methodology?" in
+staging. `completeLesson` returned HTTP 200, and StepUp progress changed from
+0 of 6 to 1 of 6. All 42 XHR/fetch requests on the StepUp course page returned
+HTTP 200. Lab Safety still has no quiz entry, and the course summary still
+contains the placeholder. A search of all mail for both QA accounts over the
+last 30 days found no messages. Welcome-email delivery remains unconfirmed.
+The browser still reports the blocked Vercel feedback script, an unload policy
+violation, and a browser-blocked resource; the LMS requests succeeded.
+
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
 - [x] Prepare the `quiz` schema migration for both Contentful environments.

@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-22: Verified staging learner progress #verification
+
+The signed-in student opened both course pages and completed "What is research methodology?" in StepUp. `completeLesson` returned HTTP 200, and course progress moved from 0 of 6 to 1 of 6. All 42 XHR/fetch requests on the StepUp course page returned HTTP 200. Lab Safety still has no quiz entry, and the StepUp summary still says "Testing, testing". A search of all mail for both QA accounts over the last 30 days found no messages, so welcome-email delivery remains unconfirmed. The browser reported the blocked Vercel feedback script, an unload policy violation, and a browser-blocked resource; the LMS requests succeeded.
+
 ## 2026-10-21: Fixed cohort date display #verification
 
 Signed commit `27bb46e` formats cohort calendar dates in UTC, so they no longer shift to the prior day in New York or Los Angeles. Component tests cover both zones. All GitHub CI jobs passed: 267 unit tests, two E2E tests, 38 accessibility checks, and the bundle budget check. Sixteen accessibility cases were skipped. Staging `/version.txt` reports the new commit SHA.
