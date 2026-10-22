@@ -8,6 +8,10 @@
 
 Signed commit `27bb46e` formats cohort calendar dates in UTC, so they no longer shift to the prior day in New York or Los Angeles. Component tests cover both zones. All GitHub CI jobs passed: 267 unit tests, two E2E tests, 38 accessibility checks, and the bundle budget check. Sixteen accessibility cases were skipped. Staging `/version.txt` reports the new commit SHA.
 
+## 2026-10-22: Reconciled staging with main #maintenance
+
+Merged the current `main` tip into `staging` without conflicts. The merge adds `main` to staging's history and leaves the existing LMS files unchanged. Production `main` remains unchanged. Final Linux verification and the staging push are pending.
+
 ## 2026-10-21: Verified LMS course switching #verification
 
 Signed commit `73e0241` passed CI run #465 and is live on staging. The signed-in student switched from Dynamerge to StepUp, saw six StepUp lessons, opened Lab Safety with the StepUp course in the URL, returned to StepUp, then switched back to Dynamerge and saw its five lessons. The Lab Safety quiz panel still cannot find quiz details because no matching quiz entry exists; quiz attempts and completion remain unverified. Production curriculum publication remains a release gate.
