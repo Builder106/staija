@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-22: Verified the staging mentor student page #verification
+
+Deployed `getMentorStudentProfiles` and its supporting Firestore index to staging. `/version.txt` reports commit `898c814`, and GitHub's Vercel check passed. The signed-in mentor sees both assigned cohorts and opens the student's detail page with progress and submissions; both callable requests returned HTTP 200. Chrome still blocks Vercel's feedback script under the site's CSP and reports a browser-blocked resource. The LMS flow works. Production curriculum publication remains a release gate.
+
 ## 2026-10-22: Reproduced mentor student-detail permissions failure #incident
 
 The verified staging mentor can see both assigned cohorts, but opening an assigned student's detail page returns `Missing or insufficient permissions.` The page reads student profiles and submissions without the mentor scope required by Firestore rules. The prepared LMS changes add an App Check callable that checks the caller's role and, for mentors, active assignments before returning a student's UID, name, and email; they also filter enrollment and submission reads by mentor ID and add the supporting index. The Functions high-severity audit and build pass on Linux ARM64; two moderate UUID advisories remain through `gaxios`. Deployment and browser verification are pending, so the frontend must not be pushed ahead of the callable and index. A mailbox search found a Firebase verification thread for the QA accounts but no welcome or enrollment message, so delivery remains unconfirmed. Production curriculum publication remains a release gate.

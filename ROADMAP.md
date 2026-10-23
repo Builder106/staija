@@ -67,16 +67,13 @@ delivery remains unconfirmed. The browser still reports the blocked Vercel
 feedback script, an unload policy violation, and a browser-blocked resource;
 the LMS requests succeeded.
 
-Mentor QA on 2026-10-22 showed both assigned cohorts, but opening an assigned
-student's detail page returned `Missing or insufficient permissions.` The
-page read profiles and submissions without the mentor scope required by
-Firestore rules. The prepared staging change adds a callable that checks the
-caller's role and, for mentors, active assignments before returning a
-student's UID, name, and email. It also filters enrollment and submission
-reads by mentor ID and adds the supporting composite index. The Functions
-high-severity audit and build pass; two moderate UUID advisories remain
-through `gaxios`. Deploy the callable and index before pushing the frontend,
-then recheck the mentor page in staging.
+On 2026-10-22, the mentor profile-scope fix and its supporting index were
+deployed to staging. The authenticated mentor sees both assigned cohorts and
+can open the student's detail page, including progress and submissions. The
+`getMentorStudentProfiles` callable returned HTTP 200 for the cohort list and
+student detail. Staging `/version.txt` reports commit `898c814`, and the
+GitHub Vercel check passed. The browser still reports a blocked Vercel
+feedback script and a browser-blocked resource; neither blocked the LMS flow.
 
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
@@ -112,9 +109,8 @@ then recheck the mentor page in staging.
   to quiz-attempt reads; define supporting Firestore indexes.
 - [x] Deploy the owner-filter and index changes to staging; verify the
   learner course and progress reads.
-- [x] Prepare mentor-scoped profile, enrollment, and submission reads and the
-  supporting index. Staging deployment and authenticated browser verification
-  remain open.
+- [x] Deploy mentor-scoped profile, enrollment, and submission reads with the
+  supporting index; verify cohort access and student detail in staging.
 - [ ] Verify quiz-attempt reads and completion after reviewed StepUp quiz
   content is available.
 - [ ] Prepare reviewed staging quiz content for StepUp Lab Safety; no matching
