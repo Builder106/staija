@@ -4,9 +4,13 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-22: Reproduced mentor student-detail permissions failure #incident
+
+The verified staging mentor can see both assigned cohorts, but opening an assigned student's detail page returns `Missing or insufficient permissions.` The page reads student profiles and submissions without the mentor scope required by Firestore rules. The prepared LMS changes add an App Check callable that checks the caller's role and, for mentors, active assignments before returning a student's UID, name, and email; they also filter enrollment and submission reads by mentor ID and add the supporting index. The Functions high-severity audit and build pass on Linux ARM64; two moderate UUID advisories remain through `gaxios`. Deployment and browser verification are pending, so the frontend must not be pushed ahead of the callable and index. A mailbox search found a Firebase verification thread for the QA accounts but no welcome or enrollment message, so delivery remains unconfirmed. Production curriculum publication remains a release gate.
+
 ## 2026-10-22: Verified staging learner progress #verification
 
-The signed-in student opened both course pages and completed "What is research methodology?" in StepUp. `completeLesson` returned HTTP 200, and course progress moved from 0 of 6 to 1 of 6. All 42 XHR/fetch requests on the StepUp course page returned HTTP 200. Lab Safety still has no quiz entry, and the StepUp summary still says "Testing, testing". A search of all mail for both QA accounts over the last 30 days found no messages, so welcome-email delivery remains unconfirmed. The browser reported the blocked Vercel feedback script, an unload policy violation, and a browser-blocked resource; the LMS requests succeeded.
+The signed-in student opened both course pages and completed "What is research methodology?" in StepUp. `completeLesson` returned HTTP 200, and course progress moved from 0 of 6 to 1 of 6. All 42 XHR/fetch requests on the StepUp course page returned HTTP 200. Lab Safety still has no quiz entry, and the StepUp summary still says "Testing, testing". A search of mail for both QA accounts found a Firebase verification thread but no welcome or enrollment message, so welcome-email delivery remains unconfirmed. The browser reported the blocked Vercel feedback script, an unload policy violation, and a browser-blocked resource; the LMS requests succeeded.
 
 ## 2026-10-21: Fixed cohort date display #verification
 

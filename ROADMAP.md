@@ -20,9 +20,9 @@ Staging now has dedicated student and mentor QA accounts. User management shows
 the student role, and the student is enrolled in both planned demo cohorts.
 The mentor accepted the email-restricted invite; the mentor portal shows both
 assignments. The student can sign in, and the Security panel confirms the
-student email is verified. The mentor email is still unconfirmed. Both
-verification emails arrived, but the mentor action page said the link was
-expired or already used. The two existing staging course entries and 19
+student email is verified. Account Settings now confirms the mentor email is
+verified; an earlier attempt to use its verification link reported that it
+was expired or already used. The two existing staging course entries and 19
 linked demo entries were republished: four modules, eleven lessons, and four
 assignment specs. The learner page now lists five Dynamerge lessons, and the
 "Hello, world!" lesson opens. The StepUp Lab Safety lesson body also opens
@@ -61,10 +61,22 @@ On 2026-10-22, the QA student completed "What is research methodology?" in
 staging. `completeLesson` returned HTTP 200, and StepUp progress changed from
 0 of 6 to 1 of 6. All 42 XHR/fetch requests on the StepUp course page returned
 HTTP 200. Lab Safety still has no quiz entry, and the course summary still
-contains the placeholder. A search of all mail for both QA accounts over the
-last 30 days found no messages. Welcome-email delivery remains unconfirmed.
-The browser still reports the blocked Vercel feedback script, an unload policy
-violation, and a browser-blocked resource; the LMS requests succeeded.
+contains the placeholder. A mailbox search found a Firebase verification
+thread for the QA accounts but no welcome or enrollment message. Welcome-email
+delivery remains unconfirmed. The browser still reports the blocked Vercel
+feedback script, an unload policy violation, and a browser-blocked resource;
+the LMS requests succeeded.
+
+Mentor QA on 2026-10-22 showed both assigned cohorts, but opening an assigned
+student's detail page returned `Missing or insufficient permissions.` The
+page read profiles and submissions without the mentor scope required by
+Firestore rules. The prepared staging change adds a callable that checks the
+caller's role and, for mentors, active assignments before returning a
+student's UID, name, and email. It also filters enrollment and submission
+reads by mentor ID and adds the supporting composite index. The Functions
+high-severity audit and build pass; two moderate UUID advisories remain
+through `gaxios`. Deploy the callable and index before pushing the frontend,
+then recheck the mentor page in staging.
 
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
@@ -89,7 +101,7 @@ violation, and a browser-blocked resource; the LMS requests succeeded.
 - [x] Register a staging-only mentor account, accept the restricted invite,
   and add the mentor to both QA cohorts.
 - [x] Confirm the student email is verified in account settings.
-- [ ] Confirm the mentor email is verified in account settings.
+- [x] Confirm the mentor email is verified in account settings.
 - [x] Create planned QA cohorts from the published StepUp and Dynamerge demo
   courses, pinned to their current versions.
 - [x] Enroll the test student in both QA cohorts.
@@ -100,6 +112,9 @@ violation, and a browser-blocked resource; the LMS requests succeeded.
   to quiz-attempt reads; define supporting Firestore indexes.
 - [x] Deploy the owner-filter and index changes to staging; verify the
   learner course and progress reads.
+- [x] Prepare mentor-scoped profile, enrollment, and submission reads and the
+  supporting index. Staging deployment and authenticated browser verification
+  remain open.
 - [ ] Verify quiz-attempt reads and completion after reviewed StepUp quiz
   content is available.
 - [ ] Prepare reviewed staging quiz content for StepUp Lab Safety; no matching
