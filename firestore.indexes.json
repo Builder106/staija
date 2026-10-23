@@ -163,6 +163,15 @@
       ]
     },
     {
+      "collectionGroup": "assignment_submissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mentorId", "order": "ASCENDING" },
+        { "fieldPath": "enrollmentId", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "live_sessions",
       "queryScope": "COLLECTION",
       "fields": [

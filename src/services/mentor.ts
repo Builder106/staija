@@ -8,15 +8,35 @@
  * filters to compound queries and add the matching composite indexes.
  */
 
-import { addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../config/firebase.ts';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../config/firebase.ts';
 import type { MentorAssignment, MentorFeedback, UserProfile } from './types';
 
+export type MentorStudentProfile = Pick<UserProfile, 'uid' | 'displayName' | 'email'>;
+
 export type AssignedStudent = MentorAssignment & {
-  student: UserProfile | null;
+  student: MentorStudentProfile | null;
 };
 
+async function getAssignedStudentProfiles(studentIds: string[]): Promise<MentorStudentProfile[]> {
+  const uniqueStudentIds = [...new Set(studentIds)];
+  if (uniqueStudentIds.length === 0) return [];
+  const call = httpsCallable<{ studentIds: string[] }, MentorStudentProfile[]>(
+    functions,
+    'getMentorStudentProfiles',
+  );
+  const result = await call({ studentIds: uniqueStudentIds });
+  return result.data;
+}
+
 export class MentorService {
+  static async getStudentProfile(studentId: string): Promise<MentorStudentProfile> {
+    const [profile] = await getAssignedStudentProfiles([studentId]);
+    if (!profile) throw new Error('Student profile not found.');
+    return profile;
+  }
+
   static async getAssignedStudents(mentorId: string): Promise<AssignedStudent[]> {
     const q = query(collection(db, 'mentor_assignments'), where('mentorId', '==', mentorId));
     const snap = await getDocs(q);
@@ -28,19 +48,12 @@ export class MentorService {
       }
     });
 
-    return Promise.all(
-      assignments.map(async (a) => {
-        try {
-          const userSnap = await getDoc(doc(db, 'users', a.studentId));
-          return {
-            ...a,
-            student: userSnap.exists() ? (userSnap.data() as UserProfile) : null,
-          };
-        } catch {
-          return { ...a, student: null };
-        }
-      }),
-    );
+    const profiles = await getAssignedStudentProfiles(assignments.map((a) => a.studentId));
+    const profilesById = new Map(profiles.map((profile) => [profile.uid, profile]));
+    return assignments.map((assignment) => ({
+      ...assignment,
+      student: profilesById.get(assignment.studentId) ?? null,
+    }));
   }
 
   static async getAssignment(

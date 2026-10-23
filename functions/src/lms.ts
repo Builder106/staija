@@ -1,11 +1,10 @@
 /**
- * LMS callables: enroll students, mark lessons complete, submit
- * assignments, grade submissions.
+ * LMS callables: enroll students, record progress, handle assignments,
+ * and return mentor-scoped profile data.
  *
- * All four enforce App Check and require auth. Direct Firestore writes
- * to enrollments / lesson_progress / assignment_submissions are denied
- * by firestore.rules so business logic, audit trails, and notification
- * side-effects can't be skipped by a tampered client.
+ * Each callable requires App Check and authentication. Firestore blocks
+ * direct writes to protected LMS records so validation, audit trails, and
+ * notifications stay on the server.
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
@@ -29,6 +28,79 @@ function programLabel(program: string | undefined): string {
   if (program === 'dynamerge') return 'Dynamerge'
   return 'STAIJA'
 }
+
+interface MentorStudentProfilesInput {
+  studentIds: string[]
+}
+
+interface MentorStudentProfile {
+  uid: string
+  displayName: string
+  email: string
+}
+
+export const getMentorStudentProfiles = onCall<MentorStudentProfilesInput>(
+  {
+    memory: '256MiB',
+    timeoutSeconds: 30,
+    enforceAppCheck: true,
+  },
+  async (request): Promise<MentorStudentProfile[]> => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be signed in.')
+    }
+
+    const { studentIds } = request.data ?? {}
+    if (
+      !Array.isArray(studentIds) ||
+      studentIds.length === 0 ||
+      studentIds.length > 100 ||
+      !studentIds.every((studentId) => typeof studentId === 'string' && studentId.trim())
+    ) {
+      throw new HttpsError('invalid-argument', 'Provide between 1 and 100 student IDs.')
+    }
+
+    const role = await callerRole(request.auth.uid)
+    if (role !== 'mentor' && role !== 'staff' && role !== 'admin') {
+      throw new HttpsError('permission-denied', 'Mentor, staff, or admin role required.')
+    }
+
+    const db = getFirestore()
+    if (role === 'mentor') {
+      const assignments = await db
+        .collection('mentor_assignments')
+        .where('mentorId', '==', request.auth.uid)
+        .get()
+      const assignedStudentIds = new Set(
+        assignments.docs.flatMap((assignment) => {
+          const data = assignment.data()
+          return data.status === 'active' && typeof data.studentId === 'string'
+            ? [data.studentId]
+            : []
+        }),
+      )
+      if (studentIds.some((studentId) => !assignedStudentIds.has(studentId))) {
+        throw new HttpsError('permission-denied', 'You are not assigned to every requested student.')
+      }
+    }
+
+    return Promise.all(
+      studentIds.map(async (studentId) => {
+        const student = await db.collection('users').doc(studentId).get()
+        const data = student.data()
+        if (!student.exists || data?.role !== 'student') {
+          throw new HttpsError('not-found', 'Student profile not found.')
+        }
+
+        return {
+          uid: student.id,
+          displayName: typeof data.displayName === 'string' ? data.displayName : 'Student',
+          email: typeof data.email === 'string' ? data.email : '',
+        }
+      }),
+    )
+  },
+)
 
 interface CourseLesson {
   slug: string

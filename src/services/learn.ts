@@ -317,10 +317,12 @@ export class SubmissionService {
   // mentor's per-student view to render the full submission timeline.
   static async getSubmissionsForEnrollmentAndAssignmentAll(
     enrollmentId: string,
+    mentorId: string,
   ): Promise<AssignmentSubmission[]> {
     const q = query(
       collection(db, 'assignment_submissions'),
       where('enrollmentId', '==', enrollmentId),
+      where('mentorId', '==', mentorId),
       orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);

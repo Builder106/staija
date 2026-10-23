@@ -10,7 +10,6 @@ import Section from '../../../components/ui/Section.vue';
 import UiButton from '../../../components/ui/UiButton.vue';
 import UiCard from '../../../components/ui/UiCard.vue';
 import { useAuth } from '../../../composables/useAuth';
-import { DatabaseService } from '../../../services/database';
 import {
   EnrollmentService,
   ProgressService,
@@ -18,13 +17,12 @@ import {
   toMillis,
   type TimestampLike,
 } from '../../../services/learn';
-import { MentorService } from '../../../services/mentor';
+import { MentorService, type MentorStudentProfile } from '../../../services/mentor';
 import type {
   AssignmentSubmission,
   Enrollment,
   LessonProgress,
   MentorFeedback,
-  UserProfile,
 } from '../../../services/types';
 
 const route = useRoute();
@@ -32,7 +30,7 @@ const { user } = useAuth();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
-const student = ref<UserProfile | null>(null);
+const student = ref<MentorStudentProfile | null>(null);
 const enrollment = ref<Enrollment | null>(null);
 const progress = ref<LessonProgress[]>([]);
 const submissions = ref<AssignmentSubmission[]>([]);
@@ -50,28 +48,27 @@ async function load() {
     const studentId = route.params.studentId as string;
 
     const [s, assignment] = await Promise.all([
-      DatabaseService.getUserProfile(studentId),
+      MentorService.getStudentProfile(studentId),
       MentorService.getAssignment(user.value.uid, studentId),
     ]);
     student.value = s;
-    if (!s) {
-      error.value = 'Student profile not found.';
-      return;
-    }
     if (!assignment) {
       error.value = 'You are not assigned to this student.';
       return;
     }
 
     // Find the matching active enrollment.
-    const studentEnrollments = await EnrollmentService.getActiveForStudent(studentId);
-    const own = studentEnrollments.find((e) => e.mentorId === user.value!.uid);
+    const mentorEnrollments = await EnrollmentService.getForMentor(user.value.uid);
+    const own = mentorEnrollments.find((e) => e.studentId === studentId);
     if (own) {
       enrollment.value = own;
       const enrollmentId = own.id ?? `${own.studentId}_${own.cohortId}`;
       const [p, subs, fb] = await Promise.all([
         ProgressService.getProgressForEnrollment(enrollmentId, 'mentorId', user.value!.uid),
-        SubmissionService.getSubmissionsForEnrollmentAndAssignmentAll(enrollmentId),
+        SubmissionService.getSubmissionsForEnrollmentAndAssignmentAll(
+          enrollmentId,
+          user.value!.uid,
+        ),
         MentorService.getFeedbackForStudent(user.value.uid, studentId),
       ]);
       progress.value = p;
