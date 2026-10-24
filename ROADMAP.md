@@ -100,8 +100,10 @@ on their course dashboard and successfully RSVPed "Yes" via `rsvpSession`
   unpublished entries in staging Contentful.
 - [x] Confirm the authenticated staff content tree loads without callable or
   schema errors.
-- [ ] Apply the schema migration to production Contentful during the production
-  release, after staging checks pass.
+- [x] Apply the schema migration to production Contentful during the production
+  release, after staging checks pass. Applied directly to environment `master`
+  via Contentful REST Management API on 2026-10-24 (`quiz` content type and
+  `lesson.quiz` field created and published).
 - [ ] Prepare reviewed curriculum and cohort assignments for production. Keep
   demo courses out of the production learner catalog. Curriculum publication
   is a release gate.
