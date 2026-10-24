@@ -55,7 +55,11 @@ onMounted(load);
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-3xl">
         <RouterLink
-          to="/learn"
+          :to="
+            route.query.course
+              ? { name: 'learn-course', params: { slug: route.query.course as string } }
+              : '/learn'
+          "
           class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
         >
           <Icon icon="lucide:arrow-left" width="12" /> Back to course

@@ -19,6 +19,7 @@ import {
   toMillis,
 } from '../../services/learn';
 import type {
+  CmsAssignmentSpec,
   CmsCourse,
   CmsLesson,
   CmsModule,
@@ -37,7 +38,9 @@ const course = ref<CmsCourse | null>(null);
 const courseOptions = ref<{ slug: string; title: string }[]>([]);
 const cohort = ref<Cohort | null>(null);
 const enrollment = ref<Enrollment | null>(null);
-const modules = ref<{ module: CmsModule; lessons: CmsLesson[] }[]>([]);
+const modules = ref<
+  { module: CmsModule; lessons: CmsLesson[]; assignments: CmsAssignmentSpec[] }[]
+>([]);
 const progress = ref<LessonProgress[]>([]);
 const upcoming = ref<LiveSession[]>([]);
 
@@ -107,7 +110,11 @@ async function load() {
 
     const mods = await CourseService.getModulesForCourse(selectedCourse);
     const hydrated = await Promise.all(
-      mods.map(async (m) => ({ module: m, lessons: await CourseService.getLessonsForModule(m) })),
+      mods.map(async (m) => ({
+        module: m,
+        lessons: await CourseService.getLessonsForModule(m),
+        assignments: await CourseService.getAssignmentsForModule(m),
+      })),
     );
     if (sequence !== loadSequence) return;
     modules.value = hydrated;
@@ -289,7 +296,29 @@ onUnmounted(() => {
                       <Icon icon="lucide:chevron-right" width="16" class="text-ink/30" />
                     </RouterLink>
                   </li>
-                  <li v-if="m.lessons.length === 0" class="px-5 py-4 text-sm text-ink/50">
+                  <li v-for="a in m.assignments" :key="a.slug">
+                    <RouterLink
+                      :to="{
+                        name: 'learn-assignment',
+                        params: { slug: a.slug },
+                        query: { course: course.slug },
+                      }"
+                      class="flex items-center gap-3 px-5 py-3.5 hover:bg-ink/[0.02] transition-colors"
+                    >
+                      <Icon icon="lucide:file-edit" width="18" class="text-ink/40" />
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-ink truncate">{{ a.title }}</div>
+                        <div class="text-xs text-ink/50 capitalize">
+                          Assignment &middot; {{ a.submissionType.replace('_', ' / ') }}
+                        </div>
+                      </div>
+                      <Icon icon="lucide:chevron-right" width="16" class="text-ink/30" />
+                    </RouterLink>
+                  </li>
+                  <li
+                    v-if="m.lessons.length === 0 && (!m.assignments || m.assignments.length === 0)"
+                    class="px-5 py-4 text-sm text-ink/50"
+                  >
                     No lessons in this module yet.
                   </li>
                 </ul>

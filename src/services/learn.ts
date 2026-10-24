@@ -302,15 +302,20 @@ export class SubmissionService {
   static async getSubmissionsForEnrollmentAndAssignment(
     enrollmentId: string,
     assignmentSlug: string,
+    studentId?: string,
   ): Promise<AssignmentSubmission[]> {
-    const q = query(
-      collection(db, 'assignment_submissions'),
+    const constraints: QueryConstraint[] = [
       where('enrollmentId', '==', enrollmentId),
       where('assignmentSlug', '==', assignmentSlug),
-      orderBy('submittedAt', 'desc'),
-    );
+    ];
+    if (studentId) {
+      constraints.push(where('studentId', '==', studentId));
+    }
+    const q = query(collection(db, 'assignment_submissions'), ...constraints);
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    const subs = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    subs.sort((a, b) => toMillis(b.submittedAt) - toMillis(a.submittedAt));
+    return subs;
   }
 
   // Every submission for a single enrollment, newest first. Used by the
