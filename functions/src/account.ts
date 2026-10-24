@@ -118,7 +118,24 @@ export const deleteAccount = onCall<Record<string, never>>(
       })
     }
 
-    // 5. Donations: keep the financial record but anonymize the donor.
+    // 5. LMS Tutor Sessions & Memory.
+    await safe('tutor_sessions and tutor_memory', async () => {
+      const sessionsSnap = await db.collection('tutor_sessions').where('userId', '==', uid).get()
+      for (const sDoc of sessionsSnap.docs) {
+        const [messages, pages] = await Promise.all([
+          sDoc.ref.collection('messages').get(),
+          sDoc.ref.collection('pages').get(),
+        ])
+        const batch = db.batch()
+        messages.docs.forEach((m) => batch.delete(m.ref))
+        pages.docs.forEach((p) => batch.delete(p.ref))
+        batch.delete(sDoc.ref)
+        await batch.commit()
+      }
+      await db.collection('tutor_memory').doc(uid).delete()
+    })
+
+    // 6. Donations: keep the financial record but anonymize the donor.
     await safe('donations anonymize', async () => {
       const snap = await db.collection('donations').where('donorUid', '==', uid).get()
       const batch = db.batch()

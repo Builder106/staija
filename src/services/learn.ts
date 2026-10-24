@@ -502,23 +502,83 @@ export class QuizService {
   }
 }
 
+// --- AI STEM Tutor types & callables ----------------------------------
+
+export type TutorPageKind = 'mermaid' | 'geometry' | 'notes' | 'freehand';
+
+export interface TutorPageSnapshot {
+  id: string;
+  title: string;
+  kind: TutorPageKind;
+  content: string;
+  createdAt: number;
+  updatedAt?: number;
+}
+
+export type TutorStreamEvent =
+  | { type: 'message-start'; sessionId: string; messageId: string }
+  | { type: 'text-delta'; messageId: string; text: string }
+  | { type: 'page-start'; pageId: string; kind: TutorPageKind }
+  | { type: 'page-complete'; page: TutorPageSnapshot }
+  | { type: 'suggestions'; items: string[] }
+  | { type: 'done'; sessionId: string; messageId: string }
+  | { type: 'error'; code: string; retryable: boolean };
+
 export interface AskLmsTutorPayload {
-  lessonTitle: string;
-  lessonBodyPlain: string;
+  sessionId?: string;
+  lessonId?: string;
+  studentQuestion: string;
+  clientMessageId?: string;
+  mode?: 'standard' | 'socratic' | 'deep' | 'diagram' | 'practice';
+  lessonTitle?: string;
+  lessonBodyPlain?: string;
   courseTitle?: string;
   program?: string;
-  studentQuestion: string;
   chatHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
   questionContext?: {
+    questionId?: string;
     questionText: string;
+    studentAnswer?: string;
     userAnswerText?: string;
+    correctAnswer?: string;
     explanation?: string;
   };
 }
 
 export interface AskLmsTutorResult {
+  sessionId?: string;
+  messageId?: string;
   reply: string;
   suggestedFollowUps: string[];
+  pages?: TutorPageSnapshot[];
+}
+
+export interface TutorSessionRecord {
+  id: string;
+  userId: string;
+  lessonId: string;
+  lessonTitle: string;
+  courseTitle?: string;
+  program?: string;
+  mode: 'standard' | 'socratic' | 'deep' | 'diagram' | 'practice';
+  lastMessage?: string;
+  messageCount: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface TutorSessionDetail {
+  session: TutorSessionRecord;
+  messages: Array<{
+    id: string;
+    sessionId: string;
+    userId: string;
+    role: 'user' | 'assistant';
+    content: string;
+    suggestedFollowUps?: string[];
+    createdAt: number;
+  }>;
+  pages: TutorPageSnapshot[];
 }
 
 export const askLmsTutor = (data: AskLmsTutorPayload) =>
@@ -526,6 +586,89 @@ export const askLmsTutor = (data: AskLmsTutorPayload) =>
     functions,
     'askLmsTutor',
   )(data).then((r) => r.data);
+
+export const askLmsTutorStream = async (
+  data: AskLmsTutorPayload,
+  onChunk: (event: TutorStreamEvent) => void,
+  signal?: AbortSignal,
+): Promise<AskLmsTutorResult> => {
+  const callable = httpsCallable<AskLmsTutorPayload, AskLmsTutorResult, TutorStreamEvent>(
+    functions,
+    'askLmsTutor',
+  );
+
+  try {
+    const streamResult = await callable.stream(data, signal ? { signal } : undefined);
+    for await (const chunk of streamResult.stream) {
+      if (chunk) onChunk(chunk);
+    }
+    return await streamResult.data;
+  } catch (err) {
+    if (signal?.aborted) throw err;
+    console.warn('Streaming callable fell back to standard invoke:', err);
+    return await askLmsTutor(data);
+  }
+};
+
+export const listTutorSessions = (
+  params: { studentId?: string; lessonId?: string; limit?: number } = {},
+) =>
+  httpsCallable<{ studentId?: string; lessonId?: string; limit?: number }, TutorSessionRecord[]>(
+    functions,
+    'listTutorSessions',
+  )(params).then((r) => r.data);
+
+export const getTutorSession = (sessionId: string) =>
+  httpsCallable<{ sessionId: string }, TutorSessionDetail>(
+    functions,
+    'getTutorSession',
+  )({ sessionId }).then((r) => r.data);
+
+export const saveTutorPage = (data: {
+  sessionId: string;
+  pageId?: string;
+  title: string;
+  kind: TutorPageKind;
+  content: string;
+}) =>
+  httpsCallable<
+    { sessionId: string; pageId?: string; title: string; kind: TutorPageKind; content: string },
+    { ok: boolean; page: TutorPageSnapshot }
+  >(
+    functions,
+    'saveTutorPage',
+  )(data).then((r) => r.data);
+
+export interface TutorAnnotationDoc {
+  id: string;
+  pageId: string;
+  authorUid: string;
+  authorName: string;
+  authorRole: string;
+  content: string;
+  createdAt: number;
+}
+
+export const saveTutorAnnotation = (data: { sessionId: string; pageId: string; content: string }) =>
+  httpsCallable<
+    { sessionId: string; pageId: string; content: string },
+    { ok: boolean; annotation: TutorAnnotationDoc }
+  >(
+    functions,
+    'saveTutorAnnotation',
+  )(data).then((r) => r.data);
+
+export const deleteTutorSession = (sessionId: string) =>
+  httpsCallable<{ sessionId: string }, { ok: boolean }>(
+    functions,
+    'deleteTutorSession',
+  )({ sessionId }).then((r) => r.data);
+
+export const setTutorMemoryPreference = (enabled: boolean) =>
+  httpsCallable<{ enabled: boolean }, { ok: boolean; memoryEnabled: boolean }>(
+    functions,
+    'setTutorMemoryPreference',
+  )({ enabled }).then((r) => r.data);
 
 // --- Helpers ----------------------------------------------------------
 

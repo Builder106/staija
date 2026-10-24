@@ -69,8 +69,16 @@ export { outlineCourse } from './aiOutline'
 // curates from there. Only requires GROQ_API_KEY.
 export { lessonMediaAssist } from './aiLessonMedia'
 
-// Visual & Interactive AI STEM Tutor (Groq-backed).
-export { askLmsTutor } from './lmsTutor'
+// Visual & Interactive AI STEM Tutor (Groq-backed with streaming & persistence).
+export {
+  askLmsTutor,
+  listTutorSessions,
+  getTutorSession,
+  saveTutorPage,
+  saveTutorAnnotation,
+  deleteTutorSession,
+  setTutorMemoryPreference,
+} from './lmsTutor'
 
 // Server-side proxy for every Contentful Management API call the admin
 // LMS surface makes. Replaces the previous client-side path that

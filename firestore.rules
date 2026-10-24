@@ -463,6 +463,46 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // LMS AI Tutor Sessions & Whiteboard archives.
+    // Owner can read their own sessions; staff/admin can read.
+    // Writes are server-only through askLmsTutor, saveTutorPage, etc.
+    match /tutor_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        hasAnyRole(['staff', 'admin'])
+      );
+      allow write: if false;
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/tutor_sessions/$(sessionId)).data.userId == request.auth.uid ||
+          hasAnyRole(['staff', 'admin'])
+        );
+        allow write: if false;
+      }
+
+      match /pages/{pageId} {
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/tutor_sessions/$(sessionId)).data.userId == request.auth.uid ||
+          hasAnyRole(['staff', 'admin'])
+        );
+        allow write: if false;
+
+        match /annotations/{annotationId} {
+          allow read: if isAuthenticated() && (
+            get(/databases/$(database)/documents/tutor_sessions/$(sessionId)).data.userId == request.auth.uid ||
+            hasAnyRole(['staff', 'admin'])
+          );
+          allow write: if false;
+        }
+      }
+    }
+
+    match /tutor_memory/{uid} {
+      allow read: if isOwner(uid) || hasAnyRole(['staff', 'admin']);
+      allow write: if false;
+    }
+
     // Per-referrer signup counters, written exclusively by the
     // subscribeNewsletter Cloud Function (Admin SDK bypasses rules).
     // Staff/admin reads power the future leaderboard UI; the visitor

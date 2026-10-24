@@ -38,16 +38,27 @@ export const exportUserData = onCall<Record<string, never>>(
     const db = getFirestore()
     const bucket = getStorage().bucket()
 
-    const [profileSnap, applicationsSnap, donationsSnap, eventRegSnap, notificationsSnap, alumniStoriesSnap, auditSnap] =
-      await Promise.all([
-        db.collection('users').doc(uid).get(),
-        db.collection('applications').where('userId', '==', uid).get(),
-        db.collection('donations').where('donorUid', '==', uid).get(),
-        db.collection('event_registrations').where('userId', '==', uid).get(),
-        db.collection('notifications').where('userId', '==', uid).get(),
-        db.collection('alumni_stories').where('authorUid', '==', uid).get(),
-        db.collection('audit_logs').where('userId', '==', uid).orderBy('timestamp', 'desc').limit(500).get(),
-      ])
+    const [
+      profileSnap,
+      applicationsSnap,
+      donationsSnap,
+      eventRegSnap,
+      notificationsSnap,
+      alumniStoriesSnap,
+      auditSnap,
+      tutorSessionsSnap,
+      tutorMemorySnap,
+    ] = await Promise.all([
+      db.collection('users').doc(uid).get(),
+      db.collection('applications').where('userId', '==', uid).get(),
+      db.collection('donations').where('donorUid', '==', uid).get(),
+      db.collection('event_registrations').where('userId', '==', uid).get(),
+      db.collection('notifications').where('userId', '==', uid).get(),
+      db.collection('alumni_stories').where('authorUid', '==', uid).get(),
+      db.collection('audit_logs').where('userId', '==', uid).orderBy('timestamp', 'desc').limit(500).get(),
+      db.collection('tutor_sessions').where('userId', '==', uid).get(),
+      db.collection('tutor_memory').doc(uid).get(),
+    ])
 
     const connectionEdges = await Promise.all(
       ['senderUid', 'recipientUid', 'fromUid', 'toUid'].flatMap((field) => [
@@ -105,6 +116,8 @@ export const exportUserData = onCall<Record<string, never>>(
       notifications: notificationsSnap.docs.map((d) => ({ id: d.id, ...d.data() })),
       alumniStories: alumniStoriesSnap.docs.map((d) => ({ id: d.id, ...d.data() })),
       auditLogs: auditSnap.docs.map((d) => ({ id: d.id, ...d.data() })),
+      tutorSessions: tutorSessionsSnap.docs.map((d) => ({ id: d.id, ...d.data() })),
+      tutorMemory: tutorMemorySnap.exists ? tutorMemorySnap.data() : null,
       connections: connectionEdges.flatMap((snap) =>
         dedupe(snap).map((d) => ({ collection: d.ref.parent.id, id: d.id, ...d.data() })),
       ),

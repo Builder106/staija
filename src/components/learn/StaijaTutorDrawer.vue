@@ -2,8 +2,18 @@
 import { Icon } from '@iconify/vue';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import { computed, defineEmits, defineProps, nextTick, onMounted, ref, watch } from 'vue';
-import { askLmsTutor, type AskLmsTutorResult } from '../../services/learn';
+import { computed, defineEmits, defineProps, nextTick, ref, watch } from 'vue';
+import {
+  askLmsTutorStream,
+  deleteTutorSession,
+  getTutorSession,
+  listTutorSessions,
+  saveTutorPage,
+  type AskLmsTutorPayload,
+  type AskLmsTutorResult,
+  type TutorSessionRecord,
+  type TutorStreamEvent,
+} from '../../services/learn';
 import UiButton from '../ui/UiButton.vue';
 import MermaidViewer from './MermaidViewer.vue';
 
@@ -39,7 +49,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const activeTab = ref<'chat' | 'whiteboard'>('chat');
+const activeTab = ref<'chat' | 'whiteboard' | 'history'>('chat');
 const isExpanded = ref(false);
 const activeMode = ref<'standard' | 'socratic' | 'deep' | 'diagram' | 'practice'>('standard');
 
@@ -50,6 +60,10 @@ const messages = ref<Message[]>([]);
 const whiteboardCards = ref<WhiteboardCard[]>([]);
 const studentNotes = ref('');
 const chatContainer = ref<HTMLElement | null>(null);
+
+const activeSessionId = ref<string | null>(null);
+const pastSessions = ref<TutorSessionRecord[]>([]);
+const loadingSessions = ref(false);
 
 const notesStorageKey = computed(
   () => `staija_tutor_notes_${props.lessonTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
@@ -83,11 +97,11 @@ function saveWhiteboard() {
   try {
     localStorage.setItem(whiteboardStorageKey.value, JSON.stringify(whiteboardCards.value));
   } catch (err) {
-    console.warn('Failed to save whiteboard:', err);
+    console.warn('Failed to save whiteboard locally:', err);
   }
 }
 
-function pinToWhiteboard(msg: Message) {
+async function pinToWhiteboard(msg: Message) {
   const cardId = `wb-${Date.now()}`;
   const firstLine =
     msg.content
@@ -96,14 +110,30 @@ function pinToWhiteboard(msg: Message) {
       .trim() || 'Concept Note';
   const cardTitle = firstLine.length > 50 ? `${firstLine.substring(0, 47)}...` : firstLine;
 
-  whiteboardCards.value.unshift({
+  const card: WhiteboardCard = {
     id: cardId,
     title: cardTitle,
     content: msg.content,
     createdAt: Date.now(),
-  });
+  };
+
+  whiteboardCards.value.unshift(card);
   msg.pinned = true;
   saveWhiteboard();
+
+  if (activeSessionId.value) {
+    try {
+      await saveTutorPage({
+        sessionId: activeSessionId.value,
+        pageId: cardId,
+        title: cardTitle,
+        kind: 'notes',
+        content: msg.content,
+      });
+    } catch (err) {
+      console.warn('Could not sync whiteboard card to cloud:', err);
+    }
+  }
 }
 
 function removeWhiteboardCard(cardId: string) {
@@ -130,6 +160,71 @@ function resetChat() {
   ];
 }
 
+async function refreshSessions() {
+  loadingSessions.value = true;
+  try {
+    const list = await listTutorSessions({ limit: 15 });
+    pastSessions.value = list;
+  } catch (err) {
+    console.warn('Could not load past tutor sessions:', err);
+  } finally {
+    loadingSessions.value = false;
+  }
+}
+
+async function loadSession(sessionId: string) {
+  loading.value = true;
+  try {
+    const detail = await getTutorSession(sessionId);
+    activeSessionId.value = detail.session.id;
+    activeMode.value = detail.session.mode || 'standard';
+
+    messages.value = detail.messages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      suggestedFollowUps: m.suggestedFollowUps,
+    }));
+
+    if (detail.pages && detail.pages.length > 0) {
+      whiteboardCards.value = detail.pages.map((p) => ({
+        id: p.id,
+        title: p.title,
+        content: p.content,
+        createdAt: p.createdAt,
+      }));
+      saveWhiteboard();
+    }
+
+    activeTab.value = 'chat';
+    await scrollToBottom();
+  } catch (err) {
+    console.error('Could not load session:', err);
+    error.value = 'Failed to load session details.';
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function startNewSession() {
+  activeSessionId.value = null;
+  resetChat();
+  activeTab.value = 'chat';
+}
+
+async function handleDeleteSession(sessionId: string) {
+  try {
+    await deleteTutorSession(sessionId);
+    pastSessions.value = pastSessions.value.filter((s) => s.id !== sessionId);
+    if (activeSessionId.value === sessionId) {
+      activeSessionId.value = null;
+      resetChat();
+    }
+  } catch (err) {
+    console.error('Failed to delete session:', err);
+  }
+}
+
 watch(
   () => props.open,
   (isOpen) => {
@@ -138,6 +233,7 @@ watch(
       if (messages.value.length === 0) {
         resetChat();
       }
+      refreshSessions();
     }
   },
   { immediate: true },
@@ -154,7 +250,6 @@ async function sendQuestion(textToSend?: string) {
   let q = (textToSend || inputQuestion.value).trim();
   if (!q || loading.value) return;
 
-  // Apply teaching workflow prefix if specific mode selected
   if (!textToSend) {
     if (activeMode.value === 'socratic') {
       q = `[Socratic Guiding Mode] Please guide me step-by-step with probing questions rather than giving away the answer directly: ${q}`;
@@ -174,33 +269,72 @@ async function sendQuestion(textToSend?: string) {
   messages.value.push({
     id: userMsgId,
     role: 'user',
-    content: q.replace(/^\[.*?\]\s*/, ''), // display clean text in bubble
+    content: q.replace(/^\[.*?\]\s*/, ''),
   });
+
+  const assistantMsgId = `asst-${Date.now()}`;
+  const assistantMessage: Message = {
+    id: assistantMsgId,
+    role: 'assistant',
+    content: '',
+    suggestedFollowUps: [],
+  };
+  messages.value.push(assistantMessage);
 
   await scrollToBottom();
   loading.value = true;
 
   try {
     const history = messages.value
-      .filter((m) => m.id !== 'intro')
+      .filter((m) => m.id !== 'intro' && m.id !== assistantMsgId)
       .map((m) => ({ role: m.role, content: m.content }));
 
-    const res: AskLmsTutorResult = await askLmsTutor({
+    const payload: AskLmsTutorPayload = {
+      sessionId: activeSessionId.value || undefined,
+      clientMessageId: userMsgId,
       lessonTitle: props.lessonTitle,
       lessonBodyPlain: props.lessonBodyPlain,
       courseTitle: props.courseTitle,
       program: props.program,
       studentQuestion: q,
+      mode: activeMode.value,
       chatHistory: history,
       questionContext: props.initialQuestionContext,
-    });
+    };
 
-    messages.value.push({
-      id: `asst-${Date.now()}`,
-      role: 'assistant',
-      content: res.reply,
-      suggestedFollowUps: res.suggestedFollowUps,
-    });
+    const result: AskLmsTutorResult = await askLmsTutorStream(
+      payload,
+      (event: TutorStreamEvent) => {
+        if (event.type === 'message-start') {
+          if (event.sessionId) activeSessionId.value = event.sessionId;
+        } else if (event.type === 'text-delta') {
+          assistantMessage.content += event.text;
+          scrollToBottom();
+        } else if (event.type === 'page-complete') {
+          if (!whiteboardCards.value.some((c) => c.id === event.page.id)) {
+            whiteboardCards.value.unshift({
+              id: event.page.id,
+              title: event.page.title,
+              content: event.page.content,
+              createdAt: event.page.createdAt,
+            });
+            saveWhiteboard();
+          }
+        } else if (event.type === 'suggestions') {
+          assistantMessage.suggestedFollowUps = event.items;
+        } else if (event.type === 'done') {
+          if (event.sessionId) activeSessionId.value = event.sessionId;
+        }
+      },
+    );
+
+    if (!assistantMessage.content && result.reply) {
+      assistantMessage.content = result.reply;
+      assistantMessage.suggestedFollowUps = result.suggestedFollowUps;
+    }
+    if (result.sessionId) {
+      activeSessionId.value = result.sessionId;
+    }
 
     await scrollToBottom();
   } catch (err) {
@@ -211,7 +345,6 @@ async function sendQuestion(textToSend?: string) {
   }
 }
 
-// Parses text blocks, rendering Mermaid blocks into <MermaidViewer> components
 function parseContentBlocks(text: string) {
   const blocks: Array<{ type: 'text' | 'mermaid' | 'math'; content: string }> = [];
 
@@ -221,42 +354,53 @@ function parseContentBlocks(text: string) {
 
   while ((match = mermaidRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      blocks.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+      blocks.push({
+        type: 'text',
+        content: text.substring(lastIndex, match.index),
+      });
     }
-    blocks.push({ type: 'mermaid', content: match[1].trim() });
+    blocks.push({
+      type: 'mermaid',
+      content: match[1].trim(),
+    });
     lastIndex = mermaidRegex.lastIndex;
   }
 
   if (lastIndex < text.length) {
-    blocks.push({ type: 'text', content: text.substring(lastIndex) });
+    blocks.push({
+      type: 'text',
+      content: text.substring(lastIndex),
+    });
   }
 
   return blocks;
 }
 
-// Formats text with KaTeX math and basic Markdown (bold, lists)
 function formatFormattedText(text: string): string {
   if (!text) return '';
 
-  // 1. Block math $$ ... $$
   let formatted = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
     try {
-      return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false });
+      return katex.renderToString(math.trim(), {
+        displayMode: true,
+        throwOnError: false,
+      });
     } catch {
       return math;
     }
   });
 
-  // 2. Inline math \( ... \) or $ ... $
   formatted = formatted.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => {
     try {
-      return katex.renderToString(math.trim(), { displayMode: false, throwOnError: false });
+      return katex.renderToString(math.trim(), {
+        displayMode: false,
+        throwOnError: false,
+      });
     } catch {
       return math;
     }
   });
 
-  // 3. Bold, lists, code spans
   formatted = formatted
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(
@@ -269,63 +413,71 @@ function formatFormattedText(text: string): string {
   return formatted;
 }
 
-onMounted(loadSavedState);
+const pedagogicalModes = [
+  { id: 'standard' as const, label: 'Standard' },
+  { id: 'socratic' as const, label: 'Socratic' },
+  { id: 'deep' as const, label: 'Deep Theory' },
+  { id: 'diagram' as const, label: 'Visual Map' },
+  { id: 'practice' as const, label: 'Practice' },
+];
 </script>
 
 <template>
   <Teleport to="body">
-    <!-- Backdrop -->
+    <!-- Backdrop Overlay -->
     <Transition
-      enter-active-class="transition duration-300 ease-out"
+      enter-active-class="transition-opacity duration-300 ease-out"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
+      leave-active-class="transition-opacity duration-200 ease-in"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
       <div
         v-if="open"
-        class="fixed inset-0 bg-ink/60 backdrop-blur-sm z-50"
+        class="fixed inset-0 z-50 bg-ink/30 backdrop-blur-xs"
         @click="emit('close')"
       />
     </Transition>
 
-    <!-- Slide-over Drawer with Expandable Width -->
+    <!-- Slide-over Drawer Panel -->
     <Transition
-      enter-active-class="transition duration-300 ease-out transform"
+      enter-active-class="transition-transform duration-300 ease-out"
       enter-from-class="translate-x-full"
       enter-to-class="translate-x-0"
-      leave-active-class="transition duration-200 ease-in transform"
+      leave-active-class="transition-transform duration-200 ease-in"
       leave-from-class="translate-x-0"
       leave-to-class="translate-x-full"
     >
-      <div
+      <aside
         v-if="open"
         class="fixed right-0 top-0 bottom-0 w-full transition-all duration-300 bg-surface border-l border-ink/10 z-50 shadow-2xl flex flex-col"
         :class="isExpanded ? 'max-w-3xl' : 'max-w-md'"
       >
-        <!-- Top Navigation Bar -->
+        <!-- Top Header & Navigation -->
         <div
-          class="p-3.5 border-b border-ink/10 flex items-center justify-between bg-surface-raised/50"
+          class="px-4 py-3.5 border-b border-ink/10 flex items-center justify-between gap-2 bg-surface-raised/40"
         >
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 overflow-hidden">
             <div
-              class="w-8 h-8 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center font-bold"
+              class="w-8 h-8 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center shrink-0"
             >
-              <Icon icon="lucide:bot" width="18" />
+              <Icon icon="lucide:sparkles" width="18" />
             </div>
-            <div>
-              <h3 class="text-sm font-semibold text-ink">STAIJA STEM Tutor</h3>
-              <p class="text-[11px] text-ink/50 truncate max-w-[200px]">{{ lessonTitle }}</p>
+            <div class="truncate">
+              <h3 class="text-sm font-semibold text-ink leading-tight">STAIJA STEM Tutor</h3>
+              <p class="text-xs text-ink/50 truncate">
+                {{ props.lessonTitle }}
+              </p>
             </div>
           </div>
 
-          <!-- Tab Controls & Expand Button -->
-          <div class="flex items-center gap-2">
+          <!-- Tabs, Expand & Close -->
+          <div class="flex items-center gap-1.5 shrink-0">
             <div class="flex items-center bg-ink/5 p-0.5 rounded-lg border border-ink/10">
               <button
                 type="button"
-                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5"
+                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
                 :class="
                   activeTab === 'chat'
                     ? 'bg-surface text-ink shadow-xs font-semibold'
@@ -355,6 +507,22 @@ onMounted(loadSavedState);
                   {{ whiteboardCards.length }}
                 </span>
               </button>
+              <button
+                type="button"
+                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
+                :class="
+                  activeTab === 'history'
+                    ? 'bg-surface text-ink shadow-xs font-semibold'
+                    : 'text-ink/60 hover:text-ink'
+                "
+                @click="
+                  activeTab = 'history';
+                  refreshSessions();
+                "
+              >
+                <Icon icon="lucide:history" width="13" />
+                History
+              </button>
             </div>
 
             <button
@@ -381,7 +549,7 @@ onMounted(loadSavedState);
           <!-- Chat Container -->
           <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
             <div
-              v-for="msg in messages"
+              v-for="(msg, idx) in messages"
               :key="msg.id"
               :class="[
                 'flex flex-col max-w-[90%]',
@@ -396,71 +564,79 @@ onMounted(loadSavedState);
                     : 'bg-surface-raised border border-ink/10 text-ink rounded-bl-none',
                 ]"
               >
-                <div v-for="(block, idx) in parseContentBlocks(msg.content)" :key="idx">
+                <div v-for="(block, bIdx) in parseContentBlocks(msg.content)" :key="bIdx">
                   <MermaidViewer v-if="block.type === 'mermaid'" :code="block.content" />
-                  <div v-else v-html="formatFormattedText(block.content)" />
+                  <div
+                    v-else
+                    class="whitespace-pre-wrap"
+                    v-html="formatFormattedText(block.content)"
+                  />
                 </div>
 
-                <!-- Pin to Whiteboard Button -->
-                <button
-                  v-if="msg.role === 'assistant' && msg.id !== 'intro'"
-                  type="button"
-                  class="mt-2.5 pt-2 border-t border-ink/10 text-xs text-ink/60 hover:text-brand-violet flex items-center gap-1 transition-colors"
-                  :disabled="msg.pinned"
-                  @click="pinToWhiteboard(msg)"
+                <!-- Pin to Whiteboard Action -->
+                <div
+                  v-if="msg.role === 'assistant' && idx > 0 && msg.content"
+                  class="mt-3 pt-2 border-t border-ink/10 flex items-center justify-between gap-2"
                 >
-                  <Icon icon="lucide:pin" width="12" />
-                  {{ msg.pinned ? 'Pinned to Whiteboard' : 'Pin to Whiteboard' }}
-                </button>
+                  <button
+                    type="button"
+                    class="text-xs font-medium text-brand-violet hover:text-brand-violet/80 flex items-center gap-1 transition-colors"
+                    :disabled="msg.pinned"
+                    @click="pinToWhiteboard(msg)"
+                  >
+                    <Icon :icon="msg.pinned ? 'lucide:check' : 'lucide:pin'" width="13" />
+                    {{ msg.pinned ? 'Pinned to Whiteboard' : 'Pin to Whiteboard' }}
+                  </button>
+                </div>
               </div>
 
-              <!-- Follow-up suggestion chips -->
+              <!-- Suggested Follow-ups -->
               <div
-                v-if="msg.suggestedFollowUps && msg.suggestedFollowUps.length > 0 && !loading"
-                class="mt-2.5 flex flex-wrap gap-1.5"
+                v-if="
+                  msg.suggestedFollowUps &&
+                  msg.suggestedFollowUps.length > 0 &&
+                  idx === messages.length - 1
+                "
+                class="mt-3 flex flex-wrap gap-1.5"
               >
                 <button
-                  v-for="(chip, cIdx) in msg.suggestedFollowUps"
-                  :key="cIdx"
+                  v-for="(suggestion, sIdx) in msg.suggestedFollowUps"
+                  :key="sIdx"
                   type="button"
                   class="text-xs bg-brand-violet/10 text-brand-violet hover:bg-brand-violet/20 font-medium px-2.5 py-1 rounded-lg border border-brand-violet/20 transition-all text-left"
-                  @click="sendQuestion(chip)"
+                  :disabled="loading"
+                  @click="sendQuestion(suggestion)"
                 >
-                  {{ chip }}
+                  {{ suggestion }}
                 </button>
               </div>
             </div>
 
             <!-- Loading indicator -->
             <div
-              v-if="loading"
-              class="self-start flex items-center gap-2 p-3 bg-surface-raised border border-ink/10 rounded-2xl rounded-bl-none text-xs text-ink/60"
+              v-if="loading && (!messages.length || messages[messages.length - 1]?.role === 'user')"
+              class="flex items-center gap-2 self-start bg-surface-raised border border-ink/10 px-3.5 py-2.5 rounded-2xl text-xs text-ink/60"
             >
-              <Icon icon="lucide:loader-2" width="16" class="animate-spin text-brand-violet" />
-              Tutor is thinking...
+              <Icon icon="lucide:loader-2" class="animate-spin text-brand-violet" width="16" />
+              <span>Tutor is formulating response...</span>
             </div>
 
+            <!-- Error message -->
             <div
               v-if="error"
-              class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl"
+              class="p-3 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-xs"
             >
               {{ error }}
             </div>
           </div>
 
-          <!-- Workflow Mode Selector Bar -->
+          <!-- Pedagogical Modes Bar -->
           <div
-            class="px-3 py-1.5 border-t border-ink/5 bg-surface-raised/40 flex items-center gap-1 overflow-x-auto text-xs"
+            class="px-4 py-2 border-t border-ink/10 bg-surface-raised/20 flex items-center gap-1.5 overflow-x-auto"
           >
             <span class="text-xs text-ink/60 font-medium shrink-0 mr-1">Mode</span>
             <button
-              v-for="mode in [
-                { id: 'standard', label: 'Standard' },
-                { id: 'socratic', label: 'Socratic' },
-                { id: 'deep', label: 'Deep Theory' },
-                { id: 'diagram', label: 'Visual Map' },
-                { id: 'practice', label: 'Practice' },
-              ] as const"
+              v-for="mode in pedagogicalModes"
               :key="mode.id"
               type="button"
               class="px-2 py-0.5 rounded text-[11px] font-medium transition-colors whitespace-nowrap"
@@ -497,7 +673,7 @@ onMounted(loadSavedState);
         </template>
 
         <!-- TAB 2: Interactive Structured Whiteboard -->
-        <template v-else>
+        <template v-else-if="activeTab === 'whiteboard'">
           <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
             <!-- Study Notes Area -->
             <div class="p-4 rounded-xl border border-ink/10 bg-surface-raised flex flex-col gap-2">
@@ -576,7 +752,85 @@ onMounted(loadSavedState);
             </div>
           </div>
         </template>
-      </div>
+
+        <!-- TAB 3: Past Sessions History -->
+        <template v-else>
+          <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-semibold text-ink">Tutor Session History</h4>
+                <p class="text-xs text-ink/50">
+                  Select a past session to continue learning or review derivations.
+                </p>
+              </div>
+              <UiButton variant="primary" size="sm" @click="startNewSession">
+                <Icon icon="lucide:plus" width="14" class="mr-1" />
+                New Chat
+              </UiButton>
+            </div>
+
+            <div v-if="loadingSessions" class="py-12 flex justify-center text-ink/40 text-xs">
+              <Icon icon="lucide:loader-2" class="animate-spin mr-2" width="18" />
+              Loading sessions...
+            </div>
+
+            <div
+              v-else-if="pastSessions.length === 0"
+              class="text-center py-12 border border-dashed border-ink/15 rounded-xl"
+            >
+              <Icon icon="lucide:message-square-off" width="28" class="text-ink/20 mx-auto mb-2" />
+              <p class="text-xs text-ink/60 font-medium">No past sessions found</p>
+              <p class="text-[11px] text-ink/40 mt-1">
+                Your future AI tutoring conversations will be saved and archived here.
+              </p>
+            </div>
+
+            <div v-else class="flex flex-col gap-2.5">
+              <div
+                v-for="s in pastSessions"
+                :key="s.id"
+                class="p-3.5 rounded-xl border border-ink/10 bg-surface-raised hover:border-brand-violet/40 transition-colors flex flex-col gap-1.5 cursor-pointer relative group"
+                :class="activeSessionId === s.id ? 'ring-2 ring-brand-violet/30' : ''"
+                @click="loadSession(s.id)"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-ink truncate max-w-[240px]">
+                    {{ s.lessonTitle || 'General Session' }}
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-ink/40">
+                      {{ new Date(s.updatedAt).toLocaleDateString() }}
+                    </span>
+                    <button
+                      type="button"
+                      class="text-ink/30 hover:text-red-600 p-0.5 rounded transition-colors"
+                      title="Delete Session"
+                      @click.stop="handleDeleteSession(s.id)"
+                    >
+                      <Icon icon="lucide:trash-2" width="12" />
+                    </button>
+                  </div>
+                </div>
+
+                <p v-if="s.lastMessage" class="text-[11px] text-ink/60 line-clamp-2">
+                  {{ s.lastMessage }}
+                </p>
+
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-ink/5 text-ink/60 font-mono">
+                    {{ s.messageCount || 0 }} messages
+                  </span>
+                  <span
+                    class="text-[10px] px-1.5 py-0.5 rounded bg-brand-violet/10 text-brand-violet font-medium capitalize"
+                  >
+                    {{ s.mode || 'standard' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </aside>
     </Transition>
   </Teleport>
 </template>

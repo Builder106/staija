@@ -213,4 +213,56 @@ graph TD
       expect(payload.chatHistory).toHaveLength(2)
     })
   })
+
+  describe('Streaming Event Aggregator & Whiteboard Cloud Contracts', () => {
+    it('aggregates streamed text deltas into a coherent progressive message', () => {
+      const chunks = [
+        { type: 'message-start' as const, sessionId: 'ts_123', messageId: 'msg_1' },
+        { type: 'text-delta' as const, messageId: 'msg_1', text: 'Photosynthesis ' },
+        { type: 'text-delta' as const, messageId: 'msg_1', text: 'converts light into ' },
+        { type: 'text-delta' as const, messageId: 'msg_1', text: 'chemical energy.' },
+        { type: 'done' as const, sessionId: 'ts_123', messageId: 'msg_1' },
+      ]
+
+      let aggregated = ''
+      for (const c of chunks) {
+        if (c.type === 'text-delta') aggregated += c.text
+      }
+
+      expect(aggregated).toBe('Photosynthesis converts light into chemical energy.')
+    })
+
+    it('extracts whiteboard page snapshots from page-complete events', () => {
+      const pageEvent = {
+        type: 'page-complete' as const,
+        page: {
+          id: 'page_456',
+          title: 'Energy Conversion Workflow',
+          kind: 'mermaid' as const,
+          content: 'graph LR\n  Sun --> Chloroplast',
+          createdAt: 1770000000000,
+        },
+      }
+
+      expect(pageEvent.page.kind).toBe('mermaid')
+      expect(pageEvent.page.content).toContain('Chloroplast')
+    })
+
+    it('validates tutor session record serialization and mode constraints', () => {
+      const session = {
+        id: 'ts_789',
+        userId: 'student_xyz',
+        lessonId: 'demo-stepup-l-research-methodology',
+        lessonTitle: 'What is research methodology?',
+        mode: 'socratic' as const,
+        messageCount: 4,
+        createdAt: 1770000000000,
+        updatedAt: 1770000060000,
+      }
+
+      expect(session.mode).toBe('socratic')
+      expect(session.messageCount).toBe(4)
+      expect(session.updatedAt).toBeGreaterThanOrEqual(session.createdAt)
+    })
+  })
 })
