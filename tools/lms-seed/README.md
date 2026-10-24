@@ -1,7 +1,9 @@
 # LMS demo seeder
 
-The seeder creates course and lesson demos without quizzes. Author quizzes in
-the staff editor so answer keys stay in server-only Firestore documents.
+The seeder populates course, module, lesson, assignment, and quiz demos.
+When seeding quizzes, public question structures are upserted to Contentful,
+and private answer keys are synchronized into server-only Firestore documents
+(`quiz_answer_keys/{quizId}`) via `npm run lms:keys`.
 Before using the quiz editor, preview the Contentful model changes with
 `npm run lms:schema -- --env=staging`; applying them requires a separate
 `--apply` run. Repeat for `master` during the approved release.

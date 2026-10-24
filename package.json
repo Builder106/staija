@@ -46,6 +46,7 @@
     "ui-demo:recapture": "node tools/ui-demo-capture/capture.mjs",
     "ui-demo:recapture-loops": "node tools/ui-demo-capture/capture-loops.mjs",
     "lms:seed": "tsx tools/lms-seed/seed.ts seed",
+    "lms:keys": "tsx tools/lms-seed/sync-quiz-keys.ts",
     "lms:clear": "tsx tools/lms-seed/seed.ts clear",
     "lms:republish": "tsx tools/lms-seed/seed.ts republish",
     "lms:schema": "tsx tools/lms-seed/migrate-quiz-schema.ts",

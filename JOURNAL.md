@@ -4,6 +4,14 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-23: Authored StepUp Lab Safety quiz and verified completion flow #implementation #verification
+
+Authored the four-question reviewed StepUp Lab Safety assessment covering biosafety levels, PPE, chemical spill response, and sharps disposal, with pass threshold pinned at 75%. Added `tools/lms-seed/demo-quizzes.ts` and `sync-quiz-keys.ts` to automate Contentful public question upserts and server-only Firestore answer key storage. Published the `demo-stepup-quiz-lab-safety` entry and updated `demo-stepup-l-lab-safety` in Contentful staging, verified automatic webhook mirroring to `cms_quizzes` and `cms_lessons`, and synced private answer keys to Firestore `staija-staging`. Updated `LessonView.vue` to show completion confirmation upon passing quiz-gated lessons. Verified unit and integration coverage with 268 passing tests, strict linting, typechecks, and clean production builds.
+
+## 2026-10-23: Lint the Cloud Functions boundary #ci #decision
+
+ESLint now checks the browser app and Cloud Functions for deprecated APIs and explicit `any`. Application `unknown` annotations are limited to Firebase, Contentful, and Lottie data boundaries, and CI typechecks the Functions package.
+
 ## 2026-10-22: Verified the staging mentor student page #verification
 
 Deployed `getMentorStudentProfiles` and its supporting Firestore index to staging. `/version.txt` reports commit `898c814`, and GitHub's Vercel check passed. The signed-in mentor sees both assigned cohorts and opens the student's detail page with progress and submissions; both callable requests returned HTTP 200. Chrome still blocks Vercel's feedback script under the site's CSP and reports a browser-blocked resource. The LMS flow works. Production curriculum publication remains a release gate.

@@ -267,6 +267,12 @@ onUnmounted(() => {
                 Completed
               </span>
             </div>
+            <div v-else-if="completed" class="flex items-center gap-3">
+              <span class="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
+                <Icon icon="lucide:check-circle-2" width="16" />
+                Completed
+              </span>
+            </div>
 
             <UiButton
               variant="secondary"

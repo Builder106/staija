@@ -113,8 +113,8 @@ feedback script and a browser-blocked resource; neither blocked the LMS flow.
   supporting index; verify cohort access and student detail in staging.
 - [ ] Verify quiz-attempt reads and completion after reviewed StepUp quiz
   content is available.
-- [ ] Prepare reviewed staging quiz content for StepUp Lab Safety; no matching
-  quiz entry exists, so quiz completion cannot be tested yet.
+- [x] Prepare reviewed staging quiz content for StepUp Lab Safety in
+  the demo seeder and sync scripts.
 - [x] Verify StepUp course selection in staging. The course chooser switches
   between the student's StepUp and Dynamerge enrollments, and StepUp lesson
   links retain the selected course. Quiz completion remains unverified until

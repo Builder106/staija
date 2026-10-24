@@ -44,10 +44,13 @@ const cliEnvFlag = process.argv.find((a) => a.startsWith('--env='))
 if (cliEnvFlag) {
   process.env.VITE_CONTENTFUL_ENV_ID = cliEnvFlag.slice('--env='.length)
 }
+const envName = process.env.VITE_CONTENTFUL_ENV_ID || 'staging'
+loadEnv({ path: `.env.${envName}.local`, override: true })
 
 import type { PlainClientAPI, EntryProps } from 'contentful-management'
-import type { Document } from '@contentful/rich-text-types'
+import { BLOCKS, type Document } from '@contentful/rich-text-types'
 import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'
+import { DEMO_QUIZZES } from './demo-quizzes.ts'
 
 // ---------- Config ----------
 
@@ -68,6 +71,7 @@ interface DemoLesson {
   estimatedMinutes: number
   videoUrl?: string
   completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed'
+  quizId?: string
 }
 
 interface DemoAssignment {
@@ -145,10 +149,11 @@ const COURSES: DemoCourse[] = [
             id: `${DEMO_PREFIX}stepup-l-lab-safety`,
             title: 'Lab safety basics',
             estimatedMinutes: 20,
-            completionCriteria: 'viewed',
+            completionCriteria: 'quiz_passed',
+            quizId: `${DEMO_PREFIX}stepup-quiz-lab-safety`,
             bodyParagraphs: [
               'Before you touch a single instrument, you need to understand the four-tier safety model used in our partner labs.',
-              'Review the lab safety guidance before any in-person session.',
+              'Review the lab safety guidance before any in-person session. The quiz at the end is required.',
             ],
           },
         ],
@@ -307,10 +312,10 @@ const COURSES: DemoCourse[] = [
 
 function richTextDoc(paragraphs: string[]): Document {
   return {
-    nodeType: 'document',
+    nodeType: BLOCKS.DOCUMENT,
     data: {},
     content: paragraphs.map((value) => ({
-      nodeType: 'paragraph',
+      nodeType: BLOCKS.PARAGRAPH,
       data: {},
       content: [{ nodeType: 'text', value, marks: [], data: {} }],
     })),
@@ -356,7 +361,7 @@ async function upsert(
     entry = await env.entry.update({ entryId: id }, entry)
   } catch (err: unknown) {
     if (!isNotFound(err)) throw err
-    entry = await env.entry.create({ entryId: id, contentTypeId: contentType }, { fields })
+    entry = await env.entry.createWithId({ entryId: id, contentTypeId: contentType }, { fields })
   }
   if (!entry.sys.publishedVersion || entry.sys.version !== entry.sys.publishedVersion + 1) {
     entry = await env.entry.publish({ entryId: id }, entry)
@@ -377,6 +382,24 @@ async function seed() {
   const env = await getEnv()
   console.log(`→ Seeding into space=${SPACE_ID} env=${ENV_ID}`)
 
+  // 1. Seed quizzes first so lessons can link to them.
+  console.log('\n📝 Quizzes')
+  for (const quiz of DEMO_QUIZZES) {
+    const publicQuestions = quiz.questions.map(({ id, questionText, options }) => ({
+      id,
+      questionText,
+      options,
+    }))
+    await upsert(env, 'quiz', quiz.id, clean({
+      slug: L(quiz.slug),
+      title: L(quiz.title),
+      summary: L(quiz.summary),
+      passThresholdPercent: L(quiz.passThresholdPercent),
+      questions: L(publicQuestions),
+    }))
+    console.log(`  · quiz    ${quiz.id}`)
+  }
+
   // Order matters: leaves first (assignments, lessons), then modules
   // that reference them, then courses that reference modules.
   for (const course of COURSES) {
@@ -393,6 +416,7 @@ async function seed() {
           videoUrl: L(lesson.videoUrl),
           estimatedMinutes: L(lesson.estimatedMinutes),
           completionCriteria: L(lesson.completionCriteria ?? 'viewed'),
+          quiz: lesson.quizId ? L(entryLink(lesson.quizId)) : undefined,
         }))
         console.log(`  · lesson  ${lesson.id}`)
         lessonIds.push(lesson.id)
@@ -452,7 +476,7 @@ async function republishDemo() {
   console.log(`→ Republishing demo entries in space=${SPACE_ID} env=${ENV_ID}`)
 
   // Order: leaves first so refs resolve in the mirror as parents arrive.
-  const types = ['lesson', 'assignmentSpec', 'module', 'course'] as const
+  const types = ['quiz', 'lesson', 'assignmentSpec', 'module', 'course'] as const
   let total = 0
   for (const contentType of types) {
     const result = await env.entry.getMany({ query: { content_type: contentType, limit: 1000 } })
@@ -485,7 +509,7 @@ async function clearDemo(opts: { dryRun: boolean }) {
 
   // Delete in reverse dependency order: courses first (so nothing
   // references modules), then modules, then their leaves.
-  const types = ['course', 'module', 'lesson', 'assignmentSpec'] as const
+  const types = ['course', 'module', 'lesson', 'assignmentSpec', 'quiz'] as const
 
   for (const contentType of types) {
     const result = await env.entry.getMany({ query: { content_type: contentType, limit: 1000 } })
@@ -546,7 +570,11 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('\nFailed:', err instanceof Error ? err.message : err)
-  process.exitCode = 1
-})
+export { COURSES, clearDemo, republishDemo, seed }
+
+if (process.argv[1]?.endsWith('seed.ts') || process.argv[1]?.endsWith('seed.js')) {
+  main().catch((err) => {
+    console.error('\nFailed:', err instanceof Error ? err.message : err)
+    process.exitCode = 1
+  })
+}
