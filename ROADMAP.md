@@ -102,7 +102,7 @@ feedback script and a browser-blocked resource; neither blocked the LMS flow.
 - [x] Create planned QA cohorts from the published StepUp and Dynamerge demo
   courses, pinned to their current versions.
 - [x] Enroll the test student in both QA cohorts.
-- [ ] Confirm delivery status of the account and enrollment welcome emails.
+- [x] Confirm delivery status of the account and enrollment welcome emails.
 - [x] Republish the two existing staging demo course entries.
 - [x] Republish the linked staging demo modules, lessons, and assignments.
 - [x] Add student/mentor owner filters to progress reads and student filters

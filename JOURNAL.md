@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-24: Audited and verified staging welcome email delivery #verification
+
+Cloud Logging traces confirmed `onUserCreated` and `enrollStudent` previously failed with `Mailgun 401: Forbidden` due to an invalid staging `MAILGUN_API_KEY` and stale sandbox domain. Synchronized Secret Manager in `staija-staging` with the active `MAILGUN_API_KEY` version 5 and `MAILGUN_DOMAIN` version 4 (`mg.staija.org`), while retaining the recipient protection in `STAGING_EMAIL_ALLOWLIST`. Dispatched test account and cohort enrollment welcome emails to the QA student address; Mailgun events confirmed successful delivery (`2.0.0 OK ... - gsmtp`). Staging transactional email delivery is verified.
+
 ## 2026-10-23: Verified staging quiz completion flow end-to-end #verification
 
 Signed in as the staging QA student and verified the StepUp Lab Safety lesson. The four-question knowledge check rendered cleanly with the 75% required pass threshold. Answered all four questions correctly and submitted via the App Check-enforced `submitQuiz` callable; the callable returned HTTP 200 with 100% score, passed status, and question feedback. The UI unlocked answer explanations, displayed the "Completed" status indicator, and recorded best score. StepUp course progress advanced immediately from 1 of 6 (17%) to 2 of 6 (33%). In Firestore `staija-staging`, the `quiz_attempts` entry was created and `lesson_progress` marked `completed`. Staging quiz gating is verified.
