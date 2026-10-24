@@ -209,6 +209,11 @@ function shapeFields(
   }
 }
 
+function entryContentTypeId(entry: EntryProps): string {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Contentful PlainClientAPI EntryProps typing
+  return entry.sys.contentType.sys.id
+}
+
 function summarize(entry: EntryProps): EntrySummary {
   const fields: Record<string, LmsFieldValue> = {}
   for (const [k, v] of Object.entries(entry.fields ?? {})) {
@@ -219,7 +224,7 @@ function summarize(entry: EntryProps): EntrySummary {
   const isDraft = !entry.sys.publishedVersion
   return {
     id: entry.sys.id,
-    contentType: entry.sys.contentType.sys.id as LmsContentType,
+    contentType: entryContentTypeId(entry) as LmsContentType,
     fields,
     publishedAt: entry.sys.publishedAt ?? null,
     updatedAt: entry.sys.updatedAt,
@@ -309,7 +314,7 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
     }
     case 'publish': {
       const entry = await client.entry.get({ entryId: request.id })
-      if (entry.sys.contentType.sys.id === 'quiz') {
+      if (entryContentTypeId(entry) === 'quiz') {
         const questions = publicQuizQuestions(entry.fields.questions?.[LOCALE])
         const keys = await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).get()
         const answerKeys = (keys.data()?.draftAnswerKeys ?? keys.data()?.answerKeys) as QuizAnswerKeys | undefined
@@ -324,7 +329,7 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
         }
       }
       const published = await client.entry.publish({ entryId: request.id }, entry)
-      if (entry.sys.contentType.sys.id === 'quiz') {
+      if (entryContentTypeId(entry) === 'quiz') {
         const ref = getFirestore().collection('quiz_answer_keys').doc(entry.sys.id)
         const keys = await ref.get()
         await ref.set({
@@ -345,7 +350,7 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
         await client.entry.unpublish({ entryId: request.id }, entry)
       }
       await client.entry.delete({ entryId: request.id })
-      if (entry.sys.contentType.sys.id === 'quiz') {
+      if (entryContentTypeId(entry) === 'quiz') {
         await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).delete()
       }
       return { ok: true }

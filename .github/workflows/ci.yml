@@ -36,6 +36,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
+      - run: npm --prefix functions ci
       - run: npm run lint
 
   format:
@@ -60,6 +61,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
+      - run: npm --prefix functions ci
       - name: Reject retired Vectorizer backend
         run: npm run avatars:check-backend
       # Scope the CI audit to production dependencies, which matches the
@@ -71,6 +73,8 @@ jobs:
         run: npx license-checker --summary --production
       - name: TypeScript validation
         run: npx vue-tsc -b
+      - name: Typecheck Cloud Functions
+        run: npm --prefix functions run build
 
   test:
     name: Unit tests & coverage gate

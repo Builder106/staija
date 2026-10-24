@@ -219,7 +219,7 @@ Required JSON shape:
   let parsed: JsonParsed
   try {
     parsed = JSON.parse(raw)
-  } catch (err) {
+  } catch {
     console.error('[outlineCourse] Groq returned non-JSON:', raw.slice(0, 200))
     throw new HttpsError('internal', 'Groq returned malformed JSON.')
   }
