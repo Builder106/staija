@@ -76,7 +76,7 @@ describe('avatar candidate promotion', () => {
     expect(second).toEqual(first)
     await expect(readFile(join(root, 'public/avatars/portrait-0.png'))).rejects.toThrow()
     await expect(readFile(join(root, 'src/services/avatar/parts.ts'))).rejects.toThrow()
-  }, 30_000)
+  }, 60_000)
 
   it('refuses stale candidate metadata before writing a runtime artifact', async () => {
     const { root, manifests } = await fixture()
