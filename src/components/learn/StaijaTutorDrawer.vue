@@ -16,6 +16,7 @@ import {
 } from '../../services/learn';
 import UiButton from '../ui/UiButton.vue';
 import MermaidViewer from './MermaidViewer.vue';
+import JsxGraphViewer from './JsxGraphViewer.vue';
 
 interface Message {
   id: string;
@@ -153,6 +154,7 @@ function resetChat() {
       content: intro,
       suggestedFollowUps: [
         'Explain key concepts visually',
+        'Plot an interactive STEM geometry diagram',
         'Give a real-world example',
         'What are common misconceptions here?',
       ],
@@ -187,12 +189,20 @@ async function loadSession(sessionId: string) {
     }));
 
     if (detail.pages && detail.pages.length > 0) {
-      whiteboardCards.value = detail.pages.map((p) => ({
-        id: p.id,
-        title: p.title,
-        content: p.content,
-        createdAt: p.createdAt,
-      }));
+      whiteboardCards.value = detail.pages.map((p) => {
+        let cardContent = p.content;
+        if (p.kind === 'mermaid' && !cardContent.includes('```mermaid')) {
+          cardContent = `\`\`\`mermaid\n${cardContent}\n\`\`\``;
+        } else if (p.kind === 'geometry' && !cardContent.includes('```geometry')) {
+          cardContent = `\`\`\`geometry\n${cardContent}\n\`\`\``;
+        }
+        return {
+          id: p.id,
+          title: p.title,
+          content: cardContent,
+          createdAt: p.createdAt,
+        };
+      });
       saveWhiteboard();
     }
 
@@ -312,10 +322,16 @@ async function sendQuestion(textToSend?: string) {
           scrollToBottom();
         } else if (event.type === 'page-complete') {
           if (!whiteboardCards.value.some((c) => c.id === event.page.id)) {
+            let cardContent = event.page.content;
+            if (event.page.kind === 'mermaid' && !cardContent.includes('```mermaid')) {
+              cardContent = `\`\`\`mermaid\n${cardContent}\n\`\`\``;
+            } else if (event.page.kind === 'geometry' && !cardContent.includes('```geometry')) {
+              cardContent = `\`\`\`geometry\n${cardContent}\n\`\`\``;
+            }
             whiteboardCards.value.unshift({
               id: event.page.id,
               title: event.page.title,
-              content: event.page.content,
+              content: cardContent,
               createdAt: event.page.createdAt,
             });
             saveWhiteboard();
@@ -346,24 +362,25 @@ async function sendQuestion(textToSend?: string) {
 }
 
 function parseContentBlocks(text: string) {
-  const blocks: Array<{ type: 'text' | 'mermaid' | 'math'; content: string }> = [];
+  const blocks: Array<{ type: 'text' | 'mermaid' | 'geometry'; content: string }> = [];
 
-  const mermaidRegex = /```mermaid\s*([\s\S]*?)\s*```/g;
+  const blockRegex = /```(mermaid|geometry|jsxgraph)\s*([\s\S]*?)\s*```/gi;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = mermaidRegex.exec(text)) !== null) {
+  while ((match = blockRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
       blocks.push({
         type: 'text',
         content: text.substring(lastIndex, match.index),
       });
     }
+    const blockKind = match[1].toLowerCase() === 'mermaid' ? 'mermaid' : 'geometry';
     blocks.push({
-      type: 'mermaid',
-      content: match[1].trim(),
+      type: blockKind,
+      content: match[2].trim(),
     });
-    lastIndex = mermaidRegex.lastIndex;
+    lastIndex = blockRegex.lastIndex;
   }
 
   if (lastIndex < text.length) {
@@ -371,6 +388,23 @@ function parseContentBlocks(text: string) {
       type: 'text',
       content: text.substring(lastIndex),
     });
+  }
+
+  if (blocks.length === 1 && blocks[0].type === 'text') {
+    const trimmed = text.trim();
+    if (
+      trimmed.startsWith('graph ') ||
+      trimmed.startsWith('flowchart ') ||
+      trimmed.startsWith('sequenceDiagram') ||
+      trimmed.startsWith('classDiagram') ||
+      trimmed.startsWith('stateDiagram') ||
+      trimmed.startsWith('erDiagram')
+    ) {
+      return [{ type: 'mermaid', content: trimmed }];
+    }
+    if (trimmed.startsWith('{') && trimmed.includes('"elements"')) {
+      return [{ type: 'geometry', content: trimmed }];
+    }
   }
 
   return blocks;
@@ -566,6 +600,7 @@ const pedagogicalModes = [
               >
                 <div v-for="(block, bIdx) in parseContentBlocks(msg.content)" :key="bIdx">
                   <MermaidViewer v-if="block.type === 'mermaid'" :code="block.content" />
+                  <JsxGraphViewer v-else-if="block.type === 'geometry'" :spec="block.content" />
                   <div
                     v-else
                     class="whitespace-pre-wrap"
@@ -745,6 +780,7 @@ const pedagogicalModes = [
                 <div class="text-xs leading-relaxed text-ink/90 flex flex-col gap-2">
                   <div v-for="(block, bIdx) in parseContentBlocks(card.content)" :key="bIdx">
                     <MermaidViewer v-if="block.type === 'mermaid'" :code="block.content" />
+                    <JsxGraphViewer v-else-if="block.type === 'geometry'" :spec="block.content" />
                     <div v-else v-html="formatFormattedText(block.content)" />
                   </div>
                 </div>

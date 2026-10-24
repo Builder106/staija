@@ -3,19 +3,20 @@ import katex from 'katex'
 import type { AskLmsTutorPayload, AskLmsTutorResult } from '../../src/services/learn'
 
 describe('LMS AI Tutor Formatting, Block Parsing & Payload Validation', () => {
-  // Helper: Content block splitter (text vs mermaid diagrams)
+  // Helper: Content block splitter (text, mermaid diagrams, and jsxgraph geometry)
   function parseContentBlocks(text: string) {
-    const blocks: Array<{ type: 'text' | 'mermaid'; content: string }> = []
-    const mermaidRegex = /```mermaid\s*([\s\S]*?)\s*```/g
+    const blocks: Array<{ type: 'text' | 'mermaid' | 'geometry'; content: string }> = []
+    const blockRegex = /```(mermaid|geometry|jsxgraph)\s*([\s\S]*?)\s*```/gi
     let lastIndex = 0
     let match: RegExpExecArray | null
 
-    while ((match = mermaidRegex.exec(text)) !== null) {
+    while ((match = blockRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {
         blocks.push({ type: 'text', content: text.substring(lastIndex, match.index) })
       }
-      blocks.push({ type: 'mermaid', content: match[1].trim() })
-      lastIndex = mermaidRegex.lastIndex
+      const blockKind = match[1].toLowerCase() === 'mermaid' ? 'mermaid' : 'geometry'
+      blocks.push({ type: blockKind, content: match[2].trim() })
+      lastIndex = blockRegex.lastIndex
     }
 
     if (lastIndex < text.length) {
@@ -130,6 +131,46 @@ graph TD
       expect(blocks.filter((b) => b.type === 'mermaid')).toHaveLength(2)
       expect(blocks[1].content).toBe('graph LR\n  X --> Y')
       expect(blocks[3].content).toBe('graph TD\n  1 --> 2')
+    })
+
+    it('extracts embedded declarative JSXGraph geometry blocks from tutor responses', () => {
+      const input = `Here is the coordinate plot:
+\`\`\`geometry
+{
+  "title": "Sine Wave",
+  "elements": [
+    { "kind": "point", "coords": [0, 0] },
+    { "kind": "functiongraph", "fn": "sin(x)" }
+  ]
+}
+\`\`\`
+Notice how the function crosses the origin.`
+
+      const blocks = parseContentBlocks(input)
+      expect(blocks).toHaveLength(3)
+      expect(blocks[0].type).toBe('text')
+      expect(blocks[1].type).toBe('geometry')
+      expect(blocks[1].content).toContain('"title": "Sine Wave"')
+      expect(blocks[2].type).toBe('text')
+    })
+
+    it('handles mixed responses with both Mermaid diagrams and geometry blocks', () => {
+      const input = `Process diagram:
+\`\`\`mermaid
+graph TD
+  A --> B
+\`\`\`
+Followed by coordinate plot:
+\`\`\`geometry
+{
+  "elements": [{ "kind": "point", "coords": [1, 2] }]
+}
+\`\`\``
+
+      const blocks = parseContentBlocks(input)
+      expect(blocks).toHaveLength(4)
+      expect(blocks[1].type).toBe('mermaid')
+      expect(blocks[3].type).toBe('geometry')
     })
   })
 

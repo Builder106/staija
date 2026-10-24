@@ -144,9 +144,10 @@ const BASE_SYSTEM_PROMPT = `You are STAIJA's Visual & Interactive AI STEM Tutor,
 Your core goals:
 1. Explain STEM concepts clearly, with academic rigor formatted for accessibility and engagement.
 2. Whenever a visual diagram, flowchart, mindmap, or process flow would help explain the topic, include a valid Mermaid diagram block (e.g. \`\`\`mermaid\ngraph TD\n  A --> B\n\`\`\`). Keep Mermaid node names simple and clean without unescaped brackets.
-3. Use KaTeX/LaTeX formatting for equations (e.g. $$ E = mc^2 $$ or \\( x^2 + y^2 = z^2 \\)) when explaining math, chemistry, physics, or algorithmic concepts.
-4. Keep explanations structured with clean subheadings, bullet points, and practical real-world examples relevant to technology, science, and African contexts where applicable.
-5. End every response with 2-3 short, relevant follow-up questions or prompt suggestions the student can ask next. Format these at the very bottom as a JSON block:
+3. When explaining coordinate geometry, vectors, function plots, physics kinematics, optics, or mathematical models, include an interactive declarative geometry block using \`\`\`geometry\n{\n  "title": "Diagram Title",\n  "boundingBox": [-5, 5, 5, -5],\n  "elements": [\n    {"kind": "point", "coords": [0, 0], "name": "A"},\n    {"kind": "functiongraph", "fn": "sin(x)", "name": "f(x)"}\n  ]\n}\n\`\`\`. Supported elements: "point", "line", "segment", "circle", "polygon", "vector", "functiongraph" (with safe math formula "fn"), "slider", and "text". Never output raw executable JavaScript.
+4. Use KaTeX/LaTeX formatting for equations (e.g. $$ E = mc^2 $$ or \\( x^2 + y^2 = z^2 \\)) when explaining math, chemistry, physics, or algorithmic concepts.
+5. Keep explanations structured with clean subheadings, bullet points, and practical real-world examples relevant to technology, science, and African contexts where applicable.
+6. End every response with 2-3 short, relevant follow-up questions or prompt suggestions the student can ask next. Format these at the very bottom as a JSON block:
 \`\`\`json
 {
   "followUps": ["Can you give another example?", "Show me a flowchart of how this works", "How is this used in real software?"]
@@ -394,6 +395,41 @@ export const askLmsTutor = onCall(
           title: `${authoritativeTitle} Concept Map`,
           kind: 'mermaid',
           content: mMatch[1].trim(),
+          createdAt: Date.now(),
+        }
+        pages.push(page)
+        await sessionRef.collection('pages').doc(pageId).set({
+          ...page,
+          sessionId: resolvedSessionId,
+          userId: uid,
+        })
+        if (request.acceptsStreaming && response) {
+          await response.sendChunk({
+            type: 'page-complete',
+            page,
+          })
+        }
+      }
+
+      const geometryRegex = /```(?:geometry|jsxgraph)\s*([\s\S]*?)\s*```/gi
+      let gMatch: RegExpExecArray | null
+      while ((gMatch = geometryRegex.exec(cleanReply)) !== null) {
+        const pageId = `page_${Date.now()}_${pages.length}`
+        let pageTitle = `${authoritativeTitle} Interactive Geometry`
+        try {
+          const parsedGeo = JSON.parse(gMatch[1].trim()) as { title?: string }
+          if (parsedGeo.title && typeof parsedGeo.title === 'string') {
+            pageTitle = parsedGeo.title
+          }
+        } catch {
+          // ignore parse error
+        }
+
+        const page: TutorPageSnapshot = {
+          id: pageId,
+          title: pageTitle,
+          kind: 'geometry',
+          content: gMatch[1].trim(),
           createdAt: Date.now(),
         }
         pages.push(page)
