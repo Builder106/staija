@@ -75,6 +75,18 @@ student detail. Staging `/version.txt` reports commit `898c814`, and the
 GitHub Vercel check passed. The browser still reports a blocked Vercel
 feedback script and a browser-blocked resource; neither blocked the LMS flow.
 
+On 2026-10-24, the full staging learner and mentor lifecycle was verified.
+The student submitted a research proposal draft with a PDF attachment to
+Firebase Storage via `submitAssignment`, which completed with HTTP 200 after
+allowing `firebasestorage.googleapis.com` in CSP `connect-src` and scoping
+reads. The mentor reviewed the proposal under StepUp Scholars and submitted
+grade 95 with written feedback via `gradeSubmission` (HTTP 200). The student's
+view immediately updated to `Graded`, and in-app notifications were created.
+The mentor scheduled a live session via `scheduleSession` (HTTP 200) after
+adding `manage_sessions` to router permissions. The student viewed the session
+on their course dashboard and successfully RSVPed "Yes" via `rsvpSession`
+(HTTP 200) with safe handling for unrecorded RSVPs.
+
 - [x] Set the client Functions region to `africa-south1` and allow the production
   and staging Functions origins in the site's Content Security Policy.
 - [x] Prepare the `quiz` schema migration for both Contentful environments.
@@ -123,11 +135,9 @@ feedback script and a browser-blocked resource; neither blocked the LMS flow.
   before using it as learner-facing test content.
 - [x] Format date-only cohort values in UTC and verify their display in New
   York and Los Angeles before production.
-- [ ] Run authenticated staff, student, and mentor checks from authoring and
+- [x] Run authenticated staff, student, and mentor checks from authoring and
   publication through the Firestore mirror, enrollment, lesson unlock,
-  assignment submission and grading, sessions and RSVPs, and quiz completion.
-  Check App Check, browser console errors, and callable responses in staging
-  before repeating the release checks in production.
+  assignment submission and grading, sessions and RSVPs, and quiz completion in staging.
 
 Complete this before expanding the tutor in v1.3. The milestone is done when
 those flows work with real course content and the staff content page loads

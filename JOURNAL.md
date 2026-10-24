@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-24: Verified end-to-end LMS assignment and session lifecycle #verification
+
+Verified the full learner and mentor lifecycle on staging (`staging.staija.org`). As student `yuRBAHfFl5TDcioayDyG6VQSxQM2`, submitted a draft research proposal PDF to Firebase Storage and recorded submission `7kcEWKymvskolHiQocu6` via `submitAssignment` (HTTP 200) after adding `firebasestorage.googleapis.com` to CSP `connect-src` and adding student owner filters. Switched to mentor `WgTsxqp3Nff0V1Q13tOB6nqPN432`, reviewed the proposal under StepUp Scholars, and submitted grade 95 with written feedback via `gradeSubmission` (HTTP 200). The student's view updated immediately to `Graded` with grade and comments, and in-app notifications dispatched for both users. Scheduled live session `qzztDw5fJVtjNOEtBqRa` ("Research Methodology Office Hours") via `scheduleSession` (HTTP 200), granting mentors `manage_sessions` router permission. Switching back to student, the upcoming session rendered on the StepUp course home; submitted RSVP "Yes" via `rsvpSession` (HTTP 200) with safe handling for initial unrecorded RSVPs. Staging LMS submission, grading, and live session scheduling are verified.
+
 ## 2026-10-24: Audited and verified staging welcome email delivery #verification
 
 Cloud Logging traces confirmed `onUserCreated` and `enrollStudent` previously failed with `Mailgun 401: Forbidden` due to an invalid staging `MAILGUN_API_KEY` and stale sandbox domain. Synchronized Secret Manager in `staija-staging` with the active `MAILGUN_API_KEY` version 5 and `MAILGUN_DOMAIN` version 4 (`mg.staija.org`), while retaining the recipient protection in `STAGING_EMAIL_ALLOWLIST`. Dispatched test account and cohort enrollment welcome emails to the QA student address; Mailgun events confirmed successful delivery (`2.0.0 OK ... - gsmtp`). Staging transactional email delivery is verified.
