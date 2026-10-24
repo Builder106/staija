@@ -108,15 +108,15 @@ export interface ChatMessage {
 }
 
 const AskLmsTutorInputSchema = z.object({
-  sessionId: z.string().optional(),
-  lessonId: z.string().optional(),
+  sessionId: z.string().nullish(),
+  lessonId: z.string().nullish(),
   studentQuestion: z.string().min(1, 'Question cannot be empty.').max(4000),
-  clientMessageId: z.string().optional(),
-  mode: z.enum(['standard', 'socratic', 'deep', 'diagram', 'practice']).optional(),
-  lessonTitle: z.string().optional(),
-  lessonBodyPlain: z.string().optional(),
-  courseTitle: z.string().optional(),
-  program: z.string().optional(),
+  clientMessageId: z.string().nullish(),
+  mode: z.enum(['standard', 'socratic', 'deep', 'diagram', 'practice']).nullish(),
+  lessonTitle: z.string().nullish(),
+  lessonBodyPlain: z.string().nullish(),
+  courseTitle: z.string().nullish(),
+  program: z.string().nullish(),
   chatHistory: z
     .array(
       z.object({
@@ -124,17 +124,17 @@ const AskLmsTutorInputSchema = z.object({
         content: z.string(),
       }),
     )
-    .optional(),
+    .nullish(),
   questionContext: z
     .object({
-      questionId: z.string().optional(),
-      questionText: z.string(),
-      userAnswerText: z.string().optional(),
-      studentAnswer: z.string().optional(),
-      correctAnswer: z.string().optional(),
-      explanation: z.string().optional(),
+      questionId: z.string().nullish(),
+      questionText: z.string().nullish(),
+      userAnswerText: z.string().nullish(),
+      studentAnswer: z.string().nullish(),
+      correctAnswer: z.string().nullish(),
+      explanation: z.string().nullish(),
     })
-    .optional(),
+    .nullish(),
 })
 
 export type AskLmsTutorInput = z.infer<typeof AskLmsTutorInputSchema>
@@ -184,19 +184,18 @@ export const askLmsTutor = onCall(
       throw new HttpsError('invalid-argument', `Invalid request: ${msg}`)
     }
 
-    const {
-      sessionId,
-      lessonId,
-      studentQuestion,
-      clientMessageId,
-      mode = 'standard',
-      lessonTitle,
-      lessonBodyPlain,
-      courseTitle,
-      program,
-      chatHistory = [],
-      questionContext,
-    } = parseResult.data
+    const rawData = parseResult.data
+    const studentQuestion = rawData.studentQuestion
+    const sessionId = rawData.sessionId || undefined
+    const lessonId = rawData.lessonId || undefined
+    const clientMessageId = rawData.clientMessageId || undefined
+    const mode = rawData.mode || 'standard'
+    const lessonTitle = rawData.lessonTitle || undefined
+    const lessonBodyPlain = rawData.lessonBodyPlain || undefined
+    const courseTitle = rawData.courseTitle || undefined
+    const program = rawData.program || undefined
+    const chatHistory = rawData.chatHistory || []
+    const questionContext = rawData.questionContext || undefined
 
     const apiKey = GROQ_API_KEY.value()
     if (!apiKey) {
@@ -531,20 +530,15 @@ export const listTutorSessions = onCall(
     let queryRef = db
       .collection('tutor_sessions')
       .where('userId', '==', targetUid)
-      .orderBy('updatedAt', 'desc')
-      .limit(Math.min(limit, 50))
 
     if (lessonId) {
-      queryRef = db
-        .collection('tutor_sessions')
-        .where('userId', '==', targetUid)
-        .where('lessonId', '==', lessonId)
-        .orderBy('updatedAt', 'desc')
-        .limit(Math.min(limit, 50))
+      queryRef = queryRef.where('lessonId', '==', lessonId)
     }
 
-    const snap = await queryRef.get()
-    return snap.docs.map((d) => d.data() as TutorSessionSummary)
+    const snap = await queryRef.limit(100).get()
+    const docs = snap.docs.map((d) => d.data() as TutorSessionSummary)
+    docs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+    return docs.slice(0, Math.min(limit, 50))
   },
 )
 
