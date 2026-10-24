@@ -9,21 +9,21 @@ import Heading from '../../../components/ui/Heading.vue';
 import Section from '../../../components/ui/Section.vue';
 import UiButton from '../../../components/ui/UiButton.vue';
 import UiCard from '../../../components/ui/UiCard.vue';
-import { DatabaseService } from '../../../services/database';
 import {
   SubmissionService,
   gradeSubmission,
   toMillis,
   type TimestampLike,
 } from '../../../services/learn';
-import type { AssignmentSubmission, UserProfile } from '../../../services/types';
+import { MentorService, type MentorStudentProfile } from '../../../services/mentor';
+import type { AssignmentSubmission } from '../../../services/types';
 
 const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
 const submission = ref<AssignmentSubmission | null>(null);
-const student = ref<UserProfile | null>(null);
+const student = ref<MentorStudentProfile | null>(null);
 const error = ref<string | null>(null);
 
 const grade = ref<number | null>(null);
@@ -40,7 +40,7 @@ async function load() {
       return;
     }
     submission.value = s;
-    student.value = await DatabaseService.getUserProfile(s.studentId);
+    student.value = await MentorService.getStudentProfile(s.studentId);
     grade.value = s.grade ?? null;
     comment.value = s.mentorComment ?? '';
   } catch (err) {
@@ -61,7 +61,10 @@ async function save(status: 'returned' | 'graded') {
       mentorComment: comment.value.trim() || undefined,
       status,
     });
-    router.push({ name: 'mentor-dashboard' });
+    router.push({
+      name: 'learn-mentor-student',
+      params: { studentId: submission.value.studentId },
+    });
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Save failed.';
   } finally {
@@ -87,10 +90,14 @@ onMounted(load);
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-3xl">
         <RouterLink
-          to="/mentor"
+          :to="
+            submission
+              ? { name: 'learn-mentor-student', params: { studentId: submission.studentId } }
+              : '/mentor'
+          "
           class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
         >
-          <Icon icon="lucide:arrow-left" width="12" /> Mentor portal
+          <Icon icon="lucide:arrow-left" width="12" /> Back to student
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-2 block">Review submission</Eyebrow>
         <Heading v-if="submission" :level="1" class="mb-2 capitalize">
