@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from 'vue';
 import JXG from 'jsxgraph';
-import { validateGeometrySpec, type GeometrySpec, type RawJsonValue } from '../../types/geometry';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { compileSafeMath } from '../../services/safeMathParser';
+import { validateGeometrySpec, type GeometrySpec, type RawJsonValue } from '../../types/geometry';
 
 const props = defineProps<{
   spec: string | GeometrySpec;
@@ -21,7 +21,9 @@ const parsedSpec = computed<{ valid: true; data: GeometrySpec } | { valid: false
       if (typeof props.spec === 'string') {
         const trimmed = props.spec.trim();
         // Remove code fence if present
-        const jsonStr = trimmed.replace(/^```(?:geometry|jsxgraph|json)?\s*/i, '').replace(/\s*```$/, '');
+        const jsonStr = trimmed
+          .replace(/^```(?:geometry|jsxgraph|json)?\s*/i, '')
+          .replace(/\s*```$/, '');
         raw = JSON.parse(jsonStr);
       }
       const validation = validateGeometrySpec(raw);
@@ -408,4 +410,3 @@ watch(
   background: rgba(184, 184, 184, 0.5);
 }
 </style>
-

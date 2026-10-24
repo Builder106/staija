@@ -8,14 +8,7 @@
 
 export type CompiledMathFn = (x: number, params?: Record<string, number>) => number;
 
-type TokenType =
-  | 'NUMBER'
-  | 'IDENT'
-  | 'OP'
-  | 'LPAREN'
-  | 'RPAREN'
-  | 'COMMA'
-  | 'EOF';
+type TokenType = 'NUMBER' | 'IDENT' | 'OP' | 'LPAREN' | 'RPAREN' | 'COMMA' | 'EOF';
 
 interface Token {
   type: TokenType;
@@ -142,7 +135,9 @@ class Parser {
   private consume(type?: TokenType): Token {
     const tok = this.tokens[this.current];
     if (type && tok.type !== type) {
-      throw new Error(`Expected token ${type} but found ${tok.type} ('${tok.value}') at pos ${tok.pos}`);
+      throw new Error(
+        `Expected token ${type} but found ${tok.type} ('${tok.value}') at pos ${tok.pos}`,
+      );
     }
     this.current++;
     return tok;
@@ -165,7 +160,10 @@ class Parser {
       const right = this.term();
       const prevLeft = left;
       left = {
-        eval: (x, p) => (op === '+' ? prevLeft.eval(x, p) + right.eval(x, p) : prevLeft.eval(x, p) - right.eval(x, p)),
+        eval: (x, p) =>
+          op === '+'
+            ? prevLeft.eval(x, p) + right.eval(x, p)
+            : prevLeft.eval(x, p) - right.eval(x, p),
       };
     }
 
@@ -374,4 +372,3 @@ export function compileSafeMath(formula: string): CompiledMathFn {
     }
   };
 }
-

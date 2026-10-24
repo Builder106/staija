@@ -135,13 +135,7 @@ export interface GeometrySpec {
 }
 
 export type RawJsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | RawJsonValue[]
-  | { [key: string]: RawJsonValue };
+  string | number | boolean | null | undefined | RawJsonValue[] | { [key: string]: RawJsonValue };
 
 function isPointCoord(c: RawJsonValue): c is [number, number] {
   return Array.isArray(c) && c.length === 2 && typeof c[0] === 'number' && typeof c[1] === 'number';
@@ -176,7 +170,7 @@ export function validateGeometrySpec(
     ) {
       return {
         valid: false,
-        error: "Invalid boundingBox: must be a 4-number array [minX, maxY, maxX, minY]",
+        error: 'Invalid boundingBox: must be a 4-number array [minX, maxY, maxX, minY]',
       };
     }
     boundingBox = obj.boundingBox as GeometryBoundingBox;
@@ -200,7 +194,10 @@ export function validateGeometrySpec(
     switch (kind) {
       case 'point': {
         if (!isPointCoord(item.coords)) {
-          return { valid: false, error: `Point at index ${i} must have 2-element numeric 'coords'` };
+          return {
+            valid: false,
+            error: `Point at index ${i} must have 2-element numeric 'coords'`,
+          };
         }
         validatedElements.push({
           kind: 'point',
@@ -239,10 +236,16 @@ export function validateGeometrySpec(
 
       case 'circle': {
         if (!isPointRef(item.center)) {
-          return { valid: false, error: `Circle at index ${i} requires a valid 'center' point or coordinates` };
+          return {
+            valid: false,
+            error: `Circle at index ${i} requires a valid 'center' point or coordinates`,
+          };
         }
         if (typeof item.radius !== 'number' && !isPointRef(item.pointOnCircle)) {
-          return { valid: false, error: `Circle at index ${i} requires either 'radius' or 'pointOnCircle'` };
+          return {
+            valid: false,
+            error: `Circle at index ${i} requires either 'radius' or 'pointOnCircle'`,
+          };
         }
         validatedElements.push({
           kind: 'circle',
@@ -261,8 +264,15 @@ export function validateGeometrySpec(
       }
 
       case 'polygon': {
-        if (!Array.isArray(item.vertices) || item.vertices.length < 3 || !item.vertices.every(isPointRef)) {
-          return { valid: false, error: `Polygon at index ${i} requires an array of at least 3 vertices` };
+        if (
+          !Array.isArray(item.vertices) ||
+          item.vertices.length < 3 ||
+          !item.vertices.every(isPointRef)
+        ) {
+          return {
+            valid: false,
+            error: `Polygon at index ${i} requires an array of at least 3 vertices`,
+          };
         }
         validatedElements.push({
           kind: 'polygon',
@@ -297,7 +307,10 @@ export function validateGeometrySpec(
 
       case 'functiongraph': {
         if (typeof item.fn !== 'string' || !item.fn.trim()) {
-          return { valid: false, error: `Functiongraph at index ${i} requires a non-empty 'fn' formula string` };
+          return {
+            valid: false,
+            error: `Functiongraph at index ${i} requires a non-empty 'fn' formula string`,
+          };
         }
         validatedElements.push({
           kind: 'functiongraph',
@@ -346,14 +359,20 @@ export function validateGeometrySpec(
           return { valid: false, error: `Slider at index ${i} requires a name` };
         }
         if (!isPointCoord(item.point1) || !isPointCoord(item.point2)) {
-          return { valid: false, error: `Slider at index ${i} requires point1 and point2 coordinates` };
+          return {
+            valid: false,
+            error: `Slider at index ${i} requires point1 and point2 coordinates`,
+          };
         }
         if (
           !Array.isArray(item.range) ||
           item.range.length !== 3 ||
           item.range.some((n) => typeof n !== 'number')
         ) {
-          return { valid: false, error: `Slider at index ${i} requires a 3-number range [min, initial, max]` };
+          return {
+            valid: false,
+            error: `Slider at index ${i} requires a 3-number range [min, initial, max]`,
+          };
         }
         validatedElements.push({
           kind: 'slider',
@@ -372,7 +391,10 @@ export function validateGeometrySpec(
           return { valid: false, error: `Text element at index ${i} requires 'text'` };
         }
         if (!isPointCoord(item.coords)) {
-          return { valid: false, error: `Text element at index ${i} requires numeric 'coords' [x, y]` };
+          return {
+            valid: false,
+            error: `Text element at index ${i} requires numeric 'coords' [x, y]`,
+          };
         }
         validatedElements.push({
           kind: 'text',
@@ -405,4 +427,3 @@ export function validateGeometrySpec(
     },
   };
 }
-

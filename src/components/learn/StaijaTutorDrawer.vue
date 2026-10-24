@@ -15,8 +15,8 @@ import {
   type TutorStreamEvent,
 } from '../../services/learn';
 import UiButton from '../ui/UiButton.vue';
-import MermaidViewer from './MermaidViewer.vue';
 import JsxGraphViewer from './JsxGraphViewer.vue';
+import MermaidViewer from './MermaidViewer.vue';
 
 interface Message {
   id: string;
