@@ -2,6 +2,7 @@
 import { Icon } from '@iconify/vue';
 import { computed, onMounted, ref } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import AddToCalendarMenu from '../../components/learn/AddToCalendarMenu.vue';
 import Body from '../../components/ui/Body.vue';
 import Container from '../../components/ui/Container.vue';
 import Eyebrow from '../../components/ui/Eyebrow.vue';
@@ -92,9 +93,16 @@ onMounted(load);
           <Icon icon="lucide:arrow-left" width="12" />
           {{ isMentor ? 'Mentor portal' : 'All sessions' }}
         </RouterLink>
-        <Eyebrow class="text-brand-violet mb-2 block">Live session</Eyebrow>
-        <Heading v-if="session" :level="1" class="mb-2">{{ session.title }}</Heading>
-        <p v-if="session" class="text-sm text-ink/70">{{ fmtFull(session.startsAt) }}</p>
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <Eyebrow class="text-brand-violet mb-2 block">Live session</Eyebrow>
+            <Heading v-if="session" :level="1" class="mb-2">{{ session.title }}</Heading>
+            <p v-if="session" class="text-sm text-ink/70">{{ fmtFull(session.startsAt) }}</p>
+          </div>
+          <div v-if="session && !isPast" class="sm:pt-4">
+            <AddToCalendarMenu :session="session" />
+          </div>
+        </div>
       </Container>
     </Section>
 
@@ -140,6 +148,19 @@ onMounted(load);
                   {{ option }}
                 </button>
               </div>
+            </div>
+
+            <div
+              v-if="myRsvp && (myRsvp.rsvped === 'yes' || myRsvp.rsvped === 'maybe') && !isPast"
+              class="mb-5 p-3 rounded-md bg-ink/[0.03] border hairline-ink flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-ink/75"
+            >
+              <span>RSVP confirmed. Remember to sync to your personal calendar.</span>
+              <AddToCalendarMenu
+                :session="session"
+                size="sm"
+                variant="ghost"
+                label="Add to calendar"
+              />
             </div>
 
             <div v-if="isJoinable && session.meetingUrl" class="flex flex-col gap-2">

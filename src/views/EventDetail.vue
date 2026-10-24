@@ -3,6 +3,7 @@ import { Icon } from '@iconify/vue';
 import { Motion } from 'motion-v';
 import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import AddToCalendarMenu from '../components/learn/AddToCalendarMenu.vue';
 import Body from '../components/ui/Body.vue';
 import Container from '../components/ui/Container.vue';
 import Heading from '../components/ui/Heading.vue';
@@ -12,12 +13,27 @@ import UiCard from '../components/ui/UiCard.vue';
 import UiChip from '../components/ui/UiChip.vue';
 import UiSelect from '../components/ui/UiSelect.vue';
 import { trackEventRsvp } from '../services/analytics';
+import { type CalendarEventInput } from '../services/calendarExport';
 import { getEvent, type EventItem } from '../services/content';
 
 const route = useRoute();
 const event = ref<EventItem | null>(null);
 const loading = ref(true);
 const notFound = ref(false);
+
+const calendarEvent = computed<CalendarEventInput | null>(() => {
+  if (!event.value) return null;
+  const start = new Date(event.value.datetime);
+  return {
+    id: event.value.slug,
+    title: event.value.title,
+    description: event.value.dek,
+    startsAt: start,
+    endsAt: new Date(start.getTime() + 90 * 60 * 1000),
+    location: event.value.location,
+    url: typeof window !== 'undefined' ? window.location.href : undefined,
+  };
+});
 
 const formattedDate = computed(() => {
   if (!event.value) return '';
@@ -147,14 +163,17 @@ function handleRSVP(e: Event) {
                   </div>
                 </div>
                 <div
-                  class="flex items-center gap-3 py-4 border-b hairline-ink bg-surface/50 px-2 text-ink font-semibold"
+                  class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b hairline-ink bg-surface/50 px-2 text-ink font-semibold"
                 >
-                  <Icon
-                    :icon="event.isVirtual ? 'lucide:video' : 'lucide:map-pin'"
-                    width="20"
-                    class="text-brand-violet"
-                  />
-                  {{ event.location }}
+                  <div class="flex items-center gap-3">
+                    <Icon
+                      :icon="event.isVirtual ? 'lucide:video' : 'lucide:map-pin'"
+                      width="20"
+                      class="text-brand-violet"
+                    />
+                    {{ event.location }}
+                  </div>
+                  <AddToCalendarMenu :event="calendarEvent" size="sm" variant="outline" />
                 </div>
               </Motion>
 
@@ -181,6 +200,13 @@ function handleRSVP(e: Event) {
                   </div>
                   <Heading :level="3">You're all set!</Heading>
                   <Body>We've sent a calendar invite and details to your email address.</Body>
+                  <div class="mt-2 w-full flex justify-center">
+                    <AddToCalendarMenu
+                      :event="calendarEvent"
+                      variant="primary"
+                      label="Add to personal calendar"
+                    />
+                  </div>
                   <UiButton variant="secondary" :to="'/events'" class="mt-4 w-full">
                     Browse more events
                   </UiButton>

@@ -2,6 +2,7 @@
 import { Icon } from '@iconify/vue';
 import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import AddToCalendarMenu from '../../components/learn/AddToCalendarMenu.vue';
 import Body from '../../components/ui/Body.vue';
 import Container from '../../components/ui/Container.vue';
 import Eyebrow from '../../components/ui/Eyebrow.vue';
@@ -9,6 +10,11 @@ import Heading from '../../components/ui/Heading.vue';
 import Section from '../../components/ui/Section.vue';
 import UiCard from '../../components/ui/UiCard.vue';
 import { useAuth } from '../../composables/useAuth';
+import {
+  downloadIcsFile,
+  generateIcsCalendar,
+  sessionToCalendarEvent,
+} from '../../services/calendarExport';
 import { EnrollmentService, SessionService, toMillis } from '../../services/learn';
 import type { LiveSession } from '../../services/types';
 
@@ -56,6 +62,13 @@ function fmt(s: LiveSession) {
   });
 }
 
+function exportAllUpcoming() {
+  if (upcoming.value.length === 0) return;
+  const events = upcoming.value.map((s) => sessionToCalendarEvent(s));
+  const ics = generateIcsCalendar(events, 'STAIJA Cohort Upcoming Sessions');
+  downloadIcsFile('staija-upcoming-sessions.ics', ics);
+}
+
 onMounted(load);
 </script>
 
@@ -83,24 +96,48 @@ onMounted(load);
 
         <template v-else>
           <div>
-            <Eyebrow class="text-ink/50 mb-3 block">Upcoming</Eyebrow>
+            <div class="flex items-center justify-between mb-3">
+              <Eyebrow class="text-ink/50 block">Upcoming</Eyebrow>
+              <button
+                v-if="upcoming.length > 0"
+                type="button"
+                class="text-xs text-brand-violet hover:underline inline-flex items-center gap-1 font-medium focus:outline-none"
+                @click="exportAllUpcoming"
+              >
+                <Icon icon="lucide:calendar-arrow-down" width="13" />
+                Export all (.ics)
+              </button>
+            </div>
             <UiCard v-if="upcoming.length === 0" class="p-6 bg-surface">
               <Body class="text-ink/60 text-sm">No upcoming sessions.</Body>
             </UiCard>
             <UiCard v-else class="p-0 bg-surface overflow-hidden">
               <ul class="divide-y divide-ink/5">
-                <li v-for="s in upcoming" :key="s.id">
+                <li
+                  v-for="s in upcoming"
+                  :key="s.id"
+                  class="flex items-center justify-between px-5 py-4 hover:bg-ink/[0.02] gap-3"
+                >
                   <RouterLink
                     :to="{ name: 'learn-session', params: { id: s.id } }"
-                    class="flex items-center gap-3 px-5 py-4 hover:bg-ink/[0.02]"
+                    class="flex items-center gap-3 flex-1 min-w-0"
                   >
-                    <Icon icon="lucide:video" width="18" class="text-brand-violet" />
+                    <Icon icon="lucide:video" width="18" class="text-brand-violet flex-shrink-0" />
                     <div class="flex-1 min-w-0">
-                      <div class="font-medium text-ink">{{ s.title }}</div>
+                      <div class="font-medium text-ink truncate">{{ s.title }}</div>
                       <div class="text-xs text-ink/50">{{ fmt(s) }}</div>
                     </div>
-                    <Icon icon="lucide:chevron-right" width="16" class="text-ink/30" />
                   </RouterLink>
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <AddToCalendarMenu :session="s" size="sm" variant="outline" label="Sync" />
+                    <RouterLink
+                      :to="{ name: 'learn-session', params: { id: s.id } }"
+                      class="text-ink/30 hover:text-ink/60 p-1"
+                      aria-label="View session details"
+                    >
+                      <Icon icon="lucide:chevron-right" width="16" />
+                    </RouterLink>
+                  </div>
                 </li>
               </ul>
             </UiCard>
