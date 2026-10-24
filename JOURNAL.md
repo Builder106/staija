@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-24: Verified calendar export and session reminders on staging #verification
+
+Verified RFC 5545 iCalendar generation, dual reminder alarms, and web calendar deep links in the staging LMS environment (staging.staija.org). Authenticated as the staging QA student and navigated to the live session detail route for "Research Methodology Office Hours". The header action and the post-RSVP confirmation card rendered the accessible AddToCalendarMenu dropdown with options for Google Calendar, Apple Calendar (.ics), Outlook Web, Office 365, Yahoo Calendar, and Copy meeting link. Tested clipboard copying of the meeting link and verified dropdown keyboard navigation and outside-click dismissal. The calendar export generator produces RFC 5545 compliant files with 75-octet line folding and alarms at 15 minutes and 24 hours prior. All 36 Vitest files (297 tests), TypeScript checking, ESLint, and GitHub Actions CI pass with zero warnings.
+
 ## 2026-10-24: Verified JSXGraph interactive STEM geometry on staging #verification
 
 Verified end-to-end declarative STEM geometry rendering in the staging LMS environment (staging.staija.org) on the "What is research methodology?" lesson. Authenticated as the staging QA student and opened the AI STEM Tutor drawer. Issued the prompt "Plot an interactive STEM geometry diagram", which streamed a coordinate model mapping the three core methodologies (wet-lab, field study, and simulation) to vectors and connecting lines. The frontend safe math tokenizer and schema normaliser dynamically handled geometry attributes (including coordinate and endpoint synonyms), rendering a reactive JSXGraph canvas complete with axes, labels, and a reset-view control without arbitrary JavaScript execution (eval or Function). The geometry visualization was automatically extracted and pinned to the persistent Whiteboard tab as a dedicated card alongside previous study notes. All 286 unit tests, ESLint, TypeScript validation, and production builds pass on Linux ARM64.
