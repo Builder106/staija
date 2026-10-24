@@ -169,6 +169,39 @@ describe('Declarative Geometry Specification Validation', () => {
     expect(res.valid).toBe(true);
   });
 
+  it('tolerates common LLM synonyms (start/end, formula, label, pos)', () => {
+    const input = {
+      title: 'Research Methodology Overview',
+      boundingBox: [-10, 10, 10, -10],
+      elements: [
+        { kind: 'circle', center: [-5, 5], radius: 2, name: 'Wet-lab' },
+        { kind: 'text', coords: [-5, 5], text: 'Wet-lab', align: 'center' },
+        { kind: 'circle', center: [0, 0], radius: 2, name: 'Population' },
+        { kind: 'text', coords: [0, 0], text: 'Population', align: 'center' },
+        { kind: 'circle', center: [5, -5], radius: 2, name: 'Simulation' },
+        { kind: 'text', coords: [5, -5], text: 'Simulation', align: 'center' },
+        { kind: 'line', start: [-5, 5], end: [0, 0] },
+        { kind: 'line', start: [0, 0], end: [5, -5] },
+        { kind: 'functiongraph', fn: '0.5*x+2', color: 'steelblue', name: 'Trend' },
+        { kind: 'point', coords: [-5, 5], name: 'A' },
+        { kind: 'point', coords: [0, 0], name: 'B' },
+        { kind: 'point', coords: [5, -5], name: 'C' },
+      ],
+    };
+
+    const res = validateGeometrySpec(input);
+    expect(res.valid).toBe(true);
+    if (res.valid) {
+      expect(res.spec.elements).toHaveLength(12);
+      const line1 = res.spec.elements[6];
+      expect(line1.kind).toBe('line');
+      if (line1.kind === 'line') {
+        expect(line1.point1).toEqual([-5, 5]);
+        expect(line1.point2).toEqual([0, 0]);
+      }
+    }
+  });
+
   it('rejects invalid bounding box dimensions', () => {
     const input = {
       boundingBox: [-10, 10, 10], // only 3 elements

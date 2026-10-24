@@ -193,7 +193,16 @@ export function validateGeometrySpec(
 
     switch (kind) {
       case 'point': {
-        if (!isPointCoord(item.coords)) {
+        const coords = isPointCoord(item.coords)
+          ? item.coords
+          : isPointCoord(item.point)
+            ? item.point
+            : isPointCoord(item.pos)
+              ? item.pos
+              : isPointCoord(item.xy)
+                ? item.xy
+                : undefined;
+        if (!coords) {
           return {
             valid: false,
             error: `Point at index ${i} must have 2-element numeric 'coords'`,
@@ -203,7 +212,7 @@ export function validateGeometrySpec(
           kind: 'point',
           id: typeof item.id === 'string' ? item.id : undefined,
           name: typeof item.name === 'string' ? item.name : undefined,
-          coords: item.coords,
+          coords,
           color: typeof item.color === 'string' ? item.color : undefined,
           size: typeof item.size === 'number' ? item.size : undefined,
           fixed: typeof item.fixed === 'boolean' ? item.fixed : undefined,
@@ -214,7 +223,25 @@ export function validateGeometrySpec(
 
       case 'line':
       case 'segment': {
-        if (!isPointRef(item.point1) || !isPointRef(item.point2)) {
+        const p1 = isPointRef(item.point1)
+          ? item.point1
+          : isPointRef(item.start)
+            ? item.start
+            : isPointRef(item.from)
+              ? item.from
+              : isPointRef(item.p1)
+                ? item.p1
+                : undefined;
+        const p2 = isPointRef(item.point2)
+          ? item.point2
+          : isPointRef(item.end)
+            ? item.end
+            : isPointRef(item.to)
+              ? item.to
+              : isPointRef(item.p2)
+                ? item.p2
+                : undefined;
+        if (!p1 || !p2) {
           return {
             valid: false,
             error: `${kind} at index ${i} requires valid point1 and point2 references or coordinates`,
@@ -224,8 +251,8 @@ export function validateGeometrySpec(
           kind,
           id: typeof item.id === 'string' ? item.id : undefined,
           name: typeof item.name === 'string' ? item.name : undefined,
-          point1: item.point1,
-          point2: item.point2,
+          point1: p1,
+          point2: p2,
           color: typeof item.color === 'string' ? item.color : undefined,
           strokeWidth: typeof item.strokeWidth === 'number' ? item.strokeWidth : undefined,
           dash: typeof item.dash === 'number' ? item.dash : undefined,
@@ -235,13 +262,26 @@ export function validateGeometrySpec(
       }
 
       case 'circle': {
-        if (!isPointRef(item.center)) {
+        const center = isPointRef(item.center)
+          ? item.center
+          : isPointRef(item.point)
+            ? item.point
+            : isPointRef(item.pos)
+              ? item.pos
+              : undefined;
+        if (!center) {
           return {
             valid: false,
             error: `Circle at index ${i} requires a valid 'center' point or coordinates`,
           };
         }
-        if (typeof item.radius !== 'number' && !isPointRef(item.pointOnCircle)) {
+        const radius =
+          typeof item.radius === 'number'
+            ? item.radius
+            : typeof item.r === 'number'
+              ? item.r
+              : undefined;
+        if (radius === undefined && !isPointRef(item.pointOnCircle)) {
           return {
             valid: false,
             error: `Circle at index ${i} requires either 'radius' or 'pointOnCircle'`,
@@ -251,8 +291,8 @@ export function validateGeometrySpec(
           kind: 'circle',
           id: typeof item.id === 'string' ? item.id : undefined,
           name: typeof item.name === 'string' ? item.name : undefined,
-          center: item.center,
-          radius: typeof item.radius === 'number' ? item.radius : undefined,
+          center,
+          radius,
           pointOnCircle: isPointRef(item.pointOnCircle) ? item.pointOnCircle : undefined,
           color: typeof item.color === 'string' ? item.color : undefined,
           fillColor: typeof item.fillColor === 'string' ? item.fillColor : undefined,
@@ -264,11 +304,12 @@ export function validateGeometrySpec(
       }
 
       case 'polygon': {
-        if (
-          !Array.isArray(item.vertices) ||
-          item.vertices.length < 3 ||
-          !item.vertices.every(isPointRef)
-        ) {
+        const rawVertices = Array.isArray(item.vertices)
+          ? item.vertices
+          : Array.isArray(item.points)
+            ? item.points
+            : undefined;
+        if (!rawVertices || rawVertices.length < 3 || !rawVertices.every(isPointRef)) {
           return {
             valid: false,
             error: `Polygon at index ${i} requires an array of at least 3 vertices`,
@@ -278,7 +319,7 @@ export function validateGeometrySpec(
           kind: 'polygon',
           id: typeof item.id === 'string' ? item.id : undefined,
           name: typeof item.name === 'string' ? item.name : undefined,
-          vertices: item.vertices,
+          vertices: rawVertices,
           color: typeof item.color === 'string' ? item.color : undefined,
           fillColor: typeof item.fillColor === 'string' ? item.fillColor : undefined,
           fillOpacity: typeof item.fillOpacity === 'number' ? item.fillOpacity : undefined,
@@ -289,15 +330,33 @@ export function validateGeometrySpec(
       }
 
       case 'vector': {
-        if (!isPointRef(item.point1) || !isPointRef(item.point2)) {
+        const p1 = isPointRef(item.point1)
+          ? item.point1
+          : isPointRef(item.start)
+            ? item.start
+            : isPointRef(item.from)
+              ? item.from
+              : isPointRef(item.p1)
+                ? item.p1
+                : undefined;
+        const p2 = isPointRef(item.point2)
+          ? item.point2
+          : isPointRef(item.end)
+            ? item.end
+            : isPointRef(item.to)
+              ? item.to
+              : isPointRef(item.p2)
+                ? item.p2
+                : undefined;
+        if (!p1 || !p2) {
           return { valid: false, error: `Vector at index ${i} requires valid point1 and point2` };
         }
         validatedElements.push({
           kind: 'vector',
           id: typeof item.id === 'string' ? item.id : undefined,
           name: typeof item.name === 'string' ? item.name : undefined,
-          point1: item.point1,
-          point2: item.point2,
+          point1: p1,
+          point2: p2,
           color: typeof item.color === 'string' ? item.color : undefined,
           strokeWidth: typeof item.strokeWidth === 'number' ? item.strokeWidth : undefined,
           visible: typeof item.visible === 'boolean' ? item.visible : undefined,
@@ -306,7 +365,17 @@ export function validateGeometrySpec(
       }
 
       case 'functiongraph': {
-        if (typeof item.fn !== 'string' || !item.fn.trim()) {
+        const rawFn =
+          typeof item.fn === 'string'
+            ? item.fn
+            : typeof item.function === 'string'
+              ? item.function
+              : typeof item.expr === 'string'
+                ? item.expr
+                : typeof item.formula === 'string'
+                  ? item.formula
+                  : undefined;
+        if (!rawFn || !rawFn.trim()) {
           return {
             valid: false,
             error: `Functiongraph at index ${i} requires a non-empty 'fn' formula string`,
@@ -316,7 +385,7 @@ export function validateGeometrySpec(
           kind: 'functiongraph',
           id: typeof item.id === 'string' ? item.id : undefined,
           name: typeof item.name === 'string' ? item.name : undefined,
-          fn: item.fn.trim(),
+          fn: rawFn.trim(),
           color: typeof item.color === 'string' ? item.color : undefined,
           strokeWidth: typeof item.strokeWidth === 'number' ? item.strokeWidth : undefined,
           dash: typeof item.dash === 'number' ? item.dash : undefined,
@@ -358,17 +427,32 @@ export function validateGeometrySpec(
         if (typeof item.name !== 'string' || !item.name.trim()) {
           return { valid: false, error: `Slider at index ${i} requires a name` };
         }
-        if (!isPointCoord(item.point1) || !isPointCoord(item.point2)) {
+        const p1 = isPointCoord(item.point1)
+          ? item.point1
+          : isPointCoord(item.start)
+            ? item.start
+            : isPointCoord(item.from)
+              ? item.from
+              : undefined;
+        const p2 = isPointCoord(item.point2)
+          ? item.point2
+          : isPointCoord(item.end)
+            ? item.end
+            : isPointCoord(item.to)
+              ? item.to
+              : undefined;
+        if (!p1 || !p2) {
           return {
             valid: false,
             error: `Slider at index ${i} requires point1 and point2 coordinates`,
           };
         }
-        if (
-          !Array.isArray(item.range) ||
-          item.range.length !== 3 ||
-          item.range.some((n) => typeof n !== 'number')
-        ) {
+        const rawRange = Array.isArray(item.range)
+          ? item.range
+          : Array.isArray(item.bounds)
+            ? item.bounds
+            : undefined;
+        if (!rawRange || rawRange.length !== 3 || rawRange.some((n) => typeof n !== 'number')) {
           return {
             valid: false,
             error: `Slider at index ${i} requires a 3-number range [min, initial, max]`,
@@ -378,19 +462,36 @@ export function validateGeometrySpec(
           kind: 'slider',
           id: typeof item.id === 'string' ? item.id : undefined,
           name: item.name.trim(),
-          point1: item.point1,
-          point2: item.point2,
-          range: item.range as [number, number, number],
+          point1: p1,
+          point2: p2,
+          range: rawRange as [number, number, number],
           visible: typeof item.visible === 'boolean' ? item.visible : undefined,
         });
         break;
       }
 
       case 'text': {
-        if (typeof item.text !== 'string') {
+        const text =
+          typeof item.text === 'string'
+            ? item.text
+            : typeof item.label === 'string'
+              ? item.label
+              : typeof item.content === 'string'
+                ? item.content
+                : undefined;
+        if (text === undefined) {
           return { valid: false, error: `Text element at index ${i} requires 'text'` };
         }
-        if (!isPointCoord(item.coords)) {
+        const coords = isPointCoord(item.coords)
+          ? item.coords
+          : isPointCoord(item.pos)
+            ? item.pos
+            : isPointCoord(item.point)
+              ? item.point
+              : isPointCoord(item.xy)
+                ? item.xy
+                : undefined;
+        if (!coords) {
           return {
             valid: false,
             error: `Text element at index ${i} requires numeric 'coords' [x, y]`,
@@ -399,8 +500,8 @@ export function validateGeometrySpec(
         validatedElements.push({
           kind: 'text',
           id: typeof item.id === 'string' ? item.id : undefined,
-          text: item.text,
-          coords: item.coords,
+          text,
+          coords,
           fontSize: typeof item.fontSize === 'number' ? item.fontSize : undefined,
           color: typeof item.color === 'string' ? item.color : undefined,
           visible: typeof item.visible === 'boolean' ? item.visible : undefined,
