@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
 import Body from '../../components/ui/Body.vue';
 import Container from '../../components/ui/Container.vue';
 import Eyebrow from '../../components/ui/Eyebrow.vue';
@@ -19,6 +19,7 @@ import {
   toMillis,
 } from '../../services/learn';
 import type {
+  CmsAssignmentSpec,
   CmsCourse,
   CmsLesson,
   CmsModule,
@@ -29,17 +30,22 @@ import type {
 } from '../../services/types';
 
 const { user } = useAuth();
+const route = useRoute();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
 const course = ref<CmsCourse | null>(null);
+const courseOptions = ref<{ slug: string; title: string }[]>([]);
 const cohort = ref<Cohort | null>(null);
 const enrollment = ref<Enrollment | null>(null);
-const modules = ref<{ module: CmsModule; lessons: CmsLesson[] }[]>([]);
+const modules = ref<
+  { module: CmsModule; lessons: CmsLesson[]; assignments: CmsAssignmentSpec[] }[]
+>([]);
 const progress = ref<LessonProgress[]>([]);
 const upcoming = ref<LiveSession[]>([]);
 
 let progressUnsub: (() => void) | null = null;
+let loadSequence = 0;
 
 const totalLessons = computed(() => modules.value.reduce((acc, m) => acc + m.lessons.length, 0));
 const fraction = computed(() => completionFraction(progress.value, totalLessons.value));
@@ -53,50 +59,85 @@ function lessonStatus(lesson: CmsLesson) {
 
 async function load() {
   if (!user.value) return;
+  const sequence = ++loadSequence;
+  progressUnsub?.();
+  progressUnsub = null;
   loading.value = true;
   error.value = null;
+  course.value = null;
+  cohort.value = null;
+  enrollment.value = null;
+  modules.value = [];
+  progress.value = [];
+  upcoming.value = [];
   try {
-    // Active enrollment for the signed-in student. Phase 1 assumes one
-    // active enrollment at a time; if more, pick the first.
     const enrollments = await EnrollmentService.getActiveForStudent(user.value.uid);
+    if (sequence !== loadSequence) return;
     if (enrollments.length === 0) {
       error.value = 'You are not enrolled in any active course yet.';
-      loading.value = false;
       return;
     }
-    enrollment.value = enrollments[0];
 
-    const [c, co] = await Promise.all([
-      CourseService.getCourseBySlug(enrollment.value.courseSlug),
-      CohortService.getCohort(enrollment.value.cohortId),
+    const courseSlugs = [...new Set(enrollments.map((item) => item.courseSlug))];
+    const requestedSlug = typeof route.params.slug === 'string' ? route.params.slug : null;
+    const selectedSlug = requestedSlug ?? enrollments[0].courseSlug;
+    const selectedEnrollment = enrollments.find((item) => item.courseSlug === selectedSlug);
+    if (!selectedEnrollment) {
+      courseOptions.value = courseSlugs.map((slug) => ({ slug, title: slug }));
+      error.value = `You are not enrolled in "${selectedSlug}".`;
+      return;
+    }
+
+    const [courses, selectedCohort] = await Promise.all([
+      Promise.all(courseSlugs.map((slug) => CourseService.getCourseBySlug(slug))),
+      CohortService.getCohort(selectedEnrollment.cohortId),
     ]);
-    course.value = c;
-    cohort.value = co;
+    if (sequence !== loadSequence) return;
 
-    if (!c) {
-      error.value = `Course "${enrollment.value.courseSlug}" hasn't been mirrored from Contentful yet.`;
-      loading.value = false;
+    courseOptions.value = courseSlugs.map((slug, index) => ({
+      slug,
+      title: courses[index]?.title ?? slug,
+    }));
+    const selectedCourse = courses[courseSlugs.indexOf(selectedSlug)];
+    enrollment.value = selectedEnrollment;
+    course.value = selectedCourse;
+    cohort.value = selectedCohort;
+
+    if (!selectedCourse) {
+      error.value = `Course "${selectedSlug}" hasn't been mirrored from Contentful yet.`;
       return;
     }
 
-    const mods = await CourseService.getModulesForCourse(c);
+    const mods = await CourseService.getModulesForCourse(selectedCourse);
     const hydrated = await Promise.all(
-      mods.map(async (m) => ({ module: m, lessons: await CourseService.getLessonsForModule(m) })),
+      mods.map(async (m) => ({
+        module: m,
+        lessons: await CourseService.getLessonsForModule(m),
+        assignments: await CourseService.getAssignmentsForModule(m),
+      })),
     );
+    if (sequence !== loadSequence) return;
     modules.value = hydrated;
 
     if (cohort.value) {
-      upcoming.value = await SessionService.upcomingForCohort(cohort.value.id ?? '', 3);
+      const sessions = await SessionService.upcomingForCohort(cohort.value.id ?? '', 3);
+      if (sequence !== loadSequence) return;
+      upcoming.value = sessions;
     }
 
     progressUnsub = ProgressService.subscribeProgressForEnrollment(
       enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`,
-      (p) => (progress.value = p),
+      enrollment.value.studentId,
+      (p) => {
+        if (sequence === loadSequence) progress.value = p;
+      },
     );
   } catch (err) {
-    error.value = (err as { message?: string }).message ?? 'Failed to load course.';
+    if (sequence === loadSequence) {
+      error.value = (err as { message?: string }).message ?? 'Failed to load course.';
+    }
   } finally {
-    loading.value = false;
+    if (sequence === loadSequence) loading.value = false;
   }
 }
 
@@ -112,7 +153,12 @@ function fmtSession(s: LiveSession) {
 }
 
 onMounted(load);
+watch(
+  () => route.params.slug,
+  () => void load(),
+);
 onUnmounted(() => {
+  loadSequence++;
   if (progressUnsub) progressUnsub();
 });
 </script>
@@ -125,6 +171,25 @@ onUnmounted(() => {
         <template v-if="course">
           <Heading :level="1" class="mb-3">{{ course.title }}</Heading>
           <Body class="text-ink/70 max-w-2xl">{{ course.summary }}</Body>
+          <nav v-if="courseOptions.length > 1" aria-label="Your active courses" class="mt-6">
+            <p class="text-sm font-medium text-ink mb-2">Your active courses</p>
+            <div class="flex flex-wrap gap-2">
+              <RouterLink
+                v-for="option in courseOptions"
+                :key="option.slug"
+                :to="{ name: 'learn-course', params: { slug: option.slug } }"
+                :aria-current="option.slug === course.slug ? 'page' : undefined"
+                class="rounded-md border px-3 py-2 text-sm transition-colors"
+                :class="
+                  option.slug === course.slug
+                    ? 'border-brand-violet bg-brand-violet/5 text-brand-violet'
+                    : 'border-ink/10 bg-surface text-ink hover:border-brand-violet'
+                "
+              >
+                {{ option.title }}
+              </RouterLink>
+            </div>
+          </nav>
         </template>
         <template v-else-if="loading">
           <Heading :level="1" class="mb-3">Loading…</Heading>
@@ -204,7 +269,11 @@ onUnmounted(() => {
                 <ul class="divide-y divide-ink/5">
                   <li v-for="lesson in m.lessons" :key="lesson.slug">
                     <RouterLink
-                      :to="{ name: 'learn-lesson', params: { slug: lesson.slug } }"
+                      :to="{
+                        name: 'learn-lesson',
+                        params: { slug: lesson.slug },
+                        query: { course: course.slug },
+                      }"
                       class="flex items-center gap-3 px-5 py-3.5 hover:bg-ink/[0.02] transition-colors"
                     >
                       <Icon
@@ -227,7 +296,29 @@ onUnmounted(() => {
                       <Icon icon="lucide:chevron-right" width="16" class="text-ink/30" />
                     </RouterLink>
                   </li>
-                  <li v-if="m.lessons.length === 0" class="px-5 py-4 text-sm text-ink/50">
+                  <li v-for="a in m.assignments" :key="a.slug">
+                    <RouterLink
+                      :to="{
+                        name: 'learn-assignment',
+                        params: { slug: a.slug },
+                        query: { course: course.slug },
+                      }"
+                      class="flex items-center gap-3 px-5 py-3.5 hover:bg-ink/[0.02] transition-colors"
+                    >
+                      <Icon icon="lucide:file-edit" width="18" class="text-ink/40" />
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-ink truncate">{{ a.title }}</div>
+                        <div class="text-xs text-ink/50 capitalize">
+                          Assignment &middot; {{ a.submissionType.replace('_', ' / ') }}
+                        </div>
+                      </div>
+                      <Icon icon="lucide:chevron-right" width="16" class="text-ink/30" />
+                    </RouterLink>
+                  </li>
+                  <li
+                    v-if="m.lessons.length === 0 && (!m.assignments || m.assignments.length === 0)"
+                    class="px-5 py-4 text-sm text-ink/50"
+                  >
                     No lessons in this module yet.
                   </li>
                 </ul>

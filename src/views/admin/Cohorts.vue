@@ -225,6 +225,7 @@ function fmtDate(value: TimestampLike) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   });
 }
 

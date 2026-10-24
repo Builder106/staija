@@ -9,11 +9,13 @@ import Heading from '../../components/ui/Heading.vue';
 import Section from '../../components/ui/Section.vue';
 import UiCard from '../../components/ui/UiCard.vue';
 import { useAuth } from '../../composables/useAuth';
+import { usePermissions } from '../../composables/usePermissions';
 import { SessionService, rsvpSession, toMillis, type TimestampLike } from '../../services/learn';
 import type { LiveSession, SessionRsvp } from '../../services/types';
 
 const route = useRoute();
 const { user } = useAuth();
+const { isMentor } = usePermissions();
 
 const loading = ref(true);
 const session = ref<LiveSession | null>(null);
@@ -84,10 +86,11 @@ onMounted(load);
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-3xl">
         <RouterLink
-          :to="{ name: 'learn-sessions' }"
+          :to="isMentor ? '/mentor' : { name: 'learn-sessions' }"
           class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
         >
-          <Icon icon="lucide:arrow-left" width="12" /> All sessions
+          <Icon icon="lucide:arrow-left" width="12" />
+          {{ isMentor ? 'Mentor portal' : 'All sessions' }}
         </RouterLink>
         <Eyebrow class="text-brand-violet mb-2 block">Live session</Eyebrow>
         <Heading v-if="session" :level="1" class="mb-2">{{ session.title }}</Heading>
@@ -112,7 +115,7 @@ onMounted(load);
             </p>
           </UiCard>
 
-          <UiCard class="p-6 md:p-8 bg-surface">
+          <UiCard v-if="!isMentor" class="p-6 md:p-8 bg-surface">
             <div class="flex items-start justify-between gap-4 mb-5">
               <div>
                 <Eyebrow class="text-ink/50 mb-2 block">Will you attend?</Eyebrow>

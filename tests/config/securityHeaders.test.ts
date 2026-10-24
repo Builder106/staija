@@ -66,6 +66,24 @@ describe('OAuth security headers', () => {
     )
   })
 
+  it('allows the deployed production and staging callable origins', () => {
+    expect(directiveSources(contentSecurityPolicy, 'connect-src')).toEqual(
+      expect.arrayContaining([
+        'https://africa-south1-staija.cloudfunctions.net',
+        'https://africa-south1-staija-staging.cloudfunctions.net',
+      ]),
+    )
+  })
+
+  it('allows Firebase Storage for uploads and downloads', () => {
+    expect(directiveSources(contentSecurityPolicy, 'connect-src')).toContain(
+      'https://firebasestorage.googleapis.com',
+    )
+    expect(directiveSources(contentSecurityPolicy, 'img-src')).toContain(
+      'https://firebasestorage.googleapis.com',
+    )
+  })
+
   it('restricts Trusted Types policy names only when sinks are enforced', () => {
     const restrictsNames = contentSecurityPolicy
       .split(';')

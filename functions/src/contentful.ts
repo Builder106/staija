@@ -11,6 +11,8 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import { FieldValue, getFirestore } from 'firebase-admin/firestore'
+import { publicQuizQuestions } from './quizContent'
+import { contentfulEnvironmentForProject } from './contentfulEnvironment'
 
 const CONTENTFUL_WEBHOOK_SECRET = defineSecret('CONTENTFUL_WEBHOOK_SECRET')
 
@@ -36,6 +38,7 @@ interface ContentfulEntryPayload {
     id: string
     type: string
     contentType?: { sys: { id: string } }
+    environment?: { sys: { id: string } }
     createdAt?: string
     updatedAt?: string
   }
@@ -51,6 +54,7 @@ const COLLECTION_MAP: Record<string, string> = {
   module: 'cms_modules',
   lesson: 'cms_lessons',
   assignmentSpec: 'cms_assignmentSpecs',
+  quiz: 'cms_quizzes',
 }
 
 export const contentfulWebhook = onRequest(
@@ -114,6 +118,20 @@ export const contentfulWebhook = onRequest(
       return
     }
 
+    if (['course', 'module', 'lesson', 'assignmentSpec', 'quiz'].includes(contentTypeId)) {
+      let expectedEnvironment: string
+      try {
+        expectedEnvironment = contentfulEnvironmentForProject(process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT)
+      } catch {
+        res.status(500).send('LMS content environment is not configured')
+        return
+      }
+      if (payload.sys.environment?.sys.id !== expectedEnvironment) {
+        res.status(400).send('Contentful environment does not match this app')
+        return
+      }
+    }
+
     const db = getFirestore()
     const entryId = payload.sys.id
     const docRef = db.collection(collection).doc(entryId)
@@ -133,9 +151,16 @@ export const contentfulWebhook = onRequest(
       if (topic === 'ContentManagement.Entry.publish' || topic === 'ContentManagement.Entry.unarchive') {
         const locale = 'en-US'
         const fields = payload.fields ?? {}
-        const flattened: Record<string, ContentfulWebhookFieldValue> = {}
-        for (const [key, value] of Object.entries(fields)) {
-          flattened[key] = value?.[locale] ?? null
+        const flattened: Record<string, unknown> = {}
+        if (contentTypeId === 'quiz') {
+          for (const key of ['slug', 'title', 'summary', 'passThresholdPercent']) {
+            flattened[key] = fields[key]?.[locale] ?? null
+          }
+          flattened.questions = publicQuizQuestions(fields.questions?.[locale])
+        } else {
+          for (const [key, value] of Object.entries(fields)) {
+            flattened[key] = value?.[locale] ?? null
+          }
         }
         await docRef.set(
           {
@@ -148,7 +173,7 @@ export const contentfulWebhook = onRequest(
               mirroredAt: FieldValue.serverTimestamp(),
             },
           },
-          { merge: true },
+          { merge: contentTypeId !== 'quiz' },
         )
         console.log('[contentfulWebhook] processed', { topic, entryId, contentTypeId, action: 'mirrored' })
         res.status(200).send(`Mirrored ${collection}/${entryId}`)

@@ -1,91 +1,68 @@
-import { describe, it, expect } from 'vitest'
-import type { CmsQuiz, QuizQuestion, QuizAttempt } from '../../src/services/types'
+import { describe, expect, it } from 'vitest'
+import { mergeQuizQuestions, publicQuizQuestions, splitQuizQuestions } from '../../functions/src/quizContent'
+import { contentfulEnvironmentForProject } from '../../functions/src/contentfulEnvironment'
+import { DEMO_QUIZZES } from '../../tools/lms-seed/demo-quizzes.ts'
 
-describe('LMS Quiz Services & Data Logic', () => {
-  const sampleQuiz: CmsQuiz = {
-    slug: 'sample-quiz',
-    title: 'Sample Knowledge Check',
-    passThresholdPercent: 70,
-    questions: [
-      {
-        id: 'q1',
-        questionText: 'What is 2 + 2?',
-        options: [
-          { id: 'q1_a', text: '3' },
-          { id: 'q1_b', text: '4' },
-        ],
-        correctOptionId: 'q1_b',
-        explanation: '2 + 2 equals 4.',
-      },
-      {
-        id: 'q2',
-        questionText: 'Is Python dynamically typed?',
-        options: [
-          { id: 'q2_a', text: 'Yes' },
-          { id: 'q2_b', text: 'No' },
-        ],
-        correctOptionId: 'q2_a',
-        explanation: 'Python determines variable types at runtime.',
-      },
-    ],
-  }
+const questions = [{
+  id: 'q1',
+  questionText: 'What is 2 + 2?',
+  options: [{ id: 'a', text: '3' }, { id: 'b', text: '4' }],
+  correctOptionId: 'b',
+  explanation: '2 + 2 equals 4.',
+}]
 
-  function evaluateQuiz(quiz: CmsQuiz, answers: Record<string, string>) {
-    let correct = 0
-    const feedback: Record<string, boolean> = {}
-
-    for (const q of quiz.questions) {
-      const isCorrect = answers[q.id] === q.correctOptionId
-      if (isCorrect) correct++
-      feedback[q.id] = isCorrect
-    }
-
-    const total = quiz.questions.length
-    const score = Math.round((correct / total) * 100)
-    const threshold = quiz.passThresholdPercent ?? 70
-    const passed = score >= threshold
-
-    return { score, passed, correct, total, feedback }
-  }
-
-  it('correctly calculates 100% score and passed status when all answers are correct', () => {
-    const userAnswers = { q1: 'q1_b', q2: 'q2_a' }
-    const res = evaluateQuiz(sampleQuiz, userAnswers)
-
-    expect(res.score).toBe(100)
-    expect(res.passed).toBe(true)
-    expect(res.correct).toBe(2)
-    expect(res.feedback.q1).toBe(true)
-    expect(res.feedback.q2).toBe(true)
+describe('quiz content boundary', () => {
+  it('keeps the two Firebase projects in their own Contentful environments', () => {
+    expect(contentfulEnvironmentForProject('staija')).toBe('master')
+    expect(contentfulEnvironmentForProject('staija-staging')).toBe('staging')
+    expect(() => contentfulEnvironmentForProject('other')).toThrow()
   })
 
-  it('correctly calculates 50% score and failed status when threshold is 70%', () => {
-    const userAnswers = { q1: 'q1_b', q2: 'q2_b' } // q2 is incorrect
-    const res = evaluateQuiz(sampleQuiz, userAnswers)
-
-    expect(res.score).toBe(50)
-    expect(res.passed).toBe(false)
-    expect(res.correct).toBe(1)
-    expect(res.feedback.q1).toBe(true)
-    expect(res.feedback.q2).toBe(false)
+  it('stores answers separately from public quiz questions', () => {
+    const result = splitQuizQuestions(questions)
+    expect(result.questions).toEqual([{
+      id: 'q1',
+      questionText: 'What is 2 + 2?',
+      options: [{ id: 'a', text: '3' }, { id: 'b', text: '4' }],
+    }])
+    expect(JSON.stringify(result.questions)).not.toContain('correctOptionId')
+    expect(result.answerKeys.q1).toEqual({ correctOptionId: 'b', explanation: '2 + 2 equals 4.' })
+    expect(mergeQuizQuestions(result.questions, result.answerKeys)).toEqual(questions)
   })
 
-  it('validates QuizAttempt record structure', () => {
-    const attempt: QuizAttempt = {
-      enrollmentId: 'enr_123',
-      studentId: 'user_456',
-      quizId: 'quiz_789',
-      quizSlug: 'sample-quiz',
-      lessonSlug: 'lesson-1',
-      score: 100,
-      passed: true,
-      answers: { q1: 'q1_b', q2: 'q2_a' },
-      totalQuestions: 2,
-      correctCount: 2,
-      submittedAt: new Date(),
-    }
+  it('drops unexpected answer fields from webhook content', () => {
+    expect(publicQuizQuestions([{ ...questions[0], secret: 'must stay private' }])).toEqual(
+      splitQuizQuestions(questions).questions,
+    )
+  })
 
-    expect(attempt.score).toBeGreaterThanOrEqual(70)
-    expect(attempt.passed).toBe(true)
+  it('rejects invalid answer keys and duplicate option IDs', () => {
+    expect(() => splitQuizQuestions([{ ...questions[0], correctOptionId: 'missing' }])).toThrow()
+    expect(() => publicQuizQuestions([{ ...questions[0], options: [questions[0].options[0], questions[0].options[0]] }])).toThrow()
   })
 })
+
+describe('authored demo quiz suite', () => {
+  it('validates demo lab safety quiz structure and answer keys', () => {
+    const labSafety = DEMO_QUIZZES.find((q) => q.id === 'demo-stepup-quiz-lab-safety')
+    expect(labSafety).toBeDefined()
+    expect(labSafety?.passThresholdPercent).toBeGreaterThanOrEqual(70)
+    expect(labSafety?.questions.length).toBeGreaterThanOrEqual(4)
+
+    const split = splitQuizQuestions(labSafety!.questions)
+    expect(split.questions.length).toBe(labSafety!.questions.length)
+    for (const q of split.questions) {
+      expect(q.id).toBeTruthy()
+      expect(q.questionText).toBeTruthy()
+      expect(q.options.length).toBeGreaterThanOrEqual(2)
+      expect(JSON.stringify(q)).not.toContain('correctOptionId')
+    }
+
+    for (const [qId, key] of Object.entries(split.answerKeys)) {
+      expect(key.correctOptionId).toBeTruthy()
+      const original = labSafety!.questions.find((item) => item.id === qId)
+      expect(original?.options.some((opt) => opt.id === key.correctOptionId)).toBe(true)
+    }
+  })
+})
+

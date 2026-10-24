@@ -1216,7 +1216,7 @@ function setTagsValue(name: string, value: string) {
     .filter(Boolean);
 }
 
-function wordCount(s: ApplicationFieldValue | unknown): number {
+function wordCount(s: ApplicationFieldValue): number {
   if (typeof s !== 'string') return 0;
   const trimmed = s.trim();
   if (!trimmed) return 0;

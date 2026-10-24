@@ -1,17 +1,17 @@
 /**
- * LMS callables: enroll students, mark lessons complete, submit
- * assignments, grade submissions.
+ * LMS callables: enroll students, record progress, handle assignments,
+ * and return mentor-scoped profile data.
  *
- * All four enforce App Check and require auth. Direct Firestore writes
- * to enrollments / lesson_progress / assignment_submissions are denied
- * by firestore.rules so business logic, audit trails, and notification
- * side-effects can't be skipped by a tampered client.
+ * Each callable requires App Check and authentication. Firestore blocks
+ * direct writes to protected LMS records so validation, audit trails, and
+ * notifications stay on the server.
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
-import { FieldValue, getFirestore } from 'firebase-admin/firestore'
+import { FieldValue, getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { APP_URL, sendMailgun, enrollmentEmail, submissionGradedEmail } from './emailTemplates'
+import type { QuizAnswerKeys } from './quizContent'
 
 const MAILGUN_API_KEY = defineSecret('MAILGUN_API_KEY')
 const MAILGUN_DOMAIN = defineSecret('MAILGUN_DOMAIN')
@@ -27,6 +27,129 @@ function programLabel(program: string | undefined): string {
   if (program === 'stepup_scholars') return 'StepUp Scholars'
   if (program === 'dynamerge') return 'Dynamerge'
   return 'STAIJA'
+}
+
+interface MentorStudentProfilesInput {
+  studentIds: string[]
+}
+
+interface MentorStudentProfile {
+  uid: string
+  displayName: string
+  email: string
+}
+
+export const getMentorStudentProfiles = onCall<MentorStudentProfilesInput>(
+  {
+    memory: '256MiB',
+    timeoutSeconds: 30,
+    enforceAppCheck: true,
+  },
+  async (request): Promise<MentorStudentProfile[]> => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be signed in.')
+    }
+
+    const { studentIds } = request.data ?? {}
+    if (
+      !Array.isArray(studentIds) ||
+      studentIds.length === 0 ||
+      studentIds.length > 100 ||
+      !studentIds.every((studentId) => typeof studentId === 'string' && studentId.trim())
+    ) {
+      throw new HttpsError('invalid-argument', 'Provide between 1 and 100 student IDs.')
+    }
+
+    const role = await callerRole(request.auth.uid)
+    if (role !== 'mentor' && role !== 'staff' && role !== 'admin') {
+      throw new HttpsError('permission-denied', 'Mentor, staff, or admin role required.')
+    }
+
+    const db = getFirestore()
+    if (role === 'mentor') {
+      const assignments = await db
+        .collection('mentor_assignments')
+        .where('mentorId', '==', request.auth.uid)
+        .get()
+      const assignedStudentIds = new Set(
+        assignments.docs.flatMap((assignment) => {
+          const data = assignment.data()
+          return data.status === 'active' && typeof data.studentId === 'string'
+            ? [data.studentId]
+            : []
+        }),
+      )
+      if (studentIds.some((studentId) => !assignedStudentIds.has(studentId))) {
+        throw new HttpsError('permission-denied', 'You are not assigned to every requested student.')
+      }
+    }
+
+    return Promise.all(
+      studentIds.map(async (studentId) => {
+        const student = await db.collection('users').doc(studentId).get()
+        const data = student.data()
+        if (!student.exists || data?.role !== 'student') {
+          throw new HttpsError('not-found', 'Student profile not found.')
+        }
+
+        return {
+          uid: student.id,
+          displayName: typeof data.displayName === 'string' ? data.displayName : 'Student',
+          email: typeof data.email === 'string' ? data.email : '',
+        }
+      }),
+    )
+  },
+)
+
+interface CourseLesson {
+  slug: string
+  moduleSlug: string
+  quizId?: string
+  completionCriteria?: string
+}
+
+async function courseLessons(db: Firestore, courseSlug: string): Promise<CourseLesson[]> {
+  const courseSnap = await db.collection('cms_courses').where('slug', '==', courseSlug).limit(1).get()
+  if (courseSnap.empty) throw new HttpsError('not-found', 'Enrolled course not found.')
+  const moduleRefs = (courseSnap.docs[0].data().modules ?? []) as Array<{ sys?: { id?: string } }>
+  const modules = await Promise.all(moduleRefs.map(async (ref) => {
+    if (!ref.sys?.id) throw new HttpsError('failed-precondition', 'Course has an invalid module reference.')
+    const snap = await db.collection('cms_modules').doc(ref.sys.id).get()
+    if (!snap.exists) throw new HttpsError('failed-precondition', 'Course module is not published.')
+    return snap
+  }))
+  const lessons = await Promise.all(modules.flatMap((module) => {
+    const refs = (module.data()?.lessons ?? []) as Array<{ sys?: { id?: string } }>
+    return refs.map(async (ref) => {
+      if (!ref.sys?.id) throw new HttpsError('failed-precondition', 'Module has an invalid lesson reference.')
+      const snap = await db.collection('cms_lessons').doc(ref.sys.id).get()
+      if (!snap.exists) throw new HttpsError('failed-precondition', 'Course lesson is not published.')
+      return {
+        slug: snap.data()?.slug as string,
+        moduleSlug: module.data()?.slug as string,
+        quizId: snap.data()?.quiz?.sys?.id as string | undefined,
+        completionCriteria: snap.data()?.completionCriteria as string | undefined,
+      }
+    })
+  }))
+  if (lessons.length === 0 || lessons.some((lesson) => !lesson.slug || !lesson.moduleSlug)) {
+    throw new HttpsError('failed-precondition', 'Course has no complete lesson index.')
+  }
+  return lessons
+}
+
+async function finishCourseIfComplete(db: Firestore, enrollmentId: string, lessons: CourseLesson[]) {
+  const progress = await db.collection('lesson_progress').where('enrollmentId', '==', enrollmentId).get()
+  const completed = new Set(progress.docs
+    .filter((doc) => doc.data().status === 'completed')
+    .map((doc) => doc.data().lessonSlug as string))
+  if (lessons.every((lesson) => completed.has(lesson.slug))) {
+    await db.collection('enrollments').doc(enrollmentId).update({
+      status: 'completed',
+      completedAt: FieldValue.serverTimestamp(),
+    })
+  }
 }
 
 // --- enrollStudent ----------------------------------------------------
@@ -311,6 +434,21 @@ export const completeLesson = onCall<CompleteLessonInput>(
     if (enrollment.studentId !== request.auth.uid) {
       throw new HttpsError('permission-denied', "You can't update someone else's progress.")
     }
+    if (enrollment.status !== 'active') {
+      throw new HttpsError('failed-precondition', 'Enrollment is not active.')
+    }
+    const lessons = await courseLessons(db, enrollment.courseSlug)
+    const lesson = lessons.find((item) => item.slug === lessonSlug)
+    if (!lesson) throw new HttpsError('permission-denied', 'Lesson is not in the enrolled course.')
+    if (moduleSlug && moduleSlug !== lesson.moduleSlug) {
+      throw new HttpsError('invalid-argument', 'Module does not match this lesson.')
+    }
+    if (lesson.completionCriteria === 'quiz_passed') {
+      throw new HttpsError('failed-precondition', 'Pass the quiz to complete this lesson.')
+    }
+    if (lesson.completionCriteria === 'assignment_submitted') {
+      throw new HttpsError('failed-precondition', 'Submit the assignment to complete this lesson.')
+    }
 
     const progressId = `${enrollmentId}_${lessonSlug}`
     const progressRef = db.collection('lesson_progress').doc(progressId)
@@ -321,7 +459,7 @@ export const completeLesson = onCall<CompleteLessonInput>(
         studentId: enrollment.studentId,
         mentorId: enrollment.mentorId ?? null,
         lessonSlug,
-        moduleSlug: moduleSlug ?? '',
+        moduleSlug: lesson.moduleSlug,
         status: 'completed',
         completedAt: now,
         firstViewedAt: now,
@@ -329,50 +467,7 @@ export const completeLesson = onCall<CompleteLessonInput>(
       { merge: true },
     )
 
-    // Course completion: count distinct lessons in cms_modules of this
-    // course vs completed lesson_progress rows. If equal, flip
-    // enrollment to completed.
-    try {
-      const modulesSnap = await db
-        .collection('cms_modules')
-        .where('courseSlug', '==', enrollment.courseSlug)
-        .get()
-      const allLessonSlugs: string[] = []
-      for (const m of modulesSnap.docs) {
-        const data = m.data() as { lessons?: { sys: { id: string } }[] }
-        // Lessons in cms_modules are stored as Contentful sys-id
-        // references; the doc itself is keyed by sys id, not slug. We
-        // resolve via cms_lessons docs in a follow-up read because the
-        // mirror flattens but doesn't denormalize cross-references.
-        const refs = data.lessons ?? []
-        for (const r of refs) {
-          if (r?.sys?.id) allLessonSlugs.push(r.sys.id)
-        }
-      }
-      // The naive total above counts Contentful entry IDs, not slugs.
-      // For now, we treat completion as "every lesson_progress doc
-      // for this enrollment is status=completed" which matches what
-      // the student UI computes anyway. A richer aggregate can come
-      // when we have a curriculum index.
-      const progressSnap = await db
-        .collection('lesson_progress')
-        .where('enrollmentId', '==', enrollmentId)
-        .get()
-      const completed = progressSnap.docs.filter(
-        (d) => (d.data() as { status?: string }).status === 'completed',
-      ).length
-      // Conservative: only mark course completed if a curriculum is
-      // recognizable (non-empty cms_modules) AND completed lessons
-      // match the count. Otherwise leave status as-is.
-      if (allLessonSlugs.length > 0 && completed >= allLessonSlugs.length) {
-        await db.collection('enrollments').doc(enrollmentId).update({
-          status: 'completed',
-          completedAt: now,
-        })
-      }
-    } catch (err) {
-      console.error('[completeLesson] aggregate update failed', err)
-    }
+    await finishCourseIfComplete(db, enrollmentId, lessons)
 
     return { ok: true }
   },
@@ -619,9 +714,13 @@ export const submitQuiz = onCall<SubmitQuizInput>(
       studentId: string
       mentorId?: string
       courseSlug: string
+      status: string
     }
     if (enrollment.studentId !== request.auth.uid) {
       throw new HttpsError('permission-denied', "You can't submit a quiz for someone else.")
+    }
+    if (enrollment.status !== 'active') {
+      throw new HttpsError('failed-precondition', 'Enrollment is not active.')
     }
 
     let quizDoc = await db.collection('cms_quizzes').doc(quizId).get()
@@ -640,8 +739,7 @@ export const submitQuiz = onCall<SubmitQuizInput>(
       questions?: Array<{
         id: string
         questionText: string
-        correctOptionId: string
-        explanation?: string
+        options: Array<{ id: string; text: string }>
       }>
     }
 
@@ -649,28 +747,52 @@ export const submitQuiz = onCall<SubmitQuizInput>(
     if (questions.length === 0) {
       throw new HttpsError('failed-precondition', 'Quiz has no questions.')
     }
+    const keySnap = await db.collection('quiz_answer_keys').doc(quizDoc.id).get()
+    const answerKeys = keySnap.data()?.answerKeys as QuizAnswerKeys | undefined
+    if (!answerKeys || questions.some((question) => !answerKeys[question.id])) {
+      throw new HttpsError('failed-precondition', 'Quiz answer key is incomplete.')
+    }
+
+    const lessons = await courseLessons(db, enrollment.courseSlug)
+    const lesson = lessons.find((item) => item.slug === lessonSlug)
+    if (!lesson || lesson.quizId !== quizDoc.id) {
+      throw new HttpsError('permission-denied', 'Quiz is not assigned to this lesson.')
+    }
+    if (moduleSlug && moduleSlug !== lesson.moduleSlug) {
+      throw new HttpsError('invalid-argument', 'Module does not match this lesson.')
+    }
+    if (
+      !answers ||
+      typeof answers !== 'object' ||
+      Array.isArray(answers) ||
+      Object.keys(answers).length !== questions.length ||
+      questions.some((question) => !question.options.some((option) => option.id === answers[question.id]))
+    ) {
+      throw new HttpsError('invalid-argument', 'Answer every question with a valid option.')
+    }
 
     let correctCount = 0
     const questionFeedback: Record<
       string,
-      { correct: boolean; correctOptionId: string; explanation?: string }
+      { correct: boolean; correctOptionId?: string; explanation?: string }
     > = {}
 
     for (const q of questions) {
       const selectedOptionId = answers[q.id]
-      const isCorrect = selectedOptionId === q.correctOptionId
+      const isCorrect = selectedOptionId === answerKeys[q.id].correctOptionId
       if (isCorrect) correctCount++
-      questionFeedback[q.id] = {
-        correct: isCorrect,
-        correctOptionId: q.correctOptionId,
-        explanation: q.explanation,
-      }
+      questionFeedback[q.id] = { correct: isCorrect }
     }
 
     const totalQuestions = questions.length
     const score = Math.round((correctCount / totalQuestions) * 100)
     const threshold = quiz.passThresholdPercent ?? 70
     const passed = score >= threshold
+    if (passed) {
+      for (const q of questions) {
+        questionFeedback[q.id] = { ...questionFeedback[q.id], ...answerKeys[q.id] }
+      }
+    }
 
     const now = FieldValue.serverTimestamp()
 
@@ -710,7 +832,7 @@ export const submitQuiz = onCall<SubmitQuizInput>(
       studentId: enrollment.studentId,
       mentorId: enrollment.mentorId ?? null,
       lessonSlug,
-      moduleSlug: moduleSlug ?? '',
+      moduleSlug: lesson.moduleSlug,
       quizScore: score,
       quizPassed: passed,
     }
@@ -721,6 +843,7 @@ export const submitQuiz = onCall<SubmitQuizInput>(
     }
 
     await progressRef.set(progressUpdate, { merge: true })
+    if (passed) await finishCourseIfComplete(db, enrollmentId, lessons)
 
     return {
       ok: true,

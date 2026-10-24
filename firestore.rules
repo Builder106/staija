@@ -305,6 +305,9 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if false;
     }
+    match /quiz_answer_keys/{entryId} {
+      allow read, write: if false;
+    }
 
     // Audit logs collection rules (for tracking role changes)
     match /audit_logs/{logId} {
@@ -453,7 +456,8 @@ service cloud.firestore {
     // server-only so RSVP triggers attendance/notification side-effects.
     match /session_rsvps/{rsvpId} {
       allow read: if isAuthenticated() && (
-        resource.data.studentId == request.auth.uid ||
+        rsvpId.matches('^.*_' + request.auth.uid + '$') ||
+        (resource != null && resource.data.studentId == request.auth.uid) ||
         hasAnyRole(['staff', 'admin'])
       );
       allow write: if false;

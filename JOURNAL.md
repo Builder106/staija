@@ -4,6 +4,90 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-24: Verified end-to-end LMS assignment and session lifecycle #verification
+
+Verified the full learner and mentor lifecycle on staging (`staging.staija.org`). As student `yuRBAHfFl5TDcioayDyG6VQSxQM2`, submitted a draft research proposal PDF to Firebase Storage and recorded submission `7kcEWKymvskolHiQocu6` via `submitAssignment` (HTTP 200) after adding `firebasestorage.googleapis.com` to CSP `connect-src` and adding student owner filters. Switched to mentor `WgTsxqp3Nff0V1Q13tOB6nqPN432`, reviewed the proposal under StepUp Scholars, and submitted grade 95 with written feedback via `gradeSubmission` (HTTP 200). The student's view updated immediately to `Graded` with grade and comments, and in-app notifications dispatched for both users. Scheduled live session `qzztDw5fJVtjNOEtBqRa` ("Research Methodology Office Hours") via `scheduleSession` (HTTP 200), granting mentors `manage_sessions` router permission. Switching back to student, the upcoming session rendered on the StepUp course home; submitted RSVP "Yes" via `rsvpSession` (HTTP 200) with safe handling for initial unrecorded RSVPs. Staging LMS submission, grading, and live session scheduling are verified.
+
+## 2026-10-24: Audited and verified staging welcome email delivery #verification
+
+Cloud Logging traces confirmed `onUserCreated` and `enrollStudent` previously failed with `Mailgun 401: Forbidden` due to an invalid staging `MAILGUN_API_KEY` and stale sandbox domain. Synchronized Secret Manager in `staija-staging` with the active `MAILGUN_API_KEY` version 5 and `MAILGUN_DOMAIN` version 4 (`mg.staija.org`), while retaining the recipient protection in `STAGING_EMAIL_ALLOWLIST`. Dispatched test account and cohort enrollment welcome emails to the QA student address; Mailgun events confirmed successful delivery (`2.0.0 OK ... - gsmtp`). Staging transactional email delivery is verified.
+
+## 2026-10-23: Verified staging quiz completion flow end-to-end #verification
+
+Signed in as the staging QA student and verified the StepUp Lab Safety lesson. The four-question knowledge check rendered cleanly with the 75% required pass threshold. Answered all four questions correctly and submitted via the App Check-enforced `submitQuiz` callable; the callable returned HTTP 200 with 100% score, passed status, and question feedback. The UI unlocked answer explanations, displayed the "Completed" status indicator, and recorded best score. StepUp course progress advanced immediately from 1 of 6 (17%) to 2 of 6 (33%). In Firestore `staija-staging`, the `quiz_attempts` entry was created and `lesson_progress` marked `completed`. Staging quiz gating is verified.
+
+## 2026-10-23: Authored StepUp Lab Safety quiz and verified completion flow #implementation #verification
+
+Authored the four-question reviewed StepUp Lab Safety assessment covering biosafety levels, PPE, chemical spill response, and sharps disposal, with pass threshold pinned at 75%. Added `tools/lms-seed/demo-quizzes.ts` and `sync-quiz-keys.ts` to automate Contentful public question upserts and server-only Firestore answer key storage. Published the `demo-stepup-quiz-lab-safety` entry and updated `demo-stepup-l-lab-safety` in Contentful staging, verified automatic webhook mirroring to `cms_quizzes` and `cms_lessons`, and synced private answer keys to Firestore `staija-staging`. Updated `LessonView.vue` to show completion confirmation upon passing quiz-gated lessons. Verified unit and integration coverage with 268 passing tests, strict linting, typechecks, and clean production builds.
+
+## 2026-10-23: Lint the Cloud Functions boundary #ci #decision
+
+ESLint now checks the browser app and Cloud Functions for deprecated APIs and explicit `any`. Application `unknown` annotations are limited to Firebase, Contentful, and Lottie data boundaries, and CI typechecks the Functions package.
+
+## 2026-10-22: Verified the staging mentor student page #verification
+
+Deployed `getMentorStudentProfiles` and its supporting Firestore index to staging. `/version.txt` reports commit `898c814`, and GitHub's Vercel check passed. The signed-in mentor sees both assigned cohorts and opens the student's detail page with progress and submissions; both callable requests returned HTTP 200. Chrome still blocks Vercel's feedback script under the site's CSP and reports a browser-blocked resource. The LMS flow works. Production curriculum publication remains a release gate.
+
+## 2026-10-22: Reproduced mentor student-detail permissions failure #incident
+
+The verified staging mentor can see both assigned cohorts, but opening an assigned student's detail page returns `Missing or insufficient permissions.` The page reads student profiles and submissions without the mentor scope required by Firestore rules. The prepared LMS changes add an App Check callable that checks the caller's role and, for mentors, active assignments before returning a student's UID, name, and email; they also filter enrollment and submission reads by mentor ID and add the supporting index. The Functions high-severity audit and build pass on Linux ARM64; two moderate UUID advisories remain through `gaxios`. Deployment and browser verification are pending, so the frontend must not be pushed ahead of the callable and index. A mailbox search found a Firebase verification thread for the QA accounts but no welcome or enrollment message, so delivery remains unconfirmed. Production curriculum publication remains a release gate.
+
+## 2026-10-22: Verified staging learner progress #verification
+
+The signed-in student opened both course pages and completed "What is research methodology?" in StepUp. `completeLesson` returned HTTP 200, and course progress moved from 0 of 6 to 1 of 6. All 42 XHR/fetch requests on the StepUp course page returned HTTP 200. Lab Safety still has no quiz entry, and the StepUp summary still says "Testing, testing". A search of mail for both QA accounts found a Firebase verification thread but no welcome or enrollment message, so welcome-email delivery remains unconfirmed. The browser reported the blocked Vercel feedback script, an unload policy violation, and a browser-blocked resource; the LMS requests succeeded.
+
+## 2026-10-21: Fixed cohort date display #verification
+
+Signed commit `27bb46e` formats cohort calendar dates in UTC, so they no longer shift to the prior day in New York or Los Angeles. Component tests cover both zones. All GitHub CI jobs passed: 267 unit tests, two E2E tests, 38 accessibility checks, and the bundle budget check. Sixteen accessibility cases were skipped. Staging `/version.txt` reports the new commit SHA.
+
+## 2026-10-22: Stabilized avatar promotion coverage #maintenance
+
+Full coverage validates ten image composites twice in the dry-run test. Under parallel load, it took 20.46 seconds and exceeded its 20-second timeout, while the focused run passed. Raised that test's timeout to 30 seconds so the coverage suite can finish it under load.
+
+## 2026-10-22: Reconciled staging with main #maintenance
+
+Merged the current `main` tip into `staging` without conflicts. The merge adds `main` to staging's history and leaves the existing LMS files unchanged. Production `main` remains unchanged. Linux E2E, accessibility, and matrix checks passed. GitHub CI passed, and staging `/version.txt` reports `c45fc9a`.
+
+## 2026-10-21: Verified LMS course switching #verification
+
+Signed commit `73e0241` passed CI run #465 and is live on staging. The signed-in student switched from Dynamerge to StepUp, saw six StepUp lessons, opened Lab Safety with the StepUp course in the URL, returned to StepUp, then switched back to Dynamerge and saw its five lessons. The Lab Safety quiz panel still cannot find quiz details because no matching quiz entry exists; quiz attempts and completion remain unverified. Production curriculum publication remains a release gate.
+
+## 2026-10-21: Deployed and verified LMS owner-filter fix #verification
+
+Pushed signed commit `61fcd2d` to staging; GitHub marks it Verified and its checks pass. Deployed the Firestore indexes to the staging project, and `/version.txt` reports the commit SHA. The signed-in student course page loads five Dynamerge lessons and displays `0 of 5` progress. The StepUp Lab Safety lesson opens without a Firestore permissions error, but reports "Quiz details could not be found." No matching quiz entry exists, so quiz-attempt history and completion remain unverified. No curriculum was published.
+
+## 2026-10-21: Republished linked staging demo content #verification
+
+Republished 19 Contentful entries linked to the two staging demo courses: four modules, eleven lessons, and four assignment specs. The student course page lists five Dynamerge lessons, and the "Hello, world!" lesson opens. The StepUp Lab Safety lesson body opens directly, but its quiz panel reports a Firestore permissions error. Chrome network traces show the student progress listener filters only by enrollment ID and the quiz-attempt query filters by enrollment and lesson; the Firestore rules also require owner IDs. The working tree now adds student/mentor owner filters and supporting indexes. Contentful has no quiz entry for the StepUp Lab Safety slug, so quiz completion remains unverified. Lint, format, Vue type-check, the full unit suite, and the production build passed in the Linux verification environment. The parallel build matrix was rejected by its storage reserve preflight; the checks passed in serial runs. No staging deployment was completed.
+
+## 2026-10-21: Completed the staging learner and mentor setup #verification
+
+Created the staging student and mentor accounts, assigned the student role, and enrolled the student in both planned demo cohorts. The mentor accepted the restricted invite, and the mentor portal shows both cohort assignments. The student Security panel confirms email verification; the mentor link reported expired or already used, so mentor verification remains unconfirmed. Republished only the two existing staging course entries with their existing fields. The learner page now shows the Dynamerge course title but reports `0 of 0 lessons`. `CourseHome` picks the first active enrollment, so the StepUp URL still shows Dynamerge. Linked modules, lessons, and assignments remain to be mirrored. The published StepUp summary contains the test text "Testing, testing"; it was left unchanged. Profile creation invokes the welcome-email trigger for each account, and both cohort enrollments attempted another email to the student. Delivery is unconfirmed. No curriculum was published.
+
+## 2026-10-21: Prepared the staging mentor QA invite #verification
+
+A single-use mentor invite was created in staging with a 30-day expiry and an email restriction for the test mentor account. The invite is still pending. Two planned QA cohorts were created from published demos: StepUp Research Foundations (`2026-spring`) and Dynamerge Bootcamp Week 1 (`2026-summer`). Both have empty mentor pools until the mentor account is registered, verified, and accepts the invite. The student account still needs to be registered. Each new applicant signup sends a Firebase verification email and an app welcome email; the approved student enrollment test will send one more welcome email. In the current New York timezone, the cohort list shows each date one day earlier than entered; verify date-only rendering before production.
+
+## 2026-10-21: Verified the authenticated LMS content tree #verification
+
+The signed-in admin opened `/admin/content` on staging. The page listed the unpublished computational chemistry QA draft and two published demo courses. All nine `lmsContentAdmin` requests returned HTTP 200, with no callable or schema errors. Chrome also reported `ERR_BLOCKED_BY_CLIENT` and a form-field `id`/`name` issue; neither stopped the tree from loading. The staging cohort page is empty, and there are no dedicated student or mentor test accounts. Enrollment testing needs test users and cohorts, and the enrollment callable attempts to send a welcome email to the student's profile address. Student and mentor workflows, real-mode App Check, and production release checks remain open.
+
+## 2026-10-21: Replace unavailable Groq model ID #incident
+
+The staging course outliner returned `INTERNAL [500]`. Its function log showed valid Auth and App Check followed by Groq's `model_not_found` for `llama-3.3-70b-versatile`. The outliner, lesson media assistant, and LMS tutor now use Groq's recommended `openai/gpt-oss-120b` model. All three callables were deployed to staging. An authenticated browser test created a one-module outline with one lesson and one assignment; Contentful readback confirmed all entries are unpublished drafts in the `staging` environment.
+
+## 2026-10-21: Isolate outline writes by Firebase project #security
+
+The outliner used Contentful `master` when the request omitted `env`, so a staging request could write draft entries into production. It now uses the existing Firebase-project mapping and rejects a supplied environment that does not match the caller's app. The staging test confirmed the generated course and linked entries were created in `staging`, not `master`.
+
+## 2026-10-21: Deployed LMS quiz backend to staging #milestone
+
+Deployed the staging Firestore rules and four LMS Functions: `lmsContentAdmin`, `contentfulWebhook`, `completeLesson`, and the new `submitQuiz`. Firebase compiled and released the rules, then reported successful create or update operations for each function. A fresh listing showed `submitQuiz` in `africa-south1` on Node.js 24. The staging site was already serving commit `a79c12d`; authenticated staff and learner checks, production schema migration, and approved curriculum publication remain release gates.
+
+## 2026-10-20: Prepared LMS quiz and callable release #implementation #decision
+
+The LMS client now targets the deployed Functions region, and the CSP allows both project origins. Quiz authoring separates private answer keys from Contentful questions and the learner Firestore mirror; quiz submissions check enrollment and course membership before grading. The demo seeder no longer writes answer keys into Contentful. The quiz type and lesson link were published and read back in staging Contentful on October 20; production's schema remains unchanged. Deployment, approved curriculum publication, and authenticated staging and production checks remain release gates.
+
 ## 2026-10-19: Merge the README diagrams into one lifecycle #decision
 
 The two sequence diagrams are now one lifecycle figure: applicant, offered, student, alumni, with reject and decline exits. Roles and transitions come from `permissions.ts`, `respondToOffer`, and `graduateCohort`. The README no longer mentions a graduation email, which `graduateCohort` does not send.

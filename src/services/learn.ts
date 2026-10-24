@@ -222,8 +222,16 @@ export class EnrollmentService {
 // --- Progress ---------------------------------------------------------
 
 export class ProgressService {
-  static async getProgressForEnrollment(enrollmentId: string): Promise<LessonProgress[]> {
-    const q = query(collection(db, 'lesson_progress'), where('enrollmentId', '==', enrollmentId));
+  static async getProgressForEnrollment(
+    enrollmentId: string,
+    ownerField: 'studentId' | 'mentorId',
+    ownerId: string,
+  ): Promise<LessonProgress[]> {
+    const q = query(
+      collection(db, 'lesson_progress'),
+      where('enrollmentId', '==', enrollmentId),
+      where(ownerField, '==', ownerId),
+    );
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonProgress);
   }
@@ -233,9 +241,14 @@ export class ProgressService {
   // refetching.
   static subscribeProgressForEnrollment(
     enrollmentId: string,
+    studentId: string,
     cb: (progress: LessonProgress[]) => void,
   ): Unsubscribe {
-    const q = query(collection(db, 'lesson_progress'), where('enrollmentId', '==', enrollmentId));
+    const q = query(
+      collection(db, 'lesson_progress'),
+      where('enrollmentId', '==', enrollmentId),
+      where('studentId', '==', studentId),
+    );
     return onSnapshot(q, (snap) => {
       cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonProgress));
     });
@@ -289,25 +302,32 @@ export class SubmissionService {
   static async getSubmissionsForEnrollmentAndAssignment(
     enrollmentId: string,
     assignmentSlug: string,
+    studentId?: string,
   ): Promise<AssignmentSubmission[]> {
-    const q = query(
-      collection(db, 'assignment_submissions'),
+    const constraints: QueryConstraint[] = [
       where('enrollmentId', '==', enrollmentId),
       where('assignmentSlug', '==', assignmentSlug),
-      orderBy('submittedAt', 'desc'),
-    );
+    ];
+    if (studentId) {
+      constraints.push(where('studentId', '==', studentId));
+    }
+    const q = query(collection(db, 'assignment_submissions'), ...constraints);
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    const subs = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as AssignmentSubmission);
+    subs.sort((a, b) => toMillis(b.submittedAt) - toMillis(a.submittedAt));
+    return subs;
   }
 
   // Every submission for a single enrollment, newest first. Used by the
   // mentor's per-student view to render the full submission timeline.
   static async getSubmissionsForEnrollmentAndAssignmentAll(
     enrollmentId: string,
+    mentorId: string,
   ): Promise<AssignmentSubmission[]> {
     const q = query(
       collection(db, 'assignment_submissions'),
       where('enrollmentId', '==', enrollmentId),
+      where('mentorId', '==', mentorId),
       orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);
@@ -347,8 +367,12 @@ export class SessionService {
   }
 
   static async getRsvp(sessionId: string, studentId: string): Promise<SessionRsvp | null> {
-    const snap = await getDoc(doc(db, 'session_rsvps', `${sessionId}_${studentId}`));
-    return snap.exists() ? ({ id: snap.id, ...snap.data() } as SessionRsvp) : null;
+    try {
+      const snap = await getDoc(doc(db, 'session_rsvps', `${sessionId}_${studentId}`));
+      return snap.exists() ? ({ id: snap.id, ...snap.data() } as SessionRsvp) : null;
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -439,7 +463,7 @@ export interface QuizSubmitResult {
   totalQuestions: number;
   questionFeedback: Record<
     string,
-    { correct: boolean; correctOptionId: string; explanation?: string }
+    { correct: boolean; correctOptionId?: string; explanation?: string }
   >;
 }
 
@@ -464,11 +488,13 @@ export class QuizService {
   static async getAttemptsForStudent(
     enrollmentId: string,
     lessonSlug: string,
+    studentId: string,
   ): Promise<QuizAttempt[]> {
     const q = query(
       collection(db, 'quiz_attempts'),
       where('enrollmentId', '==', enrollmentId),
       where('lessonSlug', '==', lessonSlug),
+      where('studentId', '==', studentId),
       orderBy('submittedAt', 'desc'),
     );
     const snap = await getDocs(q);

@@ -143,7 +143,11 @@ onMounted(loadData);
         <RouterLink
           v-for="a in assignments"
           :key="a.id ?? `${a.mentorId}-${a.studentId}`"
-          :to="`/learn/mentor/students/${a.studentId}`"
+          :to="{
+            name: 'learn-mentor-student',
+            params: { studentId: a.studentId },
+            query: { program: a.program },
+          }"
           class="block group focus-ring-brand rounded-2xl"
         >
           <UiCard hoverable class="p-6 flex items-center gap-6">

@@ -136,7 +136,7 @@ export const storage = getStorage(app);
 // so the app keeps working without it.
 const publicBucket = import.meta.env.VITE_FIREBASE_PUBLIC_BUCKET as string | undefined;
 export const publicStorage = publicBucket ? getStorage(app, `gs://${publicBucket}`) : storage;
-export const functions = getFunctions(app);
+export const functions = getFunctions(app, 'africa-south1');
 
 // Initialize analytics and performance monitoring (only in production)
 let analytics: Analytics | null = null;

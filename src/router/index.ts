@@ -487,7 +487,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: 'Session — STAIJA',
       requiresAuth: true,
-      permissions: ['participate_in_programs'],
+      permissions: ['participate_in_programs', 'manage_sessions'],
     },
   },
 

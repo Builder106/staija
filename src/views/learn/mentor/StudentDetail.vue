@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import Body from '../../../components/ui/Body.vue';
 import Container from '../../../components/ui/Container.vue';
@@ -10,7 +10,6 @@ import Section from '../../../components/ui/Section.vue';
 import UiButton from '../../../components/ui/UiButton.vue';
 import UiCard from '../../../components/ui/UiCard.vue';
 import { useAuth } from '../../../composables/useAuth';
-import { DatabaseService } from '../../../services/database';
 import {
   EnrollmentService,
   ProgressService,
@@ -18,13 +17,12 @@ import {
   toMillis,
   type TimestampLike,
 } from '../../../services/learn';
-import { MentorService } from '../../../services/mentor';
+import { MentorService, type MentorStudentProfile } from '../../../services/mentor';
 import type {
   AssignmentSubmission,
   Enrollment,
   LessonProgress,
   MentorFeedback,
-  UserProfile,
 } from '../../../services/types';
 
 const route = useRoute();
@@ -32,8 +30,9 @@ const { user } = useAuth();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
-const student = ref<UserProfile | null>(null);
+const student = ref<MentorStudentProfile | null>(null);
 const enrollment = ref<Enrollment | null>(null);
+const studentEnrollments = ref<Enrollment[]>([]);
 const progress = ref<LessonProgress[]>([]);
 const submissions = ref<AssignmentSubmission[]>([]);
 const feedback = ref<MentorFeedback[]>([]);
@@ -50,33 +49,49 @@ async function load() {
     const studentId = route.params.studentId as string;
 
     const [s, assignment] = await Promise.all([
-      DatabaseService.getUserProfile(studentId),
+      MentorService.getStudentProfile(studentId),
       MentorService.getAssignment(user.value.uid, studentId),
     ]);
     student.value = s;
-    if (!s) {
-      error.value = 'Student profile not found.';
-      return;
-    }
     if (!assignment) {
       error.value = 'You are not assigned to this student.';
       return;
     }
 
     // Find the matching active enrollment.
-    const studentEnrollments = await EnrollmentService.getActiveForStudent(studentId);
-    const own = studentEnrollments.find((e) => e.mentorId === user.value!.uid);
+    const mentorEnrollments = await EnrollmentService.getForMentor(user.value.uid);
+    const matched = mentorEnrollments.filter((e) => e.studentId === studentId);
+    studentEnrollments.value = matched;
+
+    const requestedProgram = typeof route.query.program === 'string' ? route.query.program : null;
+    const requestedCohort = typeof route.query.cohort === 'string' ? route.query.cohort : null;
+    const requestedCourse = typeof route.query.course === 'string' ? route.query.course : null;
+    const own =
+      matched.find(
+        (e) =>
+          (requestedProgram && e.program === requestedProgram) ||
+          (requestedCohort && e.cohortId === requestedCohort) ||
+          (requestedCourse && e.courseSlug === requestedCourse),
+      ) ?? matched[0];
+
     if (own) {
       enrollment.value = own;
       const enrollmentId = own.id ?? `${own.studentId}_${own.cohortId}`;
       const [p, subs, fb] = await Promise.all([
-        ProgressService.getProgressForEnrollment(enrollmentId),
-        SubmissionService.getSubmissionsForEnrollmentAndAssignmentAll(enrollmentId),
+        ProgressService.getProgressForEnrollment(enrollmentId, 'mentorId', user.value!.uid),
+        SubmissionService.getSubmissionsForEnrollmentAndAssignmentAll(
+          enrollmentId,
+          user.value!.uid,
+        ),
         MentorService.getFeedbackForStudent(user.value.uid, studentId),
       ]);
       progress.value = p;
       submissions.value = subs;
       feedback.value = fb;
+    } else {
+      progress.value = [];
+      submissions.value = [];
+      feedback.value = [];
     }
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Failed to load student.';
@@ -160,6 +175,16 @@ async function submitFeedback() {
   }
 }
 
+watch(
+  [
+    () => route.params.studentId,
+    () => route.query.program,
+    () => route.query.cohort,
+    () => route.query.course,
+  ],
+  () => void load(),
+);
+
 onMounted(load);
 </script>
 
@@ -178,6 +203,27 @@ onMounted(load);
           {{ student.displayName || 'No name' }}
         </Heading>
         <p v-if="student" class="text-sm text-ink/60">{{ student.email }}</p>
+
+        <!-- Course switcher if multiple enrollments exist under this mentor -->
+        <div v-if="studentEnrollments.length > 1" class="flex items-center gap-2 mt-4">
+          <RouterLink
+            v-for="e in studentEnrollments"
+            :key="e.id"
+            :to="{
+              name: 'learn-mentor-student',
+              params: { studentId: e.studentId },
+              query: { program: e.program },
+            }"
+            class="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+            :class="
+              enrollment?.id === e.id
+                ? 'bg-brand-violet text-white'
+                : 'bg-ink/5 text-ink/70 hover:bg-ink/10'
+            "
+          >
+            {{ e.program === 'stepup_scholars' ? 'StepUp Scholars' : 'Dynamerge' }}
+          </RouterLink>
+        </div>
       </Container>
     </Section>
 

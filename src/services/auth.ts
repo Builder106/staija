@@ -307,22 +307,28 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
 // Firestore's IndexedDB persistence layer can throw raw browser exceptions
 // (e.g. "the database connection is closing") when a second tab or the
 // OAuth popup races the main tab's connection. Those aren't meaningful to
-export type AuthErrorLike =
-  Error | { message?: string; code?: string } | string | null | undefined | unknown;
+// Provider-specific thrown values do not have a stable shape.
+// eslint-disable-next-line no-restricted-syntax -- This alias preserves the error boundary's unknown input.
+export type AuthErrorLike = unknown;
 
+// Firebase and browser storage APIs throw values outside a stable error shape.
+// eslint-disable-next-line no-restricted-syntax -- This is an error boundary.
 function isStorageError(error: unknown): boolean {
   if (!error) return false;
   const message =
     error instanceof Error
       ? error.message
       : typeof error === 'object' &&
+          error !== null &&
           'message' in error &&
-          typeof (error as { message?: unknown }).message === 'string'
-        ? (error as { message: string }).message
+          typeof error.message === 'string'
+        ? error.message
         : String(error);
   return /database connection is closing|indexeddb|version change transaction/i.test(message);
 }
 
+// Firebase may reject with either Error or a provider-specific object.
+// eslint-disable-next-line no-restricted-syntax -- This is an error boundary.
 export function toFriendlyAuthMessage(error: unknown, fallback: string): string {
   if (isStorageError(error)) {
     return 'A temporary storage issue interrupted sign-in. Please try again, or close other tabs of this site and retry.';
@@ -330,9 +336,10 @@ export function toFriendlyAuthMessage(error: unknown, fallback: string): string 
   const code =
     error &&
     typeof error === 'object' &&
+    error !== null &&
     'code' in error &&
-    typeof (error as { code?: unknown }).code === 'string'
-      ? (error as { code: string }).code
+    typeof error.code === 'string'
+      ? error.code
       : undefined;
   if (code && AUTH_ERROR_MESSAGES[code]) return AUTH_ERROR_MESSAGES[code];
   return error instanceof Error ? error.message : fallback;

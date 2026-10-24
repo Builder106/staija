@@ -14,9 +14,18 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
-import { getFirestore } from 'firebase-admin/firestore'
+import { FieldValue, getFirestore } from 'firebase-admin/firestore'
 import * as contentful from 'contentful-management'
 import type { PlainClientAPI, EntryProps } from 'contentful-management'
+import {
+  mergeQuizQuestions,
+  publicQuizQuestions,
+  splitQuizQuestions,
+  type QuizAnswerKey,
+  type QuizAnswerKeys,
+  type PublicQuizQuestion,
+} from './quizContent'
+import { contentfulEnvironmentForProject } from './contentfulEnvironment'
 
 const CONTENTFUL_MANAGEMENT_TOKEN = defineSecret('CONTENTFUL_MANAGEMENT_TOKEN')
 const CONTENTFUL_SPACE_ID = defineSecret('CONTENTFUL_SPACE_ID')
@@ -34,6 +43,8 @@ export type LmsFieldValue =
   | null
   | undefined
   | { [key: string]: LmsFieldValue }
+  | PublicQuizQuestion
+  | QuizAnswerKey
   | LmsFieldValue[]
 
 interface EntrySummary {
@@ -198,6 +209,11 @@ function shapeFields(
   }
 }
 
+function entryContentTypeId(entry: EntryProps): string {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Contentful PlainClientAPI EntryProps typing
+  return entry.sys.contentType.sys.id
+}
+
 function summarize(entry: EntryProps): EntrySummary {
   const fields: Record<string, LmsFieldValue> = {}
   for (const [k, v] of Object.entries(entry.fields ?? {})) {
@@ -208,13 +224,40 @@ function summarize(entry: EntryProps): EntrySummary {
   const isDraft = !entry.sys.publishedVersion
   return {
     id: entry.sys.id,
-    contentType: entry.sys.contentType.sys.id as LmsContentType,
+    contentType: entryContentTypeId(entry) as LmsContentType,
     fields,
     publishedAt: entry.sys.publishedAt ?? null,
     updatedAt: entry.sys.updatedAt,
     isPublished,
     isDraft,
   }
+}
+
+function quizPayload(payload: LmsCreateOrUpdatePayload): {
+  payload: LmsCreateOrUpdatePayload
+  answerKeys: QuizAnswerKeys
+} {
+  try {
+    const { questions, answerKeys } = splitQuizQuestions(payload.fields.questions)
+    return {
+      payload: { ...payload, fields: { ...payload.fields, questions } },
+      answerKeys,
+    }
+  } catch (error) {
+    throw new HttpsError('invalid-argument', error instanceof Error ? error.message : 'Invalid quiz.')
+  }
+}
+
+async function quizSummary(entry: EntryProps): Promise<EntrySummary> {
+  const summary = summarize(entry)
+  if (summary.contentType !== 'quiz') return summary
+  const keys = await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).get()
+  const answerKeys = (keys.data()?.draftAnswerKeys ?? keys.data()?.answerKeys ?? {}) as QuizAnswerKeys
+  summary.fields.questions = mergeQuizQuestions(
+    publicQuizQuestions(summary.fields.questions),
+    answerKeys,
+  )
+  return summary
 }
 
 // ---------- Dispatch ----------
@@ -242,28 +285,58 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
     }
     case 'get': {
       const entry = await client.entry.get({ entryId: request.id })
-      return summarize(entry)
+      return quizSummary(entry)
     }
     case 'create': {
+      const quiz = request.payload.type === 'quiz' ? quizPayload(request.payload) : null
       const entry = await client.entry.create(
         { contentTypeId: request.payload.type },
-        { fields: shapeFields(request.payload) },
+        { fields: shapeFields(quiz?.payload ?? request.payload) },
       )
-      return summarize(entry)
+      if (quiz) {
+        await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).set({ draftAnswerKeys: quiz.answerKeys })
+      }
+      return quiz ? quizSummary(entry) : summarize(entry)
     }
     case 'update': {
       const entry = await client.entry.get({ entryId: request.id })
-      const incoming = shapeFields(request.payload)
+      const quiz = request.payload.type === 'quiz' ? quizPayload(request.payload) : null
+      const incoming = shapeFields(quiz?.payload ?? request.payload)
       for (const [k, v] of Object.entries(incoming)) {
         if (v === undefined) continue
         ;(entry.fields as Record<string, { [LOCALE]: LmsFieldValue } | undefined>)[k] = v
       }
       const updated = await client.entry.update({ entryId: request.id }, entry)
-      return summarize(updated)
+      if (quiz) {
+        await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).set({ draftAnswerKeys: quiz.answerKeys }, { merge: true })
+      }
+      return quiz ? quizSummary(updated) : summarize(updated)
     }
     case 'publish': {
       const entry = await client.entry.get({ entryId: request.id })
+      if (entryContentTypeId(entry) === 'quiz') {
+        const questions = publicQuizQuestions(entry.fields.questions?.[LOCALE])
+        const keys = await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).get()
+        const answerKeys = (keys.data()?.draftAnswerKeys ?? keys.data()?.answerKeys) as QuizAnswerKeys | undefined
+        if (
+          questions.length === 0 ||
+          !answerKeys ||
+          questions.some((question) =>
+            !question.options.some((option) => option.id === answerKeys[question.id]?.correctOptionId),
+          )
+        ) {
+          throw new HttpsError('failed-precondition', 'Save valid quiz answers before publishing.')
+        }
+      }
       const published = await client.entry.publish({ entryId: request.id }, entry)
+      if (entryContentTypeId(entry) === 'quiz') {
+        const ref = getFirestore().collection('quiz_answer_keys').doc(entry.sys.id)
+        const keys = await ref.get()
+        await ref.set({
+          answerKeys: keys.data()?.draftAnswerKeys ?? keys.data()?.answerKeys,
+          draftAnswerKeys: FieldValue.delete(),
+        }, { merge: true })
+      }
       return summarize(published)
     }
     case 'unpublish': {
@@ -277,6 +350,9 @@ async function dispatch(client: PlainClientAPI, request: AdminRequest): Promise<
         await client.entry.unpublish({ entryId: request.id }, entry)
       }
       await client.entry.delete({ entryId: request.id })
+      if (entryContentTypeId(entry) === 'quiz') {
+        await getFirestore().collection('quiz_answer_keys').doc(entry.sys.id).delete()
+      }
       return { ok: true }
     }
   }
@@ -337,7 +413,15 @@ export const lmsContentAdmin = onCall<AdminInput>(
     }
     const data = req.data ?? ({} as AdminInput)
     const request = validate(data.request)
-    const envId = data.env || 'master'
+    let envId: 'master' | 'staging'
+    try {
+      envId = contentfulEnvironmentForProject(process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT)
+    } catch {
+      throw new HttpsError('failed-precondition', 'LMS content environment is not configured.')
+    }
+    if (data.env && data.env !== envId) {
+      throw new HttpsError('permission-denied', 'Contentful environment does not match this app.')
+    }
 
     const client = contentful.createClient(
       { accessToken: CONTENTFUL_MANAGEMENT_TOKEN.value() },
@@ -352,6 +436,7 @@ export const lmsContentAdmin = onCall<AdminInput>(
     try {
       return await dispatch(client, request)
     } catch (err) {
+      if (err instanceof HttpsError) throw err
       // Contentful management errors usually carry a useful name +
       // message; surface those instead of leaking the SDK's raw error.
       const msg = (err as { message?: string }).message ?? 'Contentful operation failed.'

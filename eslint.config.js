@@ -17,6 +17,8 @@ export default tseslint.config(
         sourceType: 'module',
         ecmaFeatures: { jsx: true },
         extraFileExtensions: ['.vue'],
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
       globals: {
         ...globals.browser,
@@ -36,8 +38,9 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.vue'],
     rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
@@ -45,6 +48,46 @@ export default tseslint.config(
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off',
       'no-empty': ['error', { allowEmptyCatch: true }],
+    },
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.vue', 'functions/src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.vue', 'functions/src/**/*.ts'],
+    ignores: [
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
+      'src/**/*.spec.ts',
+      'src/**/*.spec.tsx',
+      'src/**/__tests__/**',
+      'src/tests/**',
+      'functions/src/**/*.test.ts',
+      'functions/src/**/*.spec.ts',
+      'functions/src/**/__tests__/**',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSUnknownKeyword',
+          message: 'Use a concrete type; keep unknown only at validated data or error boundaries.',
+        },
+      ],
+    },
+  },
+  {
+    // These files model external error, Contentful, and Lottie JSON boundaries.
+    files: [
+      'src/services/avatar/lotties.ts',
+      'functions/src/quizContent.ts',
+      'functions/src/contentful.ts',
+    ],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
   prettier,
@@ -58,7 +101,9 @@ export default tseslint.config(
       'e2e/',
       'tests/',
       'trailer/',
-      'functions/',
+      'functions/lib/',
+      'functions/*.cjs',
+      'functions/*.js',
       'take_screens.mjs',
       'mobile-audit.cjs',
       '.features-gen/',

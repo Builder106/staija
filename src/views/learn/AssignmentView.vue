@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import RichText from '../../components/learn/RichText.vue';
 import Body from '../../components/ui/Body.vue';
@@ -70,6 +70,7 @@ async function load() {
   loading.value = true;
   error.value = null;
   const slug = route.params.slug as string;
+  const requestedCourse = typeof route.query.course === 'string' ? route.query.course : null;
   try {
     const [s, enrollments] = await Promise.all([
       CourseService.getAssignmentSpecBySlug(slug),
@@ -84,12 +85,20 @@ async function load() {
       error.value = 'You are not enrolled in any active course.';
       return;
     }
-    enrollment.value = enrollments[0];
+    const selectedEnrollment = requestedCourse
+      ? enrollments.find((item) => item.courseSlug === requestedCourse)
+      : enrollments[0];
+    if (!selectedEnrollment) {
+      error.value = `You are not enrolled in "${requestedCourse}".`;
+      return;
+    }
+    enrollment.value = selectedEnrollment;
     const enrollmentId =
-      enrollment.value.id ?? `${enrollment.value.studentId}_${enrollment.value.cohortId}`;
+      selectedEnrollment.id ?? `${selectedEnrollment.studentId}_${selectedEnrollment.cohortId}`;
     previousSubmissions.value = await SubmissionService.getSubmissionsForEnrollmentAndAssignment(
       enrollmentId,
       slug,
+      user.value.uid,
     );
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Failed to load assignment.';
@@ -139,7 +148,11 @@ async function handleSubmit() {
       linkUrl: linkUrl.value.trim() || undefined,
     });
 
-    router.push({ name: 'learn-submission', params: { id: result.submissionId } });
+    router.push({
+      name: 'learn-submission',
+      params: { id: result.submissionId },
+      query: enrollment.value.courseSlug ? { course: enrollment.value.courseSlug } : undefined,
+    });
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Submission failed.';
   } finally {
@@ -155,6 +168,8 @@ function fmtDate(value: TimestampLike) {
   });
 }
 
+watch([() => route.params.slug, () => route.query.course], () => void load());
+
 onMounted(load);
 </script>
 
@@ -163,7 +178,11 @@ onMounted(load);
     <Section class="!pt-10 !pb-6 border-b hairline-ink">
       <Container class="max-w-3xl">
         <RouterLink
-          to="/learn"
+          :to="
+            enrollment?.courseSlug
+              ? { name: 'learn-course', params: { slug: enrollment.courseSlug } }
+              : '/learn'
+          "
           class="text-xs text-ink/60 hover:text-ink mb-3 inline-flex items-center gap-1"
         >
           <Icon icon="lucide:arrow-left" width="12" /> Back to course

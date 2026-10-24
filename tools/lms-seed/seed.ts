@@ -44,10 +44,13 @@ const cliEnvFlag = process.argv.find((a) => a.startsWith('--env='))
 if (cliEnvFlag) {
   process.env.VITE_CONTENTFUL_ENV_ID = cliEnvFlag.slice('--env='.length)
 }
+const envName = process.env.VITE_CONTENTFUL_ENV_ID || 'staging'
+loadEnv({ path: `.env.${envName}.local`, override: true })
 
 import type { PlainClientAPI, EntryProps } from 'contentful-management'
-import type { Document } from '@contentful/rich-text-types'
+import { BLOCKS, type Document } from '@contentful/rich-text-types'
 import { createPlainClient, requireContentfulConfig } from './contentful-client.ts'
+import { DEMO_QUIZZES } from './demo-quizzes.ts'
 
 // ---------- Config ----------
 
@@ -61,20 +64,6 @@ const DEMO_PREFIX = 'demo-'
 type Program = 'stepup_scholars' | 'dynamerge'
 type Submission = 'text' | 'file' | 'link' | 'text_or_file'
 
-interface DemoQuiz {
-  id: string
-  title: string
-  summary?: string
-  passThresholdPercent?: number
-  questions: Array<{
-    id: string
-    questionText: string
-    options: Array<{ id: string; text: string }>
-    correctOptionId: string
-    explanation?: string
-  }>
-}
-
 interface DemoLesson {
   id: string
   title: string
@@ -82,7 +71,7 @@ interface DemoLesson {
   estimatedMinutes: number
   videoUrl?: string
   completionCriteria?: 'viewed' | 'assignment_submitted' | 'quiz_passed'
-  quiz?: DemoQuiz
+  quizId?: string
 }
 
 interface DemoAssignment {
@@ -161,42 +150,11 @@ const COURSES: DemoCourse[] = [
             title: 'Lab safety basics',
             estimatedMinutes: 20,
             completionCriteria: 'quiz_passed',
+            quizId: `${DEMO_PREFIX}stepup-quiz-lab-safety`,
             bodyParagraphs: [
               'Before you touch a single instrument, you need to understand the four-tier safety model used in our partner labs.',
-              'This lesson is the prerequisite for any in-person session. The quiz at the end is required.',
+              'Review the lab safety guidance before any in-person session. The quiz at the end is required.',
             ],
-            quiz: {
-              id: `${DEMO_PREFIX}quiz-lab-safety`,
-              title: 'Lab Safety Protocol Knowledge Check',
-              summary: 'Evaluate your understanding of safety protocols and hazard identification.',
-              passThresholdPercent: 70,
-              questions: [
-                {
-                  id: 'q1',
-                  questionText: 'What is the primary personal protective equipment (PPE) required when handling chemical reagents?',
-                  options: [
-                    { id: 'q1_o1', text: 'Safety goggles and lab coat' },
-                    { id: 'q1_o2', text: 'Sunglasses and t-shirt' },
-                    { id: 'q1_o3', text: 'Latex gloves only' },
-                    { id: 'q1_o4', text: 'No PPE is required for small volumes' },
-                  ],
-                  correctOptionId: 'q1_o1',
-                  explanation: 'Eye protection and lab coats shield against chemical splashes and spills.',
-                },
-                {
-                  id: 'q2',
-                  questionText: 'Where should chemical waste be disposed of after completing an experiment?',
-                  options: [
-                    { id: 'q2_o1', text: 'Poured directly down the sink' },
-                    { id: 'q2_o2', text: 'Designated hazardous waste container' },
-                    { id: 'q2_o3', text: 'Standard trash bin' },
-                    { id: 'q2_o4', text: 'Left on the lab bench' },
-                  ],
-                  correctOptionId: 'q2_o2',
-                  explanation: 'Chemical waste must always be collected in labelled hazardous waste containers.',
-                },
-              ],
-            },
           },
         ],
         assignments: [
@@ -354,10 +312,10 @@ const COURSES: DemoCourse[] = [
 
 function richTextDoc(paragraphs: string[]): Document {
   return {
-    nodeType: 'document',
+    nodeType: BLOCKS.DOCUMENT,
     data: {},
     content: paragraphs.map((value) => ({
-      nodeType: 'paragraph',
+      nodeType: BLOCKS.PARAGRAPH,
       data: {},
       content: [{ nodeType: 'text', value, marks: [], data: {} }],
     })),
@@ -403,7 +361,7 @@ async function upsert(
     entry = await env.entry.update({ entryId: id }, entry)
   } catch (err: unknown) {
     if (!isNotFound(err)) throw err
-    entry = await env.entry.create({ entryId: id, contentTypeId: contentType }, { fields })
+    entry = await env.entry.createWithId({ entryId: id, contentTypeId: contentType }, { fields })
   }
   if (!entry.sys.publishedVersion || entry.sys.version !== entry.sys.publishedVersion + 1) {
     entry = await env.entry.publish({ entryId: id }, entry)
@@ -424,6 +382,24 @@ async function seed() {
   const env = await getEnv()
   console.log(`→ Seeding into space=${SPACE_ID} env=${ENV_ID}`)
 
+  // 1. Seed quizzes first so lessons can link to them.
+  console.log('\n📝 Quizzes')
+  for (const quiz of DEMO_QUIZZES) {
+    const publicQuestions = quiz.questions.map(({ id, questionText, options }) => ({
+      id,
+      questionText,
+      options,
+    }))
+    await upsert(env, 'quiz', quiz.id, clean({
+      slug: L(quiz.slug),
+      title: L(quiz.title),
+      summary: L(quiz.summary),
+      passThresholdPercent: L(quiz.passThresholdPercent),
+      questions: L(publicQuestions),
+    }))
+    console.log(`  · quiz    ${quiz.id}`)
+  }
+
   // Order matters: leaves first (assignments, lessons), then modules
   // that reference them, then courses that reference modules.
   for (const course of COURSES) {
@@ -433,19 +409,6 @@ async function seed() {
     for (const mod of course.modules) {
       const lessonIds: string[] = []
       for (const lesson of mod.lessons) {
-        let quizLinkId: string | undefined
-        if (lesson.quiz) {
-          await upsert(env, 'quiz', lesson.quiz.id, clean({
-            slug: L(lesson.quiz.id),
-            title: L(lesson.quiz.title),
-            summary: L(lesson.quiz.summary),
-            passThresholdPercent: L(lesson.quiz.passThresholdPercent ?? 70),
-            questions: L(lesson.quiz.questions),
-          }))
-          console.log(`  · quiz    ${lesson.quiz.id}`)
-          quizLinkId = lesson.quiz.id
-        }
-
         await upsert(env, 'lesson', lesson.id, clean({
           slug: L(lesson.id),
           title: L(lesson.title),
@@ -453,7 +416,7 @@ async function seed() {
           videoUrl: L(lesson.videoUrl),
           estimatedMinutes: L(lesson.estimatedMinutes),
           completionCriteria: L(lesson.completionCriteria ?? 'viewed'),
-          quiz: quizLinkId ? L(entryLink(quizLinkId)) : undefined,
+          quiz: lesson.quizId ? L(entryLink(lesson.quizId)) : undefined,
         }))
         console.log(`  · lesson  ${lesson.id}`)
         lessonIds.push(lesson.id)
@@ -513,7 +476,7 @@ async function republishDemo() {
   console.log(`→ Republishing demo entries in space=${SPACE_ID} env=${ENV_ID}`)
 
   // Order: leaves first so refs resolve in the mirror as parents arrive.
-  const types = ['lesson', 'assignmentSpec', 'module', 'course'] as const
+  const types = ['quiz', 'lesson', 'assignmentSpec', 'module', 'course'] as const
   let total = 0
   for (const contentType of types) {
     const result = await env.entry.getMany({ query: { content_type: contentType, limit: 1000 } })
@@ -546,7 +509,7 @@ async function clearDemo(opts: { dryRun: boolean }) {
 
   // Delete in reverse dependency order: courses first (so nothing
   // references modules), then modules, then their leaves.
-  const types = ['course', 'module', 'lesson', 'assignmentSpec'] as const
+  const types = ['course', 'module', 'lesson', 'assignmentSpec', 'quiz'] as const
 
   for (const contentType of types) {
     const result = await env.entry.getMany({ query: { content_type: contentType, limit: 1000 } })
@@ -607,7 +570,11 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('\nFailed:', err instanceof Error ? err.message : err)
-  process.exitCode = 1
-})
+export { COURSES, clearDemo, republishDemo, seed }
+
+if (process.argv[1]?.endsWith('seed.ts') || process.argv[1]?.endsWith('seed.js')) {
+  main().catch((err) => {
+    console.error('\nFailed:', err instanceof Error ? err.message : err)
+    process.exitCode = 1
+  })
+}

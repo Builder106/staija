@@ -38,7 +38,11 @@ onMounted(load);
     <Section class="!pt-12 !pb-8 wash-violet-6 border-b hairline-ink">
       <Container>
         <RouterLink
-          to="/learn"
+          :to="
+            route.query.course
+              ? { name: 'learn-course', params: { slug: route.query.course as string } }
+              : '/learn'
+          "
           class="text-xs text-ink/60 hover:text-ink mb-4 inline-flex items-center gap-1"
         >
           <Icon icon="lucide:arrow-left" width="12" /> Back to course
@@ -61,7 +65,11 @@ onMounted(load);
             <ul class="divide-y divide-ink/5">
               <li v-for="lesson in lessons" :key="lesson.slug">
                 <RouterLink
-                  :to="{ name: 'learn-lesson', params: { slug: lesson.slug } }"
+                  :to="{
+                    name: 'learn-lesson',
+                    params: { slug: lesson.slug },
+                    query: route.query.course ? { course: route.query.course } : undefined,
+                  }"
                   class="flex items-center gap-3 px-5 py-3.5 hover:bg-ink/[0.02]"
                 >
                   <Icon icon="lucide:play-circle" width="18" class="text-ink/50" />
@@ -85,7 +93,11 @@ onMounted(load);
             <ul class="divide-y divide-ink/5">
               <li v-for="a in assignments" :key="a.slug">
                 <RouterLink
-                  :to="{ name: 'learn-assignment', params: { slug: a.slug } }"
+                  :to="{
+                    name: 'learn-assignment',
+                    params: { slug: a.slug },
+                    query: route.query.course ? { course: route.query.course } : undefined,
+                  }"
                   class="flex items-center gap-3 px-5 py-3.5 hover:bg-ink/[0.02]"
                 >
                   <Icon icon="lucide:file-edit" width="18" class="text-ink/50" />
