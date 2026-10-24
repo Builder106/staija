@@ -367,8 +367,12 @@ export class SessionService {
   }
 
   static async getRsvp(sessionId: string, studentId: string): Promise<SessionRsvp | null> {
-    const snap = await getDoc(doc(db, 'session_rsvps', `${sessionId}_${studentId}`));
-    return snap.exists() ? ({ id: snap.id, ...snap.data() } as SessionRsvp) : null;
+    try {
+      const snap = await getDoc(doc(db, 'session_rsvps', `${sessionId}_${studentId}`));
+      return snap.exists() ? ({ id: snap.id, ...snap.data() } as SessionRsvp) : null;
+    } catch {
+      return null;
+    }
   }
 }
 

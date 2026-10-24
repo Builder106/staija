@@ -456,7 +456,8 @@ service cloud.firestore {
     // server-only so RSVP triggers attendance/notification side-effects.
     match /session_rsvps/{rsvpId} {
       allow read: if isAuthenticated() && (
-        resource.data.studentId == request.auth.uid ||
+        rsvpId.matches('^.*_' + request.auth.uid + '$') ||
+        (resource != null && resource.data.studentId == request.auth.uid) ||
         hasAnyRole(['staff', 'admin'])
       );
       allow write: if false;
