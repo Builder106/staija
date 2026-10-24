@@ -96,8 +96,12 @@ watch(
        time the user crossed the scrollY > 20 threshold. The visual cue
        that the user has scrolled comes from the border-bottom alone now. -->
   <header
-    class="sticky top-0 z-50 w-full py-5 transition-colors duration-200 bg-paper"
-    :class="isScrolled ? 'border-b hairline-ink' : 'border-b border-transparent'"
+    class="sticky top-0 z-50 w-full py-5 transition-all duration-300 backdrop-blur-md"
+    :class="
+      isScrolled
+        ? 'bg-paper/90 border-b hairline-ink shadow-xs shadow-ink/5'
+        : 'bg-paper border-b border-transparent'
+    "
   >
     <Container>
       <div class="flex items-center justify-between">

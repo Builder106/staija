@@ -24,6 +24,7 @@ onMounted(() => {
 
 import CountUp from '../components/motion/CountUp.vue';
 import Hairline from '../components/motion/Hairline.vue';
+import StemParticles from '../components/motion/StemParticles.vue';
 import Body from '../components/ui/Body.vue';
 import Container from '../components/ui/Container.vue';
 import Eyebrow from '../components/ui/Eyebrow.vue';
@@ -147,6 +148,7 @@ onMounted(async () => {
     <Section
       class="flex items-center min-h-[800px] sm:min-h-[850px] md:min-h-[900px] lg:min-h-[700px] !pt-8 !pb-16 sm:!pt-12 sm:!pb-20 md:!pt-20 md:!pb-28 relative overflow-hidden bg-gradient-hero text-white dark:text-ink-static"
     >
+      <StemParticles class="opacity-35" />
       <!-- Soft accent glow behind the Lottie. Hidden on small screens
            where the artwork stacks below the copy and the glow would
            wash out the headline. -->
