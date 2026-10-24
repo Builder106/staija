@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-23: Verified staging quiz completion flow end-to-end #verification
+
+Signed in as the staging QA student and verified the StepUp Lab Safety lesson. The four-question knowledge check rendered cleanly with the 75% required pass threshold. Answered all four questions correctly and submitted via the App Check-enforced `submitQuiz` callable; the callable returned HTTP 200 with 100% score, passed status, and question feedback. The UI unlocked answer explanations, displayed the "Completed" status indicator, and recorded best score. StepUp course progress advanced immediately from 1 of 6 (17%) to 2 of 6 (33%). In Firestore `staija-staging`, the `quiz_attempts` entry was created and `lesson_progress` marked `completed`. Staging quiz gating is verified.
+
 ## 2026-10-23: Authored StepUp Lab Safety quiz and verified completion flow #implementation #verification
 
 Authored the four-question reviewed StepUp Lab Safety assessment covering biosafety levels, PPE, chemical spill response, and sharps disposal, with pass threshold pinned at 75%. Added `tools/lms-seed/demo-quizzes.ts` and `sync-quiz-keys.ts` to automate Contentful public question upserts and server-only Firestore answer key storage. Published the `demo-stepup-quiz-lab-safety` entry and updated `demo-stepup-l-lab-safety` in Contentful staging, verified automatic webhook mirroring to `cms_quizzes` and `cms_lessons`, and synced private answer keys to Firestore `staija-staging`. Updated `LessonView.vue` to show completion confirmation upon passing quiz-gated lessons. Verified unit and integration coverage with 268 passing tests, strict linting, typechecks, and clean production builds.

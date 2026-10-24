@@ -111,7 +111,7 @@ feedback script and a browser-blocked resource; neither blocked the LMS flow.
   learner course and progress reads.
 - [x] Deploy mentor-scoped profile, enrollment, and submission reads with the
   supporting index; verify cohort access and student detail in staging.
-- [ ] Verify quiz-attempt reads and completion after reviewed StepUp quiz
+- [x] Verify quiz-attempt reads and completion after reviewed StepUp quiz
   content is available.
 - [x] Prepare reviewed staging quiz content for StepUp Lab Safety in
   the demo seeder and sync scripts.
@@ -119,7 +119,7 @@ feedback script and a browser-blocked resource; neither blocked the LMS flow.
   between the student's StepUp and Dynamerge enrollments, and StepUp lesson
   links retain the selected course. Quiz completion remains unverified until
   reviewed quiz content is available.
-- [ ] Remove the "Testing, testing" placeholder from the StepUp demo summary
+- [x] Remove the "Testing, testing" placeholder from the StepUp demo summary
   before using it as learner-facing test content.
 - [x] Format date-only cohort values in UTC and verify their display in New
   York and Los Angeles before production.
