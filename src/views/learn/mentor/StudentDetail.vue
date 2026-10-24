@@ -2,6 +2,7 @@
 import { Icon } from '@iconify/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import TutorSessionInspector from '../../../components/learn/mentor/TutorSessionInspector.vue';
 import Body from '../../../components/ui/Body.vue';
 import Container from '../../../components/ui/Container.vue';
 import Eyebrow from '../../../components/ui/Eyebrow.vue';
@@ -14,8 +15,10 @@ import {
   EnrollmentService,
   ProgressService,
   SubmissionService,
+  listTutorSessions,
   toMillis,
   type TimestampLike,
+  type TutorSessionRecord,
 } from '../../../services/learn';
 import { MentorService, type MentorStudentProfile } from '../../../services/mentor';
 import type {
@@ -36,6 +39,10 @@ const studentEnrollments = ref<Enrollment[]>([]);
 const progress = ref<LessonProgress[]>([]);
 const submissions = ref<AssignmentSubmission[]>([]);
 const feedback = ref<MentorFeedback[]>([]);
+const tutorSessions = ref<TutorSessionRecord[]>([]);
+const loadingTutorSessions = ref(false);
+const inspectingSessionId = ref<string | null>(null);
+const showInspector = ref(false);
 
 const completedCount = computed(
   () => progress.value.filter((p) => p.status === 'completed').length,
@@ -77,21 +84,24 @@ async function load() {
     if (own) {
       enrollment.value = own;
       const enrollmentId = own.id ?? `${own.studentId}_${own.cohortId}`;
-      const [p, subs, fb] = await Promise.all([
+      const [p, subs, fb, sessions] = await Promise.all([
         ProgressService.getProgressForEnrollment(enrollmentId, 'mentorId', user.value!.uid),
         SubmissionService.getSubmissionsForEnrollmentAndAssignmentAll(
           enrollmentId,
           user.value!.uid,
         ),
         MentorService.getFeedbackForStudent(user.value.uid, studentId),
+        listTutorSessions({ studentId, limit: 15 }).catch(() => [] as TutorSessionRecord[]),
       ]);
       progress.value = p;
       submissions.value = subs;
       feedback.value = fb;
+      tutorSessions.value = sessions;
     } else {
       progress.value = [];
       submissions.value = [];
       feedback.value = [];
+      tutorSessions.value = [];
     }
   } catch (err) {
     error.value = (err as { message?: string }).message ?? 'Failed to load student.';
@@ -173,6 +183,16 @@ async function submitFeedback() {
   } finally {
     feedbackSubmitting.value = false;
   }
+}
+
+function openInspector(sessionId: string) {
+  inspectingSessionId.value = sessionId;
+  showInspector.value = true;
+}
+
+function closeInspector() {
+  showInspector.value = false;
+  inspectingSessionId.value = null;
 }
 
 watch(
@@ -314,6 +334,68 @@ onMounted(load);
             </UiCard>
           </div>
 
+          <!-- AI STEM Tutor Activity & Whiteboard -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <Eyebrow class="text-ink/50 block">AI STEM Tutor & Whiteboard</Eyebrow>
+              <span v-if="tutorSessions.length > 0" class="text-xs text-ink/50">
+                {{ tutorSessions.length }} session{{ tutorSessions.length === 1 ? '' : 's' }}
+              </span>
+            </div>
+
+            <UiCard v-if="loadingTutorSessions" class="p-6 bg-surface text-center">
+              <Icon
+                icon="lucide:loader-2"
+                width="20"
+                class="animate-spin text-brand-violet mx-auto"
+              />
+            </UiCard>
+
+            <UiCard v-else-if="tutorSessions.length === 0" class="p-6 bg-surface">
+              <Body class="text-ink/60 text-sm"
+                >No AI tutor sessions recorded yet for this student.</Body
+              >
+            </UiCard>
+
+            <UiCard v-else class="p-0 bg-surface overflow-hidden">
+              <ul class="divide-y divide-ink/5">
+                <li
+                  v-for="s in tutorSessions"
+                  :key="s.id"
+                  class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-ink/[0.02] cursor-pointer transition-colors"
+                  @click="openInspector(s.id)"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <Icon icon="lucide:sparkles" width="18" class="text-brand-violet shrink-0" />
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium text-ink truncate">
+                        {{ s.lessonTitle || 'General Lesson Tutor' }}
+                      </div>
+                      <div class="text-xs text-ink/50 flex items-center gap-2 mt-0.5">
+                        <span>{{ fmtDate(s.updatedAt || s.createdAt) }}</span>
+                        <span
+                          class="capitalize px-1.5 py-0.5 rounded bg-ink/5 text-[10px] font-semibold text-ink/70"
+                        >
+                          {{ s.mode }}
+                        </span>
+                        <span>{{ s.messageCount }} messages</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-violet/10 text-brand-violet hover:bg-brand-violet/15 transition-colors focus-ring-brand shrink-0"
+                    @click.stop="openInspector(s.id)"
+                  >
+                    <span>Inspect</span>
+                    <Icon icon="lucide:arrow-right" width="12" />
+                  </button>
+                </li>
+              </ul>
+            </UiCard>
+          </div>
+
           <div>
             <Eyebrow class="text-ink/50 mb-3 block">Feedback you've left</Eyebrow>
 
@@ -371,5 +453,12 @@ onMounted(load);
         </template>
       </Container>
     </Section>
+
+    <TutorSessionInspector
+      :show="showInspector"
+      :session-id="inspectingSessionId || ''"
+      :student-name="student?.displayName || 'Student'"
+      @close="closeInspector"
+    />
   </div>
 </template>

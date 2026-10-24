@@ -24,6 +24,7 @@ export interface TutorPageSnapshot {
   content: string
   createdAt: number
   updatedAt?: number
+  annotations?: TutorAnnotationDoc[]
 }
 
 export type TutorStreamEvent =
@@ -541,6 +542,34 @@ export const askLmsTutor = onCall(
   },
 )
 
+async function isAuthorizedForStudent(
+  db: FirebaseFirestore.Firestore,
+  callerUid: string,
+  callerRole: string | undefined,
+  studentUid: string,
+): Promise<boolean> {
+  if (callerUid === studentUid) return true
+  if (callerRole === 'admin' || callerRole === 'staff') return true
+
+  const [enrollmentSnap, assignmentSnap] = await Promise.all([
+    db
+      .collection('enrollments')
+      .where('mentorId', '==', callerUid)
+      .where('studentId', '==', studentUid)
+      .limit(1)
+      .get(),
+    db
+      .collection('mentor_assignments')
+      .where('mentorId', '==', callerUid)
+      .where('studentId', '==', studentUid)
+      .where('status', '==', 'active')
+      .limit(1)
+      .get(),
+  ])
+
+  return !enrollmentSnap.empty || !assignmentSnap.empty
+}
+
 export const listTutorSessions = onCall(
   { timeoutSeconds: 30, memory: '256MiB' },
   async (request): Promise<TutorSessionSummary[]> => {
@@ -559,16 +588,9 @@ export const listTutorSessions = onCall(
     if (studentId && studentId !== uid) {
       const userDoc = await db.collection('users').doc(uid).get()
       const role = userDoc.data()?.role
-      if (role !== 'admin' && role !== 'staff') {
-        const enrollmentSnap = await db
-          .collection('enrollments')
-          .where('mentorId', '==', uid)
-          .where('studentId', '==', studentId)
-          .limit(1)
-          .get()
-        if (enrollmentSnap.empty) {
-          throw new HttpsError('permission-denied', 'Not authorized to view student tutor sessions.')
-        }
+      const authorized = await isAuthorizedForStudent(db, uid, role, studentId)
+      if (!authorized) {
+        throw new HttpsError('permission-denied', 'Not authorized to view student tutor sessions.')
       }
       targetUid = studentId
     }
@@ -610,16 +632,9 @@ export const getTutorSession = onCall(
     if (session.userId !== uid) {
       const userDoc = await db.collection('users').doc(uid).get()
       const role = userDoc.data()?.role
-      if (role !== 'admin' && role !== 'staff') {
-        const enrollmentSnap = await db
-          .collection('enrollments')
-          .where('mentorId', '==', uid)
-          .where('studentId', '==', session.userId)
-          .limit(1)
-          .get()
-        if (enrollmentSnap.empty) {
-          throw new HttpsError('permission-denied', 'Not authorized.')
-        }
+      const authorized = await isAuthorizedForStudent(db, uid, role, session.userId)
+      if (!authorized) {
+        throw new HttpsError('permission-denied', 'Not authorized.')
       }
     }
 
@@ -628,10 +643,22 @@ export const getTutorSession = onCall(
       db.collection('tutor_sessions').doc(sessionId).collection('pages').orderBy('createdAt', 'desc').get(),
     ])
 
+    const pages = await Promise.all(
+      pagesSnap.docs.map(async (d) => {
+        const pageData = d.data() as TutorPageSnapshot
+        const annSnap = await d.ref.collection('annotations').orderBy('createdAt', 'asc').get()
+        const annotations = annSnap.docs.map((ad) => ad.data() as TutorAnnotationDoc)
+        return {
+          ...pageData,
+          annotations: annotations.length > 0 ? annotations : undefined,
+        }
+      }),
+    )
+
     return {
       session,
       messages: msgSnap.docs.map((d) => d.data() as TutorSessionMessageDoc),
-      pages: pagesSnap.docs.map((d) => d.data() as TutorPageSnapshot),
+      pages,
     }
   },
 )
@@ -692,14 +719,32 @@ export const saveTutorAnnotation = onCall(
       pageId: string
       content: string
     }
-    if (!sessionId || !pageId || !content) {
-      throw new HttpsError('invalid-argument', 'sessionId, pageId, and content are required.')
+    const trimmed = typeof content === 'string' ? content.trim() : ''
+    if (!sessionId || !pageId || !trimmed) {
+      throw new HttpsError('invalid-argument', 'sessionId, pageId, and non-empty content are required.')
     }
+
+    const sessionDoc = await db.collection('tutor_sessions').doc(sessionId).get()
+    if (!sessionDoc.exists) {
+      throw new HttpsError('not-found', 'Tutor session not found.')
+    }
+    const session = sessionDoc.data() as TutorSessionSummary
 
     const userDoc = await db.collection('users').doc(uid).get()
     const userData = userDoc.data() || {}
     const role = (userData.role as string) || 'student'
     const name = (userData.displayName as string) || (userData.name as string) || 'User'
+
+    const authorized = await isAuthorizedForStudent(db, uid, role, session.userId)
+    if (!authorized) {
+      throw new HttpsError('permission-denied', 'Not authorized to annotate this session.')
+    }
+
+    const pageRef = db.collection('tutor_sessions').doc(sessionId).collection('pages').doc(pageId)
+    const pageDoc = await pageRef.get()
+    if (!pageDoc.exists) {
+      throw new HttpsError('not-found', 'Whiteboard page not found.')
+    }
 
     const annotationId = `ann_${Date.now()}`
     const annotation: TutorAnnotationDoc = {
@@ -708,18 +753,11 @@ export const saveTutorAnnotation = onCall(
       authorUid: uid,
       authorName: name,
       authorRole: role,
-      content,
+      content: trimmed,
       createdAt: Date.now(),
     }
 
-    await db
-      .collection('tutor_sessions')
-      .doc(sessionId)
-      .collection('pages')
-      .doc(pageId)
-      .collection('annotations')
-      .doc(annotationId)
-      .set(annotation)
+    await pageRef.collection('annotations').doc(annotationId).set(annotation)
 
     return { ok: true, annotation }
   },

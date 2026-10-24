@@ -11,6 +11,7 @@ import {
   saveTutorPage,
   type AskLmsTutorPayload,
   type AskLmsTutorResult,
+  type TutorAnnotationDoc,
   type TutorSessionRecord,
   type TutorStreamEvent,
 } from '../../services/learn';
@@ -31,6 +32,7 @@ interface WhiteboardCard {
   title: string;
   content: string;
   createdAt: number;
+  annotations?: TutorAnnotationDoc[];
 }
 
 const props = defineProps<{
@@ -201,6 +203,7 @@ async function loadSession(sessionId: string) {
           title: p.title,
           content: cardContent,
           createdAt: p.createdAt,
+          annotations: p.annotations,
         };
       });
       saveWhiteboard();
@@ -445,6 +448,16 @@ function formatFormattedText(text: string): string {
     .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>');
 
   return formatted;
+}
+
+function fmtTime(ms: number) {
+  if (!ms) return '';
+  return new Date(ms).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 const pedagogicalModes = [
@@ -782,6 +795,30 @@ const pedagogicalModes = [
                     <MermaidViewer v-if="block.type === 'mermaid'" :code="block.content" />
                     <JsxGraphViewer v-else-if="block.type === 'geometry'" :spec="block.content" />
                     <div v-else v-html="formatFormattedText(block.content)" />
+                  </div>
+                </div>
+
+                <!-- Pinned Mentor Feedback -->
+                <div
+                  v-if="card.annotations && card.annotations.length > 0"
+                  class="pt-3 border-t border-ink/10 flex flex-col gap-2"
+                >
+                  <div
+                    class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-violet"
+                  >
+                    <Icon icon="lucide:message-square" width="13" />
+                    <span>Mentor notes ({{ card.annotations.length }})</span>
+                  </div>
+                  <div
+                    v-for="ann in card.annotations"
+                    :key="ann.id"
+                    class="p-2.5 rounded-lg bg-surface border border-brand-violet/20 flex flex-col gap-1 text-xs"
+                  >
+                    <div class="flex items-center justify-between text-[11px] text-ink/60">
+                      <span class="font-medium text-ink">{{ ann.authorName }}</span>
+                      <span>{{ fmtTime(ann.createdAt) }}</span>
+                    </div>
+                    <p class="text-ink whitespace-pre-wrap m-0">{{ ann.content }}</p>
                   </div>
                 </div>
               </div>

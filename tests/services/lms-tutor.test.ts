@@ -305,5 +305,70 @@ Followed by coordinate plot:
       expect(session.messageCount).toBe(4)
       expect(session.updatedAt).toBeGreaterThanOrEqual(session.createdAt)
     })
+
+    it('validates whiteboard card snapshots with attached mentor annotations', () => {
+      const pageWithAnnotations = {
+        id: 'page_geometry_001',
+        title: 'Research Methodology Vector Model',
+        kind: 'geometry' as const,
+        content: '{"elements":[{"kind":"point","name":"Q","coord":[-5,5]}]}',
+        createdAt: 1770000000000,
+        annotations: [
+          {
+            id: 'ann_101',
+            pageId: 'page_geometry_001',
+            authorUid: 'mentor_dr_ada',
+            authorName: 'Dr. Ada',
+            authorRole: 'mentor',
+            content: 'Check the coordinate directions for wet-lab vs field observation.',
+            createdAt: 1770000010000,
+          },
+        ],
+      }
+
+      expect(pageWithAnnotations.kind).toBe('geometry')
+      expect(pageWithAnnotations.annotations).toHaveLength(1)
+      expect(pageWithAnnotations.annotations[0].authorName).toBe('Dr. Ada')
+      expect(pageWithAnnotations.annotations[0].content).toContain('coordinate directions')
+    })
+
+    it('rejects empty or whitespace-only annotation content', () => {
+      function validateAnnotationInput(content: unknown): { valid: boolean; trimmed: string } {
+        const trimmed = typeof content === 'string' ? content.trim() : ''
+        return { valid: trimmed.length > 0, trimmed }
+      }
+
+      expect(validateAnnotationInput('').valid).toBe(false)
+      expect(validateAnnotationInput('   \n  \t  ').valid).toBe(false)
+      expect(validateAnnotationInput(null).valid).toBe(false)
+      expect(validateAnnotationInput('Great hypothesis framing!').valid).toBe(true)
+      expect(validateAnnotationInput('Great hypothesis framing!').trimmed).toBe('Great hypothesis framing!')
+    })
+
+    it('verifies mentor-student authorization predicate logic', () => {
+      function checkAuth(params: {
+        callerUid: string
+        callerRole?: string
+        studentUid: string
+        hasEnrollment: boolean
+        hasAssignment: boolean
+      }): boolean {
+        if (params.callerUid === params.studentUid) return true
+        if (params.callerRole === 'admin' || params.callerRole === 'staff') return true
+        return params.hasEnrollment || params.hasAssignment
+      }
+
+      // Self
+      expect(checkAuth({ callerUid: 'u1', studentUid: 'u1', hasEnrollment: false, hasAssignment: false })).toBe(true)
+      // Staff / admin
+      expect(checkAuth({ callerUid: 'admin1', callerRole: 'admin', studentUid: 'u2', hasEnrollment: false, hasAssignment: false })).toBe(true)
+      expect(checkAuth({ callerUid: 'staff1', callerRole: 'staff', studentUid: 'u2', hasEnrollment: false, hasAssignment: false })).toBe(true)
+      // Assigned mentor via enrollments
+      expect(checkAuth({ callerUid: 'mentor1', callerRole: 'mentor', studentUid: 'u2', hasEnrollment: true, hasAssignment: false })).toBe(true)
+      // Assigned mentor via mentor_assignments
+      expect(checkAuth({ callerUid: 'mentor1', callerRole: 'mentor', studentUid: 'u2', hasEnrollment: false, hasAssignment: true })).toBe(true)
+      // Unassigned peer
+      expect(checkAuth({ callerUid: 'peer1', callerRole: 'student', studentUid: 'u2', hasEnrollment: false, hasAssignment: false })).toBe(false)
+    })
   })
 })

@@ -513,6 +513,7 @@ export interface TutorPageSnapshot {
   content: string;
   createdAt: number;
   updatedAt?: number;
+  annotations?: TutorAnnotationDoc[];
 }
 
 export type TutorStreamEvent =
