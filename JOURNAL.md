@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-25: Skip staging deploys for tracking-doc-only pushes #decision
+
+Keep the staging hook behind the full CI gate. Skip it when a push changes only `JOURNAL.md`, `ROADMAP.md`, or both. These edits leave the deployed app unchanged and currently create extra Preview records. Leave the production hook unchanged.
+
 ## 2026-10-24: Verified mentor whiteboard review and annotations on staging #verification
 
 Verified end-to-end mentor review and collaborative whiteboard annotations in the staging LMS environment (staging.staija.org). Authenticated as the staging QA mentor (vaughanolayinka+staija-lms-mentor@gmail.com) and navigated to the assigned student profile for StepUp Scholars. The student profile rendered the AI STEM Tutor & Whiteboard section listing historical tutor sessions with title, timestamp, pedagogical mode, and message counts. Opened the TutorSessionInspector modal, verifying accessible tabs between interactive JSXGraph geometry whiteboard cards and dialogue transcripts. In the whiteboard inspector, submitted a mentor annotation note via the saveTutorAnnotation Cloud Function; the note pinned immediately with mentor attribution and timestamp. Switched authentication back to the QA student (vaughanolayinka+staija-lms-student@gmail.com), opened the lesson tutor drawer, loaded the session from history, and verified that the mentor's pinned note rendered directly beneath the whiteboard card. Evidence screenshots captured to docs/evidence/mentor_whiteboard_inspector.png and docs/evidence/student_whiteboard_mentor_notes.png.

@@ -164,8 +164,26 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-24.04
     steps:
-      - name: Deploy to Staging
+      - name: Checkout staging history
         if: github.ref == 'refs/heads/staging'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check staging deployment changes
+        id: staging_changes
+        if: github.ref == 'refs/heads/staging'
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if git diff --quiet "$BEFORE" "$AFTER" -- . ':!JOURNAL.md' ':!ROADMAP.md'; then
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "JOURNAL.md and ROADMAP.md are the only changes; skipping the staging deployment."
+          else
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy to Staging
+        if: github.ref == 'refs/heads/staging' && steps.staging_changes.outputs.deploy == 'true'
         env:
           HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_STAGING }}
         run: |
