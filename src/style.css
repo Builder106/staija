@@ -174,12 +174,6 @@
     8 1;
 }
 
-[data-theme='dark'] .gradient-blob {
-  /* Soft white glow loses contrast on a dark surface — inverse it to a
-     subtle dark glow that still reads as artwork-backing. */
-  background-image: radial-gradient(closest-side, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
-}
-
 [data-theme='dark'] .brand-surface ::selection {
   background-color: rgba(139, 85, 255, 0.35);
 }
@@ -206,17 +200,6 @@
         var(--color-brand-violet) 45%,
         var(--color-brand-sky) 100%
       );
-  }
-
-  /* Soft radial accent for placement behind hero artwork (Lottie, image,
-     etc.) — looks like a glow. Layer absolutely. */
-  .gradient-blob {
-    background-image: radial-gradient(
-      closest-side,
-      rgba(255, 255, 255, 0.35) 0%,
-      rgba(255, 255, 255, 0) 70%
-    );
-    filter: blur(8px);
   }
 
   /* 2-px gradient stripe for section transitions and footer top edge. */
