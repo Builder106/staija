@@ -130,6 +130,15 @@ async function handleNewsletter(e: Event) {
             >
               <Icon icon="mdi:linkedin" width="18" height="18" />
             </a>
+            <a
+              href="https://github.com/Builder106/staija"
+              target="_blank"
+              rel="noopener"
+              aria-label="View the source on GitHub"
+              class="w-9 h-9 rounded-full bg-paper-static/5 border border-paper-static/10 flex items-center justify-center text-paper-static/70 hover:text-paper-static hover:bg-paper-static/10 hover:border-paper-static/20 transition-colors"
+            >
+              <Icon icon="mdi:github" width="18" height="18" />
+            </a>
           </div>
           <div class="mt-2">
             <span

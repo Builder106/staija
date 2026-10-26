@@ -4,6 +4,14 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-26: Rebuilt both program pages around a drawing of what each program produces #decision
+
+The StepUp and Dynamerge pages were a stack of hero, feature rows, timeline, FAQ accordion, and gradient CTA banner. Each now holds one drawing in view while its schedule scrolls beside it. StepUp's `ManuscriptSheet` gains its methods, data figure, abstract, and submission stamp month by month. Dynamerge's `ContinentMap` is a 632-dot map generated from the site's own BlankMap-Africa file; it lights up in Week 1, tints by track in Week 2 (the track buttons filter it), links cross-border teams in Week 3, and draws every team to one demo-day point in Week 4. Phones get a static copy of the drawing per step instead of a held one. FAQ answers moved beside the step that raises them. References came from the Awwwards catalog: Breakthrough Energy for the scroll-filled statement, the AI in Design Report 2026 for the chapter rhythm and duotone photography, and Colonia Zacamil for the photo set inside the title line and the map as the organizing drawing. The two pages use GSAP (ScrollTrigger, SplitText) with native scroll, kept in `programMotion.ts`; the rest of the site still uses motion-v. The fallback mentor list is still not rendered, since its names are placeholders. `ProgramCtaBanner` and `ProgramFaq` no longer have callers and await a decision on deletion.
+
+## 2026-10-26: Removed template tells from the public pages and fixed Container widths #decision
+
+An audit of the live site found decoration that read as generated: a GitHub pill, particles, a glow blob and idle loops in the homepage hero; a count-up stat strip; gradient card stripes; and a left accent rail on Get Involved. Removed them inside the existing structure, keeping the gradient hero and hover swaps from DESIGN.md. "Africa's" is now white with the red, black and green flag as a rule under the word, because the black letters vanished into the violet. Eyebrows are gone from Home, About, and Get Involved. The empty Stories and Events placeholders on Home now collapse, since production had no CMS entries and showed about 800px of blank space. `Container` dropped its 1200px default whenever a caller passes its own `max-w-*` class: the arbitrary value sorted last, so all 85 narrowing call sites were silently ignored.
+
 ## 2026-10-25: Skip staging deploys for tracking-doc-only pushes #decision
 
 Keep the staging hook behind the full CI gate. Skip it when a push changes only `JOURNAL.md`, `ROADMAP.md`, or both. These edits leave the deployed app unchanged and currently create extra Preview records. Leave the production hook unchanged.

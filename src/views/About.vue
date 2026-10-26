@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { Motion } from 'motion-v';
-import Hairline from '../components/motion/Hairline.vue';
-import ScrollReveal from '../components/motion/ScrollReveal.vue';
 import Container from '../components/ui/Container.vue';
-import Eyebrow from '../components/ui/Eyebrow.vue';
 import Heading from '../components/ui/Heading.vue';
 import Section from '../components/ui/Section.vue';
 import UiCard from '../components/ui/UiCard.vue';
@@ -26,49 +23,37 @@ const ADVISORS: string[] = [];
 
 <template>
   <div class="flex flex-col bg-paper min-h-screen">
-    <!-- Hero -->
-    <Section class="!py-24 md:!py-32 min-h-screen flex items-center justify-center">
-      <Container class="max-w-4xl text-center flex flex-col items-center">
-        <Eyebrow class="text-brand-violet mb-8 block text-[25px]">Our Mission</Eyebrow>
-        <blockquote
-          class="font-display text-4xl md:text-5xl lg:text-6xl italic leading-tight text-ink m-0"
-        >
-          "Talent is evenly distributed across the continent. Opportunity, equipment, and mentorship
-          are not. We are here to balance the equation."
-        </blockquote>
+    <!-- Mission -->
+    <Section class="!pt-24 md:!pt-32 !pb-16">
+      <Container class="max-w-3xl">
+        <Heading :level="1" class="leading-tight">
+          Talent is evenly distributed across the continent. Opportunity, equipment, and mentorship
+          are not.
+        </Heading>
+        <p class="mt-6 text-xl md:text-2xl text-ink/70">We are here to balance the equation.</p>
       </Container>
     </Section>
 
-    <Hairline />
     <!-- Story -->
-    <Section class="bg-surface !py-24">
+    <Section class="bg-surface !py-24 border-t hairline-ink">
       <Container class="max-w-3xl">
         <div class="flex flex-col gap-8 text-lg md:text-xl text-ink/80 leading-relaxed font-sans">
-          <ScrollReveal>
-            <p class="m-0">
-              <span class="font-semibold text-brand-violet">STAIJA</span> began in 2023 by students
-              about to enter college who wanted to prepare high school students for their own
-              college journeys.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal :delay="0.1">
-            <p class="m-0">
-              What started as a weekend seminar for 15 ambitious high-schoolers has grown into a
-              pan-African ecosystem. We realized early on that simply teaching students
-              <em>about</em> science wasn't enough; they needed to <em>do</em> science. They needed
-              pipettes, sequencers, clean data sets, and mentors who treated them as future peers,
-              not just students.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal :delay="0.2">
-            <p class="m-0">
-              Today, STAIJA runs two flagship programs — StepUp Scholars in Nigeria and Dynamerge
-              across Africa — and hosts the STAIJA Talks series for the wider community. Around 100
-              students have come through our programs over the last three years, and roughly 200
-              more have joined us at Talks. Our alumni are publishing papers, founding startups, and
-              reshaping the narrative of African innovation.
-            </p>
-          </ScrollReveal>
+          <p class="m-0">
+            STAIJA was started in 2023 by students about to enter college who wanted to prepare high
+            school students for their own college journeys.
+          </p>
+          <p class="m-0">
+            What started as a weekend seminar for 15 high-schoolers now runs programs across Africa.
+            We learned early that teaching students <em>about</em> science wasn't enough; they
+            needed to <em>do</em> science. That meant pipettes, sequencers, clean data sets, and
+            mentors who treated them as future colleagues.
+          </p>
+          <p class="m-0">
+            Today STAIJA runs two programs, StepUp Scholars in Nigeria and Dynamerge across Africa,
+            and hosts the STAIJA Talks series for the wider community. Around 100 students have come
+            through our programs over the last three years, and roughly 200 more have joined us at
+            Talks. Our alumni have gone on to publish papers and start companies.
+          </p>
         </div>
       </Container>
     </Section>

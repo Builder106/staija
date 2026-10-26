@@ -26,7 +26,6 @@
    },
    "home": {
       "hero": {
-         "githubPill": "Open Source on GitHub",
          "headline": "{lead} next {accent} start here.",
          "headlineLead": "Africa's",
          "headlineAccent": "scientist-leaders",
@@ -38,13 +37,10 @@
          "studentsReached": "Students reached",
          "studentsReachedCaption": "Across StepUp + Dynamerge since 2023",
          "talkAttendees": "Talk attendees",
-         "talkAttendeesCaption": "At STAIJA Talks and public events",
-         "programs": "Programs",
-         "programsCaption": "StepUp Scholars {'|'} Dynamerge"
+         "talkAttendeesCaption": "At STAIJA Talks and public events"
       },
       "programs": {
-         "eyebrow": "Our Programs",
-         "heading": "Two paths to accelerated impact.",
+         "heading": "Six months in a lab, or four weeks online.",
          "stepupChip": "In-person",
          "stepupBlurb": "A rigorous, Nigeria-based research incubator for high-school and gap-year students. Access world-class labs, receive a stipend, and publish your first paper.",
          "stepupAge": "Ages 15–19 {'|'} Nigeria",
@@ -56,14 +52,11 @@
       "featured": {
          "eyebrow": "Featured Story",
          "byline": "By {author}",
-         "readMore": "Read full story",
-         "emptyState": "No stories yet"
+         "readMore": "Read full story"
       },
       "events": {
-         "eyebrow": "Community",
          "heading": "Upcoming events.",
-         "viewAll": "View all events",
-         "emptyState": "No upcoming events"
+         "viewAll": "View all events"
       }
    },
    "donate": {

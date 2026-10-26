@@ -1,44 +1,42 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue';
-import { Motion } from 'motion-v';
+import { useMediaQuery } from '@vueuse/core';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useProgram } from '../../composables/useProgram';
 import { trackApplyClick } from '../../services/analytics';
-import Parallax from '../motion/Parallax.vue';
-import Body from '../ui/Body.vue';
 import Container from '../ui/Container.vue';
-import Eyebrow from '../ui/Eyebrow.vue';
-import Heading from '../ui/Heading.vue';
-import Section from '../ui/Section.vue';
 import UiButton from '../ui/UiButton.vue';
-import ProgramCtaBanner from './ProgramCtaBanner.vue';
-import ProgramFaq from './ProgramFaq.vue';
+import { ScrollTrigger, useScheduleScroll } from './programMotion';
+import ManuscriptSheet from './stepup/ManuscriptSheet.vue';
 
-// StepUp Scholars — the "research journal" register.
-//
-// StepUp and Dynamerge used to render through one shared layout with
-// swapped text, which made two genuinely different programs read as the
-// same product. This page leans into what StepUp actually is (a six-month
-// Nigeria-based research incubator whose scholars end with a symposium
-// talk and a journal submission): specimen-label ledger instead of icon
-// stats, numbered editorial rows instead of a card grid, person-forward
-// 1:1 mentor bench, and slower, quieter motion. The mono ledger styling
-// deliberately echoes the transactional-email refBox (see
-// functions/src/emailTemplates.ts) so the register carries across media.
+// StepUp Scholars: the page is organized around the paper a scholar
+// leaves with. The months scroll on the left; the manuscript stays in
+// view on the right and reaches each month's state as that month crosses
+// the middle of the screen. On phones each month carries its own copy of
+// the sheet. FAQ answers sit beside the month that raises the question.
 const SLUG = 'stepup-scholars' as const;
 
-const { program, isApplyOpen, closedReason } = useProgram(SLUG);
+const { program, isApplyOpen, closedReason, isStatusResolved } = useProgram(SLUG);
 
-// Deliverable each phase of the arc leaves behind — the tangible
-// artifact that makes the "first question → first paper" progression
-// legible. Every value is surfaced from the matching timeline
-// description (no invented content); keyed by month so it renders
-// whether the timeline comes from the fallback dict or a Firestore doc
-// seeded before this waypoint treatment existed.
-const TIMELINE_OUTPUTS: Record<string, string> = {
-  'Month 1': 'Lab safety certification',
-  'Month 2–4': 'Original dataset',
-  'Month 5': 'Drafted abstract',
-  'Month 6': 'Submitted manuscript',
+const root = ref<HTMLElement | null>(null);
+const { stage } = useScheduleScroll(root);
+const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+// Firestore can replace the fallback copy after mount, which changes the
+// height of every month.
+watch([program, isDesktop], () => nextTick(() => ScrollTrigger.refresh()));
+
+const titleWords = computed(() => {
+  const [first, ...rest] = (program.value?.name ?? '').split(' ');
+  return { first, rest: rest.join(' ') };
+});
+
+// What each phase leaves behind, keyed by month so it renders whether the
+// timeline comes from the fallback or from a Firestore doc.
+const OUTPUTS: Record<string, string> = {
+  'Month 1': 'You finish with a lab safety certification.',
+  'Month 2–4': 'You finish with an original dataset.',
+  'Month 5': 'You finish with a drafted abstract.',
+  'Month 6': 'You finish with a submitted manuscript.',
 };
 
 const FAQS = [
@@ -56,347 +54,186 @@ const FAQS = [
     a: 'Yes, but you can only participate in one program per calendar year if accepted to both.',
   },
 ];
+// Month index -> the question that month raises.
+const FAQ_BY_MONTH: Record<number, (typeof FAQS)[number]> = { 0: FAQS[0], 1: FAQS[1] };
+const CLOSING_FAQS = [FAQS[2], FAQS[3]];
+
+const ctaLabel = computed(() => {
+  if (isApplyOpen.value) return 'Apply now';
+  return closedReason.value === 'upcoming'
+    ? 'Get notified when applications open'
+    : 'Stay connected for the next cycle';
+});
+const ctaTarget = computed(() =>
+  isApplyOpen.value
+    ? `/apply/${SLUG}`
+    : `/stay-connected?from=${SLUG}&reason=${closedReason.value}`,
+);
+function onApply(source: 'program_hero' | 'program_cta_banner') {
+  if (isApplyOpen.value) trackApplyClick({ program: 'stepup', source });
+}
 </script>
 
 <template>
-  <div v-if="program" class="flex flex-col">
-    <!-- Hero — intentionally always-dark regardless of theme (uses the
-         `*-static` tokens so it doesn't invert in dark mode). One still
-         photo, a specimen-label ledger for the program facts, and slow
-         reveals: the page should open like a journal, not a poster. -->
-    <div class="relative min-h-svh flex items-center bg-ink-static overflow-hidden">
-      <div class="absolute inset-0 z-0">
-        <Parallax :speed="-0.25" :distance="120" class="absolute inset-0">
-          <img
-            :src="program.heroImg"
-            :alt="program.name"
-            width="1280"
-            height="720"
-            class="w-full h-full object-cover opacity-40 scale-110"
-          />
-        </Parallax>
-        <div class="absolute inset-0 wash-violet-6 mix-blend-screen" />
+  <div v-if="program" ref="root" class="flex flex-col">
+    <!-- Title line: the program name with a duotone photo set into it. -->
+    <section class="bg-paper pt-14 md:pt-24 pb-14 md:pb-20">
+      <Container>
+        <div class="relative">
+          <h1
+            class="m-0 font-display font-medium text-ink tracking-[-0.035em] leading-[0.95] text-[clamp(3.25rem,9.5vw,7.5rem)]"
+          >
+            <span class="flex items-center gap-[0.22em]">
+              <span>{{ titleWords.first }}</span>
+              <span class="inline-photo" aria-hidden="true">
+                <img :src="program.heroImg" alt="" width="1280" height="720" />
+              </span>
+            </span>
+            <span class="block">{{ titleWords.rest }}</span>
+          </h1>
+          <!-- On wide screens the pitch sits on the second title line, beside
+               the shorter word, instead of below the whole title. -->
+          <p
+            class="mt-8 lg:mt-0 lg:absolute lg:right-0 lg:bottom-[0.6rem] lg:w-[44%] mb-0 text-xl leading-snug text-ink/80"
+          >
+            {{ program.pitch }}
+          </p>
+        </div>
+        <div class="mt-10 md:mt-12 flex flex-wrap items-center gap-4">
+          <UiButton v-if="isStatusResolved" :to="ctaTarget" @click="onApply('program_hero')">
+            {{ ctaLabel }}
+          </UiButton>
+          <UiButton variant="secondary" href="#months">See the six months</UiButton>
+        </div>
+      </Container>
+    </section>
+
+    <section class="bg-ink-static text-white">
+      <Container class="pt-24 md:pt-36">
+        <p
+          data-fill
+          class="m-0 max-w-5xl font-display font-light tracking-[-0.01em] leading-[1.15] text-[clamp(1.75rem,3.6vw,3.25rem)]"
+        >
+          Each scholar spends six months on one research question. It starts with a lab safety
+          course, moves through experiments with weekly mentor check-ins, and ends with a manuscript
+          sent to a youth science journal. A stipend arrives every month.
+        </p>
+
         <div
-          class="absolute inset-0 bg-gradient-to-t from-ink-static via-ink-static/60 to-transparent"
-        />
-      </div>
+          id="months"
+          class="mt-20 md:mt-32 grid lg:grid-cols-12 gap-10 lg:gap-16 pb-24 md:pb-36 scroll-mt-24"
+        >
+          <div class="lg:col-span-5">
+            <!-- Before Month 1 the sheet is blank: this is who can start one. -->
+            <div class="lg:min-h-[70vh] flex flex-col justify-center py-6">
+              <h2 class="m-0 font-display font-medium text-[28px] leading-tight">Before Month 1</h2>
+              <ul class="mt-6 list-none p-0 m-0 flex flex-col gap-3 text-lg text-white/80">
+                <li v-for="req in program.eligibilityList" :key="req">{{ req }}</li>
+              </ul>
+              <ManuscriptSheet v-if="!isDesktop" :program="program" :stage="0" class="mt-10" />
+            </div>
 
-      <Container class="relative z-10 py-24">
-        <div class="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-20 items-center">
-          <div class="max-w-2xl flex flex-col gap-6 text-paper-static">
-            <Motion
-              :initial="{ opacity: 0, y: 14 }"
-              :animate="{ opacity: 1, y: 0 }"
-              :transition="{ duration: 0.55 }"
-            >
-              <Eyebrow accent class="text-brand-sky"
-                >Research incubator — {{ program.eligibility
-                }}<span class="ml-1.5 tracking-normal align-middle" role="img" aria-label="Nigeria"
-                  >🇳🇬</span
-                ></Eyebrow
+            <ol class="list-none p-0 m-0">
+              <li
+                v-for="(step, i) in program.timeline"
+                :key="i"
+                data-step
+                class="lg:min-h-[75vh] flex flex-col justify-center py-14"
               >
-            </Motion>
+                <h2
+                  class="m-0 font-mono-african font-normal leading-none text-[clamp(2.75rem,5vw,4.5rem)] text-white"
+                >
+                  {{ step.date }}
+                </h2>
+                <p class="mt-6 m-0 text-xl md:text-2xl leading-snug text-white/85 max-w-md">
+                  {{ step.desc }}
+                </p>
+                <p v-if="OUTPUTS[step.date]" class="mt-4 m-0 text-lg text-brand-sky max-w-md">
+                  {{ OUTPUTS[step.date] }}
+                </p>
+                <div v-if="FAQ_BY_MONTH[i]" class="mt-10 max-w-sm">
+                  <p class="m-0 font-semibold text-white">{{ FAQ_BY_MONTH[i].q }}</p>
+                  <p class="m-0 mt-1 text-white/65 leading-relaxed">{{ FAQ_BY_MONTH[i].a }}</p>
+                </div>
+                <ManuscriptSheet
+                  v-if="!isDesktop"
+                  :program="program"
+                  :stage="i + 1"
+                  class="mt-10"
+                />
+              </li>
+            </ol>
 
-            <Motion
-              class="font-display text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-white"
-              as="h1"
-              :initial="{ opacity: 0, y: 14 }"
-              :animate="{ opacity: 1, y: 0 }"
-              :transition="{ duration: 0.55, delay: 0.12 }"
-            >
-              {{ program.name }}
-            </Motion>
-
-            <Motion
-              class="text-lg md:text-xl text-paper-static/80 leading-relaxed"
-              as="p"
-              :initial="{ opacity: 0, y: 14 }"
-              :animate="{ opacity: 1, y: 0 }"
-              :transition="{ duration: 0.55, delay: 0.24 }"
-            >
-              {{ program.pitch }}
-            </Motion>
-
-            <Motion
-              class="mt-6 flex flex-wrap items-center gap-4"
-              :initial="{ opacity: 0 }"
-              :animate="{ opacity: 1 }"
-              :transition="{ duration: 0.6, delay: 0.4 }"
-            >
-              <UiButton
-                v-if="isApplyOpen"
-                variant="on-gradient"
-                :to="`/apply/${SLUG}`"
-                @click="trackApplyClick({ program: 'stepup', source: 'program_hero' })"
+            <!-- After Month 6: the application is the first page of the next manuscript. -->
+            <div class="pt-16 lg:pt-24 lg:min-h-[60vh]">
+              <h2
+                class="m-0 font-display font-medium text-[clamp(2rem,3.4vw,2.75rem)] leading-tight"
               >
-                Apply now
-              </UiButton>
-              <template v-else>
+                Joining the next cohort
+              </h2>
+              <div v-if="isStatusResolved" class="mt-8">
                 <UiButton
                   variant="on-gradient"
-                  :to="`/stay-connected?from=${SLUG}&reason=${closedReason}`"
+                  :to="ctaTarget"
+                  @click="onApply('program_cta_banner')"
                 >
-                  {{
-                    closedReason === 'upcoming'
-                      ? 'Get notified when applications open'
-                      : 'Stay connected for the next cycle'
-                  }}
+                  {{ ctaLabel }}
                 </UiButton>
-                <span class="text-sm text-paper-static/70">
-                  Applications
-                  {{ closedReason === 'upcoming' ? 'open soon' : 'are closed for this cycle' }}.
-                </span>
-              </template>
-              <UiButton variant="on-gradient-ghost" href="#arc">Read the six-month arc</UiButton>
-            </Motion>
-          </div>
-
-          <!-- Specimen ledger — same visual language as the email refBox
-               (hairline border, dotted ledger rules, mono labels). -->
-          <Motion
-            :initial="{ opacity: 0, y: 14 }"
-            :animate="{ opacity: 1, y: 0 }"
-            :transition="{ duration: 0.6, delay: 0.35 }"
-          >
-            <div
-              class="w-full lg:w-80 border border-brand-violet/25 bg-gradient-to-b from-brand-violet/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-sm rounded-2xl p-6 font-mono-african cursor-pin"
-            >
-              <div class="text-lg font-semibold uppercase tracking-[0.16em] text-brand-violet">
-                Program record
               </div>
-              <dl class="m-0 mt-2">
-                <div
-                  v-for="stat in program.stats"
-                  :key="stat.label"
-                  class="flex items-baseline justify-between gap-6 py-3 border-b border-dotted border-brand-violet/25 last:border-0"
-                >
-                  <dt class="text-sm uppercase tracking-[0.14em] text-paper-static/60">
-                    {{ stat.label }}
-                  </dt>
-                  <dd class="m-0 text-lg text-violet-100">{{ stat.value }}</dd>
+              <div class="mt-12 flex flex-col gap-8 max-w-md">
+                <div v-for="faq in CLOSING_FAQS" :key="faq.q">
+                  <p class="m-0 font-semibold text-white">{{ faq.q }}</p>
+                  <p class="m-0 mt-1 text-white/65 leading-relaxed">{{ faq.a }}</p>
                 </div>
-              </dl>
+              </div>
             </div>
-          </Motion>
-        </div>
-      </Container>
-    </div>
-
-    <!-- The work — numbered editorial rows instead of a card grid. The
-         index numerals do the "journal entry" work; alternating image
-         sides keep the scroll from feeling like a template. -->
-    <Section class="bg-paper">
-      <Container>
-        <div class="max-w-5xl mx-auto">
-          <Eyebrow accent class="text-brand-violet mb-4 block">The work</Eyebrow>
-          <Heading :level="2" class="mb-16 max-w-2xl"
-            >Six months of doing science, not hearing about it.</Heading
-          >
-
-          <div class="flex flex-col gap-16 md:gap-24">
-            <Motion
-              v-for="(feature, i) in program.features"
-              :key="feature.title"
-              class="grid md:grid-cols-2 gap-8 md:gap-14 items-center"
-              :initial="{ opacity: 0, y: 24 }"
-              :while-in-view="{ opacity: 1, y: 0 }"
-              :viewport="{ once: true, margin: '-60px' }"
-              :transition="{ duration: 0.6 }"
-            >
-              <div
-                class="aspect-[4/3] rounded-2xl overflow-hidden"
-                :class="i % 2 === 1 && 'md:order-2'"
-              >
-                <img
-                  :src="feature.img"
-                  :alt="feature.title"
-                  width="600"
-                  height="400"
-                  class="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div>
-                <div
-                  class="font-mono-african text-3xl md:text-4xl font-semibold text-brand-violet mb-3"
-                >
-                  {{ String(i + 1).padStart(2, '0') }}
-                </div>
-                <Heading :level="3" class="mb-3">{{ feature.title }}</Heading>
-                <Body large>{{ feature.desc }}</Body>
-              </div>
-            </Motion>
           </div>
-        </div>
-      </Container>
-    </Section>
 
-    <!-- The six-month arc — the vertical month spine stays: a long
-         program earns a long, patient timeline. (Dynamerge deliberately
-         does NOT use this shape.) -->
-    <Section id="arc" class="bg-surface">
-      <Container>
-        <div class="max-w-4xl mx-auto">
-          <Eyebrow accent class="text-brand-violet mb-4 block">The arc</Eyebrow>
-          <Heading :level="2" class="mb-12">From first question to first paper.</Heading>
-
-          <!-- Shared gradient for the deliverable glyphs — violet→sky,
-               matching the spine dots. (Hex mirrors --color-brand-* since
-               SVG stop-color can't reliably read CSS custom properties.) -->
-          <svg width="0" height="0" class="absolute" aria-hidden="true">
-            <defs>
-              <linearGradient id="arcGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#8B55FF" />
-                <stop offset="1" stop-color="#5EDBE7" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          <ol
-            class="list-none p-0 m-0 grid grid-cols-[auto_28px_1fr] md:grid-cols-[180px_28px_1fr] gap-x-5 md:gap-x-8"
-          >
-            <Motion
-              v-for="(step, i) in program.timeline"
-              :key="step.date"
-              as="li"
-              class="contents"
-              :initial="{ opacity: 0, x: -12 }"
-              :while-in-view="{ opacity: 1, x: 0 }"
-              :viewport="{ once: true, margin: '-50px' }"
-              :transition="{ duration: 0.5, delay: i * 0.08 }"
-            >
-              <!-- Date column — mono ledger type (STAIJA Tac Mono) so the
-                   month stamps read as data, echoing the hero's program
-                   record. The Month label IS the sequence. -->
-              <div
-                class="font-mono-african text-lg md:text-2xl font-semibold text-ink md:text-right pt-1.5 self-start"
-                :class="i === program.timeline.length - 1 ? 'pb-0' : 'pb-16'"
-              >
-                {{ step.date }}
-              </div>
-
-              <!-- Spine: the connector draws itself downward on scroll
-                   (scaleY, sky→violet), each dot igniting with a glow as
-                   it enters — the section literally advances as you read. -->
-              <div class="relative flex flex-col items-center self-stretch">
-                <Motion
-                  v-if="i !== program.timeline.length - 1"
-                  as="span"
-                  aria-hidden="true"
-                  class="absolute top-7 bottom-0 left-1/2 -translate-x-1/2 w-[2px] origin-top rounded-full bg-gradient-to-b from-brand-sky to-brand-violet"
-                  :initial="{ scaleY: 0 }"
-                  :while-in-view="{ scaleY: 1 }"
-                  :viewport="{ once: true, margin: '-50px' }"
-                  :transition="{ duration: 0.6, delay: 0.15 + i * 0.12, ease: 'easeInOut' }"
-                />
-                <Motion
-                  as="span"
-                  aria-hidden="true"
-                  class="relative z-10 mt-2 grid place-items-center"
-                  :initial="{ scale: 0, opacity: 0 }"
-                  :while-in-view="{ scale: 1, opacity: 1 }"
-                  :viewport="{ once: true, margin: '-50px' }"
-                  :transition="{ duration: 0.4, delay: i * 0.12, ease: 'easeOut' }"
-                >
-                  <span class="absolute w-7 h-7 rounded-full bg-brand-violet/40 blur-md" />
-                  <span
-                    class="relative w-7 h-7 rounded-full bg-gradient-to-br from-brand-violet to-brand-sky shadow-lg shadow-brand-violet/30 ring-4 ring-surface"
-                  />
-                </Motion>
-              </div>
-
-              <div
-                class="self-start pt-1.5"
-                :class="i === program.timeline.length - 1 ? 'pb-0' : 'pb-16'"
-              >
-                <Body large class="text-ink/80 leading-relaxed">{{ step.desc }}</Body>
-                <!-- Deliverable glyph — a hand-built line-art mark of the
-                     artifact each phase leaves behind (award → dataset →
-                     abstract → submitted paper), drawn in the page's Lucide
-                     stroke voice with a violet→sky gradient stroke that
-                     echoes the spine dots. The caption keeps the meaning. -->
-                <div class="mt-4 flex items-center gap-3">
-                  <svg
-                    viewBox="0 0 24 24"
-                    class="w-12 h-12 shrink-0"
-                    fill="none"
-                    stroke="url(#arcGlyphGrad)"
-                    stroke-width="1.75"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <template v-if="step.date === 'Month 1'">
-                      <circle cx="12" cy="8" r="6" />
-                      <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
-                    </template>
-                    <template v-else-if="step.date === 'Month 2–4'">
-                      <ellipse cx="12" cy="5" rx="9" ry="3" />
-                      <path d="M3 5v14a9 3 0 0 0 18 0V5" />
-                      <path d="M3 12a9 3 0 0 0 18 0" />
-                    </template>
-                    <template v-else-if="step.date === 'Month 5'">
-                      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
-                      <path d="M14 2v5h5" />
-                      <path d="M8 18v-3" />
-                      <path d="M12 18v-5" />
-                      <path d="M16 18v-2" />
-                    </template>
-                    <template v-else>
-                      <path
-                        d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"
-                      />
-                      <path d="m21.854 2.147-10.94 10.939" />
-                    </template>
-                  </svg>
-                  <div v-if="TIMELINE_OUTPUTS[step.date]" class="leading-tight">
-                    <div
-                      class="font-mono-african text-xs uppercase tracking-[0.2em] text-brand-violet/60"
-                    >
-                      Output
-                    </div>
-                    <div class="font-sans text-lg font-medium text-ink mt-0.5">
-                      {{ TIMELINE_OUTPUTS[step.date] }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Motion>
-          </ol>
-        </div>
-      </Container>
-    </Section>
-
-    <!-- Who it's for -->
-    <Section class="bg-paper border-t hairline-ink">
-      <Container>
-        <div
-          class="max-w-4xl mx-auto bg-surface rounded-3xl p-8 md:p-12 shadow-sm border hairline-ink flex flex-col md:flex-row gap-12"
-        >
-          <div class="md:w-1/3">
-            <Heading :level="2" class="mb-4">Who it's for</Heading>
-            <Body class="text-ink/60">
-              We evaluate applications based on curiosity, resilience, and potential for growth. We
-              actively encourage students from underrepresented backgrounds to apply.
-            </Body>
-          </div>
-          <div class="md:w-2/3 flex flex-col gap-4">
-            <div v-for="req in program.eligibilityList" :key="req" class="flex items-start gap-3">
-              <Icon
-                icon="lucide:check-circle-2"
-                width="20"
-                class="text-brand-violet shrink-0 mt-1"
-              />
-              <Body>{{ req }}</Body>
+          <div v-if="isDesktop" class="lg:col-span-7">
+            <div class="sticky top-28 flex justify-end">
+              <ManuscriptSheet :program="program" :stage="stage" class="sheet-fit" />
             </div>
           </div>
         </div>
       </Container>
-    </Section>
-
-    <ProgramFaq :faqs="FAQS" />
-
-    <ProgramCtaBanner :slug="SLUG" :is-apply-open="isApplyOpen" :closed-reason="closedReason" />
+    </section>
   </div>
   <div v-else class="p-24 text-center">Program not found.</div>
 </template>
+
+<style scoped>
+/* design-system: DESIGN.md | detail-view: StepUp manuscript register (see note vs.
+   DynamergeDetailView) */
+
+/* The photo set into the title line (Colonia Zacamil reference): the
+   program photo in the brand duotone, filling the rest of the first line
+   so the title spans the page at every width. */
+.inline-photo {
+  flex: 1 1 auto;
+  min-width: 1.2em;
+  height: 0.74em;
+  margin-top: 0.08em;
+  border-radius: 0.16em;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    #3f1f8a 0%,
+    var(--color-brand-violet) 50%,
+    var(--color-brand-sky) 100%
+  );
+}
+.inline-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: grayscale(1) contrast(1.2) brightness(1.1);
+  mix-blend-mode: multiply;
+}
+
+/* Fit the held sheet inside the viewport below the sticky header. */
+.sheet-fit {
+  width: min(100%, calc((100vh - 9rem) * 0.72));
+}
+</style>
