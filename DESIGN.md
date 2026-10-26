@@ -39,7 +39,12 @@ The homepage hero's "Africa's" and "scientist-leaders" pop out on hover/focus an
 
 ## Detail view architecture
 
-Program detail pages are split by content shape, not shared through one generic template: `StepUpDetailView`(sprint format) and`DynamergeDetailView`(research-journal format) are separate components. When adding a new program type, decide which shape it follows — don't force it into either existing view or resurrect a shared`ProgramDetailView`.
+Program detail pages are split by content shape, not shared through one generic template: `StepUpDetailView` and `DynamergeDetailView` are separate components. Each is organized around one drawing of what the program produces, held in view on desktop while the schedule scrolls beside it, and repeated per step on phones:
+
+- StepUp: `ManuscriptSheet`, the paper a scholar leaves with, which gains its methods, data figure, abstract, and submission stamp month by month.
+- Dynamerge: `ContinentMap`, a dot map of Africa generated from `public/images/africa-mask.svg` (`africaDots.ts`), lit in Week 1, tinted by track in Week 2, linked into teams in Week 3, and drawn to one demo-day point in Week 4.
+
+FAQ answers sit beside the month or week that raises the question; there is no FAQ accordion or closing CTA banner. Motion on these two pages is GSAP (ScrollTrigger and SplitText) with native scroll, and every ease and range lives in `src/components/programs/programMotion.ts`. When adding a new program type, give it its own drawing; don't force it into either existing view or resurrect a shared `ProgramDetailView`.
 
 Every detail view's `<style scoped>`block opens with a one-line stamp recording its allegiance to this file, e.g.`/*design-system: DESIGN.md · detail-view: sprint register (see note vs. StepUpDetailView)*/`. This is what lets an audit (or another contributor) tell at a glance whether a page is intentionally following the system rather than having drifted from it — add the stamp to any new detail view, and update it if the view's register changes.
 
