@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-27: Check tools and Functions dependencies in CI #ci #decision
+
+CI now typechecks `tools/**/*.ts` and audits the Functions lockfile. The app checks already covered the root package.
+
 ## 2026-10-26: Rebuilt both program pages around a drawing of what each program produces #decision
 
 The StepUp and Dynamerge pages were a stack of hero, feature rows, timeline, FAQ accordion, and gradient CTA banner. Each now holds one drawing in view while its schedule scrolls beside it. StepUp's `ManuscriptSheet` gains its methods, data figure, abstract, and submission stamp month by month. Dynamerge's `ContinentMap` is a 632-dot map generated from the site's own BlankMap-Africa file; it lights up in Week 1, tints by track in Week 2 (the track buttons filter it), links cross-border teams in Week 3, and draws every team to one demo-day point in Week 4. Phones get a static copy of the drawing per step instead of a held one. FAQ answers moved beside the step that raises them. References came from the Awwwards catalog: Breakthrough Energy for the scroll-filled statement, the AI in Design Report 2026 for the chapter rhythm and duotone photography, and Colonia Zacamil for the photo set inside the title line and the map as the organizing drawing. The two pages use GSAP (ScrollTrigger, SplitText) with native scroll, kept in `programMotion.ts`; the rest of the site still uses motion-v. The fallback mentor list is still not rendered, since its names are placeholders. `ProgramCtaBanner` and `ProgramFaq` no longer have callers and await a decision on deletion.

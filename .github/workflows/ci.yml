@@ -62,6 +62,8 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm --prefix functions ci
+      - name: Audit Functions dependencies
+        run: npm --prefix functions audit --omit=dev --audit-level=high
       - name: Reject retired Vectorizer backend
         run: npm run avatars:check-backend
       # Scope the CI audit to production dependencies, which matches the
@@ -73,6 +75,8 @@ jobs:
         run: npx license-checker --summary --production
       - name: TypeScript validation
         run: npx vue-tsc -b
+      - name: Typecheck tools
+        run: npm run typecheck:tools
       - name: Typecheck Cloud Functions
         run: npm --prefix functions run build
 
