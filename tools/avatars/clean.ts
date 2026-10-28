@@ -1,7 +1,7 @@
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { optimize, type Config } from 'svgo'
+import { optimize, type Config, type PluginConfig } from 'svgo'
 import { PROMPTS } from './prompts.ts'
 import { validatePortraitSet, validateSvg } from './verify.ts'
 
@@ -35,10 +35,10 @@ const removeBackgroundLayerPlugin = {
   }),
 }
 
-const baseSvgoPlugins: Config['plugins'] = [
+const baseSvgoPlugins: PluginConfig[] = [
   { name: 'preset-default', params: { overrides: {
     convertPathData: { floatPrecision: 2, transformPrecision: 2, applyTransforms: true },
-    cleanupIds: true, mergePaths: false, collapseGroups: false, convertShapeToPath: false,
+    mergePaths: false, collapseGroups: false, convertShapeToPath: false,
   } } },
   { name: 'removeAttrs', params: { attrs: ['data-.*', 'inkscape:.*', 'sodipodi:.*'] } },
   'removeDimensions',
