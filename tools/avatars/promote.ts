@@ -6,7 +6,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Jimp } from 'jimp'
 import { buildPartsTs } from './clean.ts'
-import { compositeManifest } from './composite.ts'
+import { compositeManifest, type JimpImage } from './composite.ts'
 import { AVATAR_CANVAS_SIZE, AVATAR_SLOT_COUNT, type AvatarSlotManifest } from './contracts.ts'
 import { buildLottieDocumentForManifest } from './lottie-rig.ts'
 import { validateLottieDocument } from './lottie-validate.ts'
@@ -99,7 +99,7 @@ async function exactFiles(directory: string, extension: string, names: readonly 
 
 async function validatePng(path: string, name: string): Promise<Buffer> {
   const bytes = await readFile(path)
-  let image: Jimp
+  let image: JimpImage
   try { image = await Jimp.read(bytes) } catch { throw new Error(`${name}: candidate composite is not a readable PNG`) }
   if (image.width !== AVATAR_CANVAS_SIZE || image.height !== AVATAR_CANVAS_SIZE) throw new Error(`${name}: candidate composite must be 256x256`)
   return bytes

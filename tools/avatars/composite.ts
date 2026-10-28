@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, isAbsolute, resolve } from 'node:path'
-import { Jimp } from 'jimp'
+import { BlendMode, Jimp } from 'jimp'
 import {
   AVATAR_CANVAS_SIZE,
   isAvatarSlot,
@@ -29,7 +29,9 @@ function assertInsideRoot(repositoryRoot: string, relativePath: string): string 
   return resolved
 }
 
-async function readLayer(path: string, layerId: string): Promise<Jimp> {
+export type JimpImage = Awaited<ReturnType<typeof Jimp.read>>
+
+async function readLayer(path: string, layerId: string): Promise<JimpImage> {
   try {
     const image = await Jimp.read(path)
     if (image.width !== AVATAR_CANVAS_SIZE || image.height !== AVATAR_CANVAS_SIZE) {
@@ -71,7 +73,7 @@ export async function compositeManifest(
     if (layer.opacity !== 1) image.opacity(layer.opacity)
     const centeredOffset = (AVATAR_CANVAS_SIZE - image.width) / 2
     canvas.composite(image, Math.round(layer.transform.x + centeredOffset), Math.round(layer.transform.y + centeredOffset), {
-      mode: layer.blendMode === 'multiply' ? Jimp.BLEND_MULTIPLY : layer.blendMode === 'screen' ? Jimp.BLEND_SCREEN : Jimp.BLEND_SOURCE_OVER,
+      mode: layer.blendMode === 'multiply' ? BlendMode.MULTIPLY : layer.blendMode === 'screen' ? BlendMode.SCREEN : BlendMode.SRC_OVER,
     })
   }
 

@@ -4,6 +4,7 @@ import { isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Jimp } from 'jimp'
 import { AVATAR_CANVAS_SIZE, type AvatarSlot } from './contracts.ts'
+import type { JimpImage } from './composite.ts'
 import { AVATAR_MANIFESTS } from './manifests.ts'
 
 export const REVIEW_SIZES = [32, 56, 80, 120, 256] as const
@@ -58,7 +59,7 @@ function assertSafeOutputDirectory(options: AvatarReviewOptions): void {
   }
 }
 
-async function readPng(path: string, label: string): Promise<{ image: Jimp; bytes: Buffer }> {
+async function readPng(path: string, label: string): Promise<{ image: JimpImage; bytes: Buffer }> {
   let bytes: Buffer
   try {
     bytes = await readFile(path)
@@ -77,8 +78,8 @@ async function readPng(path: string, label: string): Promise<{ image: Jimp; byte
   }
 }
 
-async function loadSlots(options: AvatarReviewOptions): Promise<Array<AvatarReviewSlot & { baseline: Jimp; candidate: Jimp }>> {
-  const slots: Array<AvatarReviewSlot & { baseline: Jimp; candidate: Jimp }> = []
+async function loadSlots(options: AvatarReviewOptions): Promise<Array<AvatarReviewSlot & { baseline: JimpImage; candidate: JimpImage }>> {
+  const slots: Array<AvatarReviewSlot & { baseline: JimpImage; candidate: JimpImage }> = []
   for (const manifest of AVATAR_MANIFESTS) {
     const baselinePath = join(options.baselineDir, `portrait-${manifest.slot}.png`)
     const candidatePath = join(options.candidateDir, `${manifest.name}.png`)
@@ -98,7 +99,7 @@ async function loadSlots(options: AvatarReviewOptions): Promise<Array<AvatarRevi
   return slots
 }
 
-async function writeSheet(outputDir: string, size: number, slots: readonly (AvatarReviewSlot & { baseline: Jimp; candidate: Jimp })[]): Promise<AvatarReviewSheet> {
+async function writeSheet(outputDir: string, size: number, slots: readonly (AvatarReviewSlot & { baseline: JimpImage; candidate: JimpImage })[]): Promise<AvatarReviewSheet> {
   const sheet = new Jimp({ width: size * 2, height: size * slots.length, color: 0x00000000 })
   for (const [index, slot] of slots.entries()) {
     const baseline = slot.baseline.clone().resize({ w: size, h: size })
