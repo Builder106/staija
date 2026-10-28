@@ -138,9 +138,9 @@ export const vTracerBackend: TraceBackend = {
 
 function profileNameFor(profile: TraceProfile): TraceProfileName {
   const entry = Object.entries(TRACE_PROFILES).find(([, value]) => value === profile)
-  if (!entry) throw new Error('Trace request uses an unknown profile')
-  if (!(entry[0] in TRACE_PROFILES)) throw new Error('Trace request uses an unknown profile')
-  return entry[0]
+  const name = entry?.[0]
+  if (!isTraceProfileName(name)) throw new Error('Trace request uses an unknown profile')
+  return name
 }
 
 export function isTraceProfileName(value: string | undefined): value is TraceProfileName {
