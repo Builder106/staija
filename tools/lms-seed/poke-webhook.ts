@@ -27,7 +27,7 @@ async function main() {
 
   const hooks = await env.webhook.getMany({ query: {} })
   for (const hook of hooks.items) {
-    const calls = await env.webhookCall.getMany({ webhookDefinitionId: hook.sys.id, query: {} })
+    const calls = await env.webhook.getManyCallDetails({ webhookDefinitionId: hook.sys.id, query: {} })
     console.log(`\n${hook.name}: ${calls.items.length} call(s)`)
     for (const c of calls.items.slice(0, 5)) {
       console.log(`  ${c.statusCode}  ${c.requestAt}  ${c.eventType}`)

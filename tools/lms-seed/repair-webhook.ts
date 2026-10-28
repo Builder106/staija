@@ -34,7 +34,7 @@ async function main() {
   }
 
   // Recreate from scratch.
-  const created = await client.webhook.create({
+  const created = await client.webhook.create({}, {
     name: 'Mirror to Firestore (LMS)',
     url: URL,
     topics: [

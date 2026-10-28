@@ -46,7 +46,7 @@ async function main() {
     // Contentful environment scope — when present, the webhook only fires
     // for events in those envs. Empty/undefined = all environments.
     console.log('  environments: (inspect raw config above)')
-    const calls = await client.webhookCall.getMany({ webhookDefinitionId: hook.sys.id, query: {} })
+    const calls = await client.webhook.getManyCallDetails({ webhookDefinitionId: hook.sys.id, query: {} })
     const recent = calls.items.slice(0, 5)
     if (recent.length === 0) {
       console.log('  recent calls: (none)')
