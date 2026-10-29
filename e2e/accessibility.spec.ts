@@ -127,7 +127,7 @@ for (const theme of THEMES) {
             `${target.name} has accessibility violations:\n${formatResults(violations)}`
           ).toEqual([]);
 
-          // incomplete recorded in output JSON
+          // The output JSON marks this check as incomplete.
         });
       }
     });
