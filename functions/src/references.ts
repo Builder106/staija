@@ -31,7 +31,8 @@ const MAILGUN_API_KEY = defineSecret('MAILGUN_API_KEY')
 const MAILGUN_DOMAIN = defineSecret('MAILGUN_DOMAIN')
 
 const TOKEN_TTL_DAYS = 90
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024 // 5MB — references letters often PDFs
+// Reference letters are often PDFs, so allow uploads up to 5 MiB.
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 // --- Token helpers ---------------------------------------------------
 
