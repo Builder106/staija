@@ -345,7 +345,7 @@ export const askLmsTutor = onCall(
         messages,
         model: 'openai/gpt-oss-120b',
         temperature: mode === 'deep' ? 0.4 : 0.6,
-        max_tokens: 1800,
+        max_completion_tokens: 1800,
         stream: true,
       })
 

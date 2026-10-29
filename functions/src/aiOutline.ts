@@ -195,7 +195,7 @@ Required JSON shape:
   const response = await client.chat.completions.create({
     model: 'openai/gpt-oss-120b',
     temperature: 0.6,
-    max_tokens: 8000,
+    max_completion_tokens: 8000,
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
