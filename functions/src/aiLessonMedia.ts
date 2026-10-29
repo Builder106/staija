@@ -93,7 +93,7 @@ Constraints:
   const response = await client.chat.completions.create({
     model: 'openai/gpt-oss-120b',
     temperature: 0.4,
-    max_tokens: 2000,
+    max_completion_tokens: 2000,
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
