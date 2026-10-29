@@ -618,6 +618,7 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- The replacement lives in vue-router/experimental, which has no stability guarantee.
   scrollBehavior(to, _from, savedPosition) {
     if (savedPosition) return savedPosition;
     if (to.hash) return { el: to.hash, behavior: 'smooth' };

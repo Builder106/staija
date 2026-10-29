@@ -50,6 +50,7 @@ function detectInitialLocale(): LocaleCode {
 }
 
 const options: I18nOptions = {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Composition mode is the default only from vue-i18n v12; v11 needs the flag.
   legacy: false,
   globalInjection: true,
   locale: detectInitialLocale(),
