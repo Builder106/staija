@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-30: Put the Pan-African colors inside "Africa's" #decision
+
+The homepage word now carries red, black, and green in a left-to-right text gradient. The separate underline is gone, and the map still replaces "Africa" on hover.
+
 ## 2026-10-27: Check tools and Functions dependencies in CI #ci #decision
 
 CI now typechecks `tools/**/*.ts` and audits the Functions lockfile. The app checks already covered the root package.
