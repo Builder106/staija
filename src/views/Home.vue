@@ -152,7 +152,6 @@ onMounted(async () => {
                       <span class="africa-pop-in" aria-hidden="true" />
                     </span>
                     <span>{{ headlineLeadLines[2] }}</span>
-                    <span class="flag-rule" aria-hidden="true" />
                   </span>
                 </template>
                 <template #accent>
@@ -445,34 +444,31 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* "Africa's" stays white so it reads against the violet hero. The
-   Pan-African flag (Marcus Garvey/UNIA, 1920: red, black, green) runs as
-   a three-band rule under the word instead of coloring the letters,
-   where the black third disappeared into the violet. */
-.flag-rule {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.06em;
-  height: 0.07em;
-  background: linear-gradient(
-    to right,
-    #ce1126 0 33.33%,
-    #000000 33.33% 66.66%,
-    #007a3d 66.66% 100%
-  );
-  pointer-events: none;
-}
-
-/* Baseline layout and positioning rules apply unconditionally across all
-   input methods (touch and mouse/hover), ensuring elements remain correctly
-   positioned and hidden by default on mobile touch screens. */
+/* Keep the Pan-African colors inside the word, matching the map below. */
 .lead-hover-group {
   position: relative;
   display: inline-flex;
   align-items: baseline;
   outline: none;
   white-space: nowrap;
+  background-image: linear-gradient(
+    to right,
+    #ce1126 0 33.33%,
+    #000000 33.33% 66.66%,
+    #007a3d 66.66% 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@media (forced-colors: active) {
+  .lead-hover-group {
+    background-image: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+  }
 }
 
 .lead-swap {
