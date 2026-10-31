@@ -118,10 +118,7 @@ const WEEKS = 13;
               <div class="text-[1.05em] font-semibold">
                 <span class="text-brand-violet">1</span> Methods
               </div>
-              <p
-                data-stage="1"
-                class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80"
-              >
+              <p data-stage="1" class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80">
                 {{ program.timeline[0]?.desc }}
               </p>
             </div>
@@ -157,10 +154,7 @@ const WEEKS = 13;
               <div class="text-[1.05em] font-semibold">
                 <span class="text-brand-violet">3</span> Results
               </div>
-              <p
-                data-stage="3"
-                class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80"
-              >
+              <p data-stage="3" class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80">
                 {{ program.timeline[2]?.desc }}
               </p>
             </div>
@@ -197,10 +191,7 @@ const WEEKS = 13;
               <div class="text-[1.05em] font-semibold">
                 <span class="text-brand-violet">4</span> Symposium
               </div>
-              <p
-                data-stage="4"
-                class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80"
-              >
+              <p data-stage="4" class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80">
                 {{ program.timeline[3]?.desc }}
               </p>
             </div>
