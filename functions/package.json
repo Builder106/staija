@@ -1,7 +1,7 @@
 {
   "name": "staija-functions",
   "version": "0.1.0",
-  "description": "Firebase Functions for STAIJA — Contentful webhook + transactional email",
+  "description": "Firebase Functions for STAIJA \u2014 Contentful webhook + transactional email",
   "private": true,
   "main": "lib/index.js",
   "engines": {
@@ -28,5 +28,9 @@
     "@types/node": "^26.6.5",
     "@types/busboy": "^1.5.5",
     "typescript": "~7.0.2"
+  },
+  "overrides": {
+    "@google-cloud/firestore-api": "0.7.1",
+    "uuid": "^11.1.1"
   }
 }
