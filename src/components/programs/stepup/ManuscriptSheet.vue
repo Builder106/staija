@@ -64,7 +64,7 @@ const WEEKS = 13;
         <span class="text-[1em] text-white/80">Manuscript draft</span>
       </div>
 
-      <div class="flex-1 flex flex-col px-[7%] pt-[2.2em] pb-[6%]">
+      <div class="flex-1 flex flex-col px-[7%] pt-[1.8em] pb-[5%]">
         <div class="flex items-start justify-between gap-[1.45em]">
           <div>
             <div class="text-[2.2em] leading-tight font-display font-medium">
@@ -103,98 +103,112 @@ const WEEKS = 13;
           </svg>
         </div>
 
-        <div class="mt-[1.45em] h-[3px] rounded-full bg-gradient-brand" />
+        <div class="mt-[1.2em] h-[3px] rounded-full bg-gradient-brand" />
 
-        <div class="mt-[1.45em] rounded-[4px] bg-brand-sky/15 px-[1.25em] py-[1.1em]">
+        <div class="mt-[1.2em] rounded-[4px] bg-brand-sky/15 px-[1.25em] py-[1em]">
           <div class="text-[1.05em] font-semibold">Abstract</div>
-          <p data-stage="3" class="m-0 mt-[0.35em] text-[1em] leading-[1.55] text-ink-static/80">
+          <p data-stage="3" class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80">
             {{ program.pitch }}
           </p>
         </div>
 
-        <div class="mt-[1.45em]">
-          <div class="text-[1.05em] font-semibold">
-            <span class="text-brand-violet">1</span> Methods
-          </div>
-          <p data-stage="1" class="m-0 mt-[0.35em] text-[1em] leading-[1.55] text-ink-static/80">
-            {{ program.timeline[0]?.desc }}
-          </p>
-        </div>
-
-        <div class="mt-[1.45em] grid grid-cols-[1.25fr_1fr] gap-[1.8em] items-start">
-          <div class="rounded-[4px] bg-brand-sky/15 p-[0.9em]">
-            <svg viewBox="0 0 140 108" class="w-full overflow-visible">
-              <path d="M10 4 V100 H138" fill="none" stroke="#0e1217" stroke-opacity="0.5" />
-              <circle
-                v-for="([x, y], i) in POINTS"
-                :key="i"
-                data-stage="2"
-                :cx="x"
-                :cy="y"
-                r="2.6"
-                fill="#8b55ff"
-              />
-              <path
-                data-stage="3"
-                data-draw
-                d="M14 94 L134 20"
-                fill="none"
-                stroke="#3f1f8a"
-                stroke-width="2"
-              />
-            </svg>
-            <div class="mt-[0.35em] text-[0.86em] leading-snug text-ink-static/65">
-              Figure 1. Your original dataset, sketched.
-            </div>
-          </div>
-          <div>
-            <div class="text-[1.05em] font-semibold">
-              <span class="text-brand-violet">2</span> Data
-            </div>
-            <div data-stage="2">
-              <p class="m-0 mt-[0.35em] text-[1em] leading-[1.55] text-ink-static/80">
-                {{ program.timeline[1]?.desc }}
+        <div class="cols mt-[1.2em]">
+          <div class="col">
+            <div class="sec-methods">
+              <div class="text-[1.05em] font-semibold">
+                <span class="text-brand-violet">1</span> Methods
+              </div>
+              <p
+                data-stage="1"
+                class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80"
+              >
+                {{ program.timeline[0]?.desc }}
               </p>
-              <svg :viewBox="`0 0 ${WEEKS * 8} 12`" class="mt-[0.7em] w-full">
-                <line
-                  v-for="w in WEEKS"
-                  :key="w"
-                  :x1="w * 8 - 4"
-                  :x2="w * 8 - 4"
-                  y1="1"
-                  y2="11"
-                  stroke="#8b55ff"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <div class="mt-[0.2em] text-[0.86em] text-ink-static/65">
-                One mark per mentor check-in
+            </div>
+
+            <div class="sec-data">
+              <div class="text-[1.05em] font-semibold">
+                <span class="text-brand-violet">2</span> Data
+              </div>
+              <div data-stage="2">
+                <p class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80">
+                  {{ program.timeline[1]?.desc }}
+                </p>
+                <svg :viewBox="`0 0 ${WEEKS * 8} 12`" class="mt-[0.7em] w-full">
+                  <line
+                    v-for="w in WEEKS"
+                    :key="w"
+                    :x1="w * 8 - 4"
+                    :x2="w * 8 - 4"
+                    y1="1"
+                    y2="11"
+                    stroke="#8b55ff"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <div class="mt-[0.2em] text-[0.9em] text-ink-static/70">
+                  One mark per mentor check-in
+                </div>
               </div>
             </div>
+
+            <div class="sec-results">
+              <div class="text-[1.05em] font-semibold">
+                <span class="text-brand-violet">3</span> Results
+              </div>
+              <p
+                data-stage="3"
+                class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80"
+              >
+                {{ program.timeline[2]?.desc }}
+              </p>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="sec-figure rounded-[4px] bg-brand-sky/15 p-[0.9em]">
+              <svg viewBox="0 0 140 108" class="w-full overflow-visible">
+                <path d="M10 4 V100 H138" fill="none" stroke="#0e1217" stroke-opacity="0.5" />
+                <circle
+                  v-for="([x, y], i) in POINTS"
+                  :key="i"
+                  data-stage="2"
+                  :cx="x"
+                  :cy="y"
+                  r="2.6"
+                  fill="#8b55ff"
+                />
+                <path
+                  data-stage="3"
+                  data-draw
+                  d="M14 94 L134 20"
+                  fill="none"
+                  stroke="#3f1f8a"
+                  stroke-width="2"
+                />
+              </svg>
+              <div class="mt-[0.35em] text-[0.9em] leading-snug text-ink-static/70">
+                Figure 1. Your original dataset, sketched.
+              </div>
+            </div>
+
+            <div class="sec-symposium">
+              <div class="text-[1.05em] font-semibold">
+                <span class="text-brand-violet">4</span> Symposium
+              </div>
+              <p
+                data-stage="4"
+                class="m-0 mt-[0.35em] text-[1em] leading-[1.5] text-ink-static/80"
+              >
+                {{ program.timeline[3]?.desc }}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div class="mt-[1.45em]">
-          <div class="text-[1.05em] font-semibold">
-            <span class="text-brand-violet">3</span> Results
-          </div>
-          <p data-stage="3" class="m-0 mt-[0.35em] text-[1em] leading-[1.55] text-ink-static/80">
-            {{ program.timeline[2]?.desc }}
-          </p>
-        </div>
-
-        <div class="mt-[1.45em]">
-          <div class="text-[1.05em] font-semibold">
-            <span class="text-brand-violet">4</span> Symposium
-          </div>
-          <p data-stage="4" class="m-0 mt-[0.35em] text-[1em] leading-[1.55] text-ink-static/80">
-            {{ program.timeline[3]?.desc }}
-          </p>
-        </div>
-
-        <div class="mt-auto pt-[1.8em] flex items-end justify-between gap-[2.2em]">
-          <div class="text-[0.86em] leading-relaxed text-ink-static/60 max-w-[62%]">
+        <div class="mt-auto pt-[1.5em] flex items-end justify-between gap-[2.2em]">
+          <div class="text-[0.9em] leading-relaxed text-ink-static/70 max-w-[62%]">
             <p class="m-0">
               <sup class="text-brand-violet">1</sup> {{ program.name }}, Nigeria: {{ affiliation }}.
             </p>
@@ -218,12 +232,55 @@ const WEEKS = 13;
 <style scoped>
 /* design-system: DESIGN.md | drawing: StepUp manuscript (program page signature) */
 /* Every size inside the sheet is in em off one base that tracks the
-   sheet's width, so the drawing scales as a unit instead of reflowing. */
+   sheet's width, so the drawing scales as a unit instead of reflowing.
+   A narrow sheet stacks one column at a base that stays readable on a
+   phone; a wide one sets two columns, which is what lets the base reach
+   about 12px on a laptop without the sheet outgrowing the viewport. */
 .manuscript {
   container-type: inline-size;
 }
 .sheet {
-  font-size: max(8px, 1.96cqw);
+  font-size: clamp(11px, 3.2cqw, 14px);
+}
+.cols,
+.col {
+  display: contents;
+}
+.cols {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+.sec-methods {
+  order: 1;
+}
+.sec-figure {
+  order: 2;
+}
+.sec-data {
+  order: 3;
+}
+.sec-results {
+  order: 4;
+}
+.sec-symposium {
+  order: 5;
+}
+@container (min-width: 26rem) {
+  .sheet {
+    font-size: max(11px, 1.96cqw);
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    column-gap: 2em;
+    align-items: start;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2em;
+  }
 }
 .stamp {
   mix-blend-mode: multiply;

@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-31: Set the StepUp manuscript in two columns so its text can be read #decision
+
+The held `ManuscriptSheet` was a portrait page capped by viewport height, so its text was about 9px on a laptop and 8px on a phone. Raising the base size could not help: a taller sheet only shrinks the width the cap allows. The sheet now sets two columns when its own width is 26rem or more (base about 12px at 1440x900, 11px at 1024x768) and stacks one column below that (11px on a phone). The height cap in `StepUpDetailView` moved from a 0.72 to a 0.97 width-to-height ratio to match the shorter layout.
+
 ## 2026-10-30: Put the Pan-African colors inside "Africa's" #decision
 
 The homepage word now carries red, black, and green in a left-to-right text gradient. The separate underline is gone, and the map still replaces "Africa" on hover.

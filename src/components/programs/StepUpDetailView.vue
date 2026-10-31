@@ -234,6 +234,6 @@ function onApply(source: 'program_hero' | 'program_cta_banner') {
 
 /* Fit the held sheet inside the viewport below the sticky header. */
 .sheet-fit {
-  width: min(100%, calc((100vh - 9rem) * 0.72));
+  width: min(100%, calc((100vh - 9rem) * 0.97));
 }
 </style>
