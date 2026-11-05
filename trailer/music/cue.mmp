@@ -1,0 +1,563 @@
+<?xml version="1.0"?>
+<!DOCTYPE lmms-project>
+<lmms-project version="31" creator="lmms-cue" type="song">
+  <head bpm="108" mastervol="100" masterpitch="0" timesig_numerator="4" timesig_denominator="4" />
+  <song>
+    <trackcontainer type="song">
+      <track type="0" name="Percussion" muted="0" solo="0">
+        <instrumenttrack vol="80" pan="0" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="0" bank="128" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Percussion" muted="0" type="1" steps="16">
+          <note pos="1008" len="5" key="70" vol="38" pan="0" />
+          <note pos="1032" len="5" key="70" vol="26" pan="0" />
+          <note pos="1056" len="5" key="70" vol="38" pan="0" />
+          <note pos="1080" len="12" key="36" vol="62" pan="0" />
+          <note pos="1080" len="5" key="70" vol="26" pan="0" />
+          <note pos="1104" len="5" key="70" vol="38" pan="0" />
+          <note pos="1128" len="5" key="70" vol="26" pan="0" />
+          <note pos="1152" len="12" key="36" vol="62" pan="0" />
+          <note pos="1152" len="5" key="70" vol="38" pan="0" />
+          <note pos="1176" len="5" key="70" vol="26" pan="0" />
+          <note pos="1200" len="5" key="70" vol="38" pan="0" />
+          <note pos="1224" len="5" key="70" vol="26" pan="0" />
+          <note pos="1248" len="5" key="70" vol="38" pan="0" />
+          <note pos="1272" len="12" key="36" vol="62" pan="0" />
+          <note pos="1272" len="5" key="70" vol="26" pan="0" />
+          <note pos="1296" len="5" key="70" vol="38" pan="0" />
+          <note pos="1320" len="5" key="70" vol="26" pan="0" />
+          <note pos="1344" len="12" key="36" vol="62" pan="0" />
+          <note pos="1344" len="5" key="70" vol="38" pan="0" />
+          <note pos="1368" len="5" key="70" vol="26" pan="0" />
+          <note pos="1392" len="5" key="70" vol="38" pan="0" />
+          <note pos="1416" len="5" key="70" vol="26" pan="0" />
+          <note pos="1440" len="5" key="70" vol="38" pan="0" />
+          <note pos="1464" len="12" key="36" vol="62" pan="0" />
+          <note pos="1464" len="5" key="70" vol="26" pan="0" />
+          <note pos="1488" len="5" key="70" vol="38" pan="0" />
+          <note pos="1512" len="5" key="70" vol="26" pan="0" />
+          <note pos="1536" len="12" key="36" vol="62" pan="0" />
+          <note pos="1536" len="5" key="70" vol="38" pan="0" />
+          <note pos="1560" len="5" key="70" vol="26" pan="0" />
+          <note pos="1584" len="5" key="70" vol="38" pan="0" />
+          <note pos="1608" len="5" key="70" vol="26" pan="0" />
+          <note pos="1632" len="5" key="70" vol="38" pan="0" />
+          <note pos="1656" len="12" key="36" vol="62" pan="0" />
+          <note pos="1656" len="5" key="70" vol="26" pan="0" />
+          <note pos="1680" len="10" key="64" vol="48" pan="0" />
+          <note pos="1680" len="5" key="70" vol="38" pan="0" />
+          <note pos="1704" len="5" key="70" vol="26" pan="0" />
+          <note pos="1728" len="12" key="36" vol="62" pan="0" />
+          <note pos="1728" len="5" key="70" vol="38" pan="0" />
+          <note pos="1752" len="5" key="70" vol="26" pan="0" />
+          <note pos="1764" len="10" key="62" vol="48" pan="0" />
+          <note pos="1776" len="5" key="70" vol="38" pan="0" />
+          <note pos="1800" len="10" key="63" vol="48" pan="0" />
+          <note pos="1800" len="5" key="70" vol="26" pan="0" />
+          <note pos="1824" len="5" key="70" vol="38" pan="0" />
+          <note pos="1848" len="12" key="36" vol="62" pan="0" />
+          <note pos="1848" len="5" key="70" vol="26" pan="0" />
+          <note pos="1872" len="10" key="64" vol="48" pan="0" />
+          <note pos="1872" len="5" key="70" vol="38" pan="0" />
+          <note pos="1896" len="5" key="70" vol="26" pan="0" />
+          <note pos="1920" len="12" key="36" vol="62" pan="0" />
+          <note pos="1920" len="5" key="70" vol="38" pan="0" />
+          <note pos="1944" len="5" key="70" vol="26" pan="0" />
+          <note pos="1956" len="10" key="62" vol="48" pan="0" />
+          <note pos="1968" len="5" key="70" vol="38" pan="0" />
+          <note pos="1992" len="10" key="63" vol="48" pan="0" />
+          <note pos="1992" len="5" key="70" vol="26" pan="0" />
+          <note pos="2016" len="5" key="70" vol="38" pan="0" />
+          <note pos="2040" len="12" key="36" vol="62" pan="0" />
+          <note pos="2040" len="5" key="70" vol="26" pan="0" />
+          <note pos="2064" len="10" key="64" vol="48" pan="0" />
+          <note pos="2064" len="5" key="70" vol="38" pan="0" />
+          <note pos="2088" len="5" key="70" vol="26" pan="0" />
+          <note pos="2112" len="12" key="36" vol="62" pan="0" />
+          <note pos="2112" len="5" key="70" vol="38" pan="0" />
+          <note pos="2136" len="5" key="70" vol="26" pan="0" />
+          <note pos="2148" len="10" key="62" vol="48" pan="0" />
+          <note pos="2160" len="5" key="70" vol="38" pan="0" />
+          <note pos="2184" len="10" key="63" vol="48" pan="0" />
+          <note pos="2184" len="5" key="70" vol="26" pan="0" />
+          <note pos="2208" len="5" key="70" vol="38" pan="0" />
+          <note pos="2232" len="12" key="36" vol="62" pan="0" />
+          <note pos="2232" len="5" key="70" vol="26" pan="0" />
+          <note pos="2256" len="12" key="36" vol="82" pan="0" />
+          <note pos="2256" len="10" key="37" vol="70" pan="0" />
+          <note pos="2256" len="10" key="64" vol="72" pan="0" />
+          <note pos="2256" len="5" key="70" vol="38" pan="0" />
+          <note pos="2280" len="5" key="70" vol="26" pan="0" />
+          <note pos="2304" len="12" key="36" vol="82" pan="0" />
+          <note pos="2304" len="5" key="70" vol="38" pan="0" />
+          <note pos="2328" len="5" key="70" vol="26" pan="0" />
+          <note pos="2340" len="10" key="62" vol="72" pan="0" />
+          <note pos="2352" len="12" key="36" vol="82" pan="0" />
+          <note pos="2352" len="10" key="37" vol="70" pan="0" />
+          <note pos="2352" len="5" key="70" vol="38" pan="0" />
+          <note pos="2376" len="10" key="63" vol="72" pan="0" />
+          <note pos="2376" len="5" key="70" vol="26" pan="0" />
+          <note pos="2400" len="12" key="36" vol="82" pan="0" />
+          <note pos="2400" len="5" key="70" vol="38" pan="0" />
+          <note pos="2424" len="12" key="36" vol="82" pan="0" />
+          <note pos="2424" len="5" key="70" vol="26" pan="0" />
+          <note pos="2448" len="12" key="36" vol="82" pan="0" />
+          <note pos="2448" len="10" key="37" vol="70" pan="0" />
+          <note pos="2448" len="10" key="64" vol="72" pan="0" />
+          <note pos="2448" len="5" key="70" vol="38" pan="0" />
+          <note pos="2472" len="5" key="70" vol="26" pan="0" />
+          <note pos="2496" len="12" key="36" vol="82" pan="0" />
+          <note pos="2496" len="5" key="70" vol="38" pan="0" />
+          <note pos="2520" len="5" key="70" vol="26" pan="0" />
+          <note pos="2532" len="10" key="62" vol="72" pan="0" />
+          <note pos="2544" len="12" key="36" vol="82" pan="0" />
+          <note pos="2544" len="10" key="37" vol="70" pan="0" />
+          <note pos="2544" len="5" key="70" vol="38" pan="0" />
+          <note pos="2568" len="10" key="63" vol="72" pan="0" />
+          <note pos="2568" len="5" key="70" vol="26" pan="0" />
+          <note pos="2592" len="12" key="36" vol="82" pan="0" />
+          <note pos="2592" len="5" key="70" vol="38" pan="0" />
+          <note pos="2616" len="12" key="36" vol="82" pan="0" />
+          <note pos="2616" len="5" key="70" vol="26" pan="0" />
+          <note pos="2640" len="12" key="36" vol="82" pan="0" />
+          <note pos="2640" len="10" key="37" vol="70" pan="0" />
+          <note pos="2640" len="10" key="64" vol="72" pan="0" />
+          <note pos="2640" len="5" key="70" vol="38" pan="0" />
+          <note pos="2664" len="5" key="70" vol="26" pan="0" />
+        </midiclip>
+      </track>
+      <track type="0" name="Kalimba" muted="0" solo="0">
+        <instrumenttrack vol="88" pan="-10" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="108" bank="0" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Kalimba" muted="0" type="1" steps="16">
+          <note pos="0" len="29" key="67" vol="46" pan="0" />
+          <note pos="0" len="48" key="71" vol="90" pan="0" />
+          <note pos="24" len="29" key="71" vol="46" pan="0" />
+          <note pos="48" len="29" key="74" vol="46" pan="0" />
+          <note pos="48" len="48" key="74" vol="90" pan="0" />
+          <note pos="72" len="29" key="69" vol="46" pan="0" />
+          <note pos="96" len="29" key="67" vol="46" pan="0" />
+          <note pos="96" len="48" key="76" vol="90" pan="0" />
+          <note pos="120" len="29" key="71" vol="46" pan="0" />
+          <note pos="144" len="29" key="74" vol="46" pan="0" />
+          <note pos="144" len="72" key="79" vol="90" pan="0" />
+          <note pos="168" len="29" key="69" vol="46" pan="0" />
+          <note pos="192" len="29" key="62" vol="46" pan="0" />
+          <note pos="216" len="29" key="66" vol="46" pan="0" />
+          <note pos="216" len="24" key="81" vol="90" pan="0" />
+          <note pos="240" len="29" key="69" vol="46" pan="0" />
+          <note pos="240" len="144" key="83" vol="90" pan="0" />
+          <note pos="264" len="29" key="74" vol="46" pan="0" />
+          <note pos="288" len="29" key="62" vol="46" pan="0" />
+          <note pos="312" len="29" key="66" vol="46" pan="0" />
+          <note pos="336" len="29" key="69" vol="46" pan="0" />
+          <note pos="360" len="29" key="74" vol="46" pan="0" />
+          <note pos="384" len="29" key="64" vol="46" pan="0" />
+          <note pos="408" len="29" key="67" vol="46" pan="0" />
+          <note pos="432" len="29" key="71" vol="46" pan="0" />
+          <note pos="456" len="29" key="74" vol="46" pan="0" />
+          <note pos="480" len="29" key="64" vol="38" pan="0" />
+          <note pos="504" len="29" key="67" vol="38" pan="0" />
+          <note pos="528" len="29" key="71" vol="38" pan="0" />
+          <note pos="552" len="29" key="74" vol="38" pan="0" />
+          <note pos="576" len="29" key="60" vol="38" pan="0" />
+          <note pos="600" len="29" key="64" vol="38" pan="0" />
+          <note pos="624" len="29" key="67" vol="38" pan="0" />
+          <note pos="648" len="29" key="71" vol="38" pan="0" />
+          <note pos="672" len="29" key="60" vol="38" pan="0" />
+          <note pos="696" len="29" key="64" vol="38" pan="0" />
+          <note pos="720" len="29" key="67" vol="38" pan="0" />
+          <note pos="744" len="29" key="71" vol="38" pan="0" />
+          <note pos="768" len="29" key="67" vol="38" pan="0" />
+          <note pos="792" len="29" key="71" vol="38" pan="0" />
+          <note pos="816" len="29" key="74" vol="38" pan="0" />
+          <note pos="840" len="29" key="69" vol="38" pan="0" />
+          <note pos="864" len="29" key="67" vol="38" pan="0" />
+          <note pos="888" len="29" key="71" vol="38" pan="0" />
+          <note pos="912" len="29" key="74" vol="38" pan="0" />
+          <note pos="936" len="29" key="69" vol="38" pan="0" />
+          <note pos="960" len="29" key="62" vol="38" pan="0" />
+          <note pos="984" len="29" key="66" vol="38" pan="0" />
+          <note pos="1008" len="24" key="69" vol="36" pan="0" />
+          <note pos="1008" len="48" key="71" vol="76" pan="0" />
+          <note pos="1032" len="24" key="74" vol="36" pan="0" />
+          <note pos="1056" len="24" key="62" vol="36" pan="0" />
+          <note pos="1056" len="48" key="74" vol="76" pan="0" />
+          <note pos="1080" len="24" key="66" vol="36" pan="0" />
+          <note pos="1104" len="24" key="69" vol="36" pan="0" />
+          <note pos="1104" len="48" key="76" vol="76" pan="0" />
+          <note pos="1128" len="24" key="74" vol="36" pan="0" />
+          <note pos="1152" len="24" key="67" vol="36" pan="0" />
+          <note pos="1152" len="72" key="79" vol="76" pan="0" />
+          <note pos="1176" len="24" key="71" vol="36" pan="0" />
+          <note pos="1200" len="24" key="74" vol="36" pan="0" />
+          <note pos="1224" len="24" key="69" vol="36" pan="0" />
+          <note pos="1224" len="24" key="81" vol="76" pan="0" />
+          <note pos="1248" len="24" key="67" vol="36" pan="0" />
+          <note pos="1248" len="144" key="83" vol="76" pan="0" />
+          <note pos="1272" len="24" key="71" vol="36" pan="0" />
+          <note pos="1296" len="24" key="74" vol="36" pan="0" />
+          <note pos="1320" len="24" key="69" vol="36" pan="0" />
+          <note pos="1344" len="24" key="62" vol="36" pan="0" />
+          <note pos="1368" len="24" key="66" vol="36" pan="0" />
+          <note pos="1392" len="24" key="69" vol="36" pan="0" />
+          <note pos="1416" len="24" key="74" vol="36" pan="0" />
+          <note pos="1440" len="24" key="62" vol="36" pan="0" />
+          <note pos="1464" len="24" key="66" vol="36" pan="0" />
+          <note pos="1488" len="24" key="69" vol="36" pan="0" />
+          <note pos="1512" len="24" key="74" vol="36" pan="0" />
+          <note pos="1536" len="24" key="64" vol="36" pan="0" />
+          <note pos="1560" len="24" key="67" vol="36" pan="0" />
+          <note pos="1584" len="24" key="71" vol="36" pan="0" />
+          <note pos="1608" len="24" key="74" vol="36" pan="0" />
+          <note pos="1632" len="24" key="64" vol="36" pan="0" />
+          <note pos="1656" len="24" key="67" vol="36" pan="0" />
+          <note pos="1680" len="24" key="71" vol="36" pan="0" />
+          <note pos="1704" len="24" key="74" vol="36" pan="0" />
+          <note pos="1728" len="24" key="60" vol="36" pan="0" />
+          <note pos="1752" len="24" key="64" vol="36" pan="0" />
+          <note pos="1776" len="24" key="67" vol="36" pan="0" />
+          <note pos="1800" len="24" key="71" vol="36" pan="0" />
+          <note pos="1824" len="24" key="60" vol="36" pan="0" />
+          <note pos="1848" len="24" key="64" vol="36" pan="0" />
+          <note pos="1872" len="24" key="67" vol="36" pan="0" />
+          <note pos="1920" len="24" key="67" vol="36" pan="0" />
+          <note pos="1944" len="24" key="71" vol="36" pan="0" />
+          <note pos="1968" len="24" key="74" vol="36" pan="0" />
+          <note pos="2016" len="24" key="67" vol="36" pan="0" />
+          <note pos="2040" len="24" key="71" vol="36" pan="0" />
+          <note pos="2064" len="24" key="74" vol="36" pan="0" />
+          <note pos="2088" len="24" key="69" vol="36" pan="0" />
+          <note pos="2112" len="24" key="62" vol="36" pan="0" />
+          <note pos="2136" len="24" key="66" vol="36" pan="0" />
+          <note pos="2160" len="24" key="69" vol="36" pan="0" />
+          <note pos="2184" len="24" key="74" vol="36" pan="0" />
+          <note pos="2208" len="24" key="62" vol="36" pan="0" />
+          <note pos="2232" len="24" key="66" vol="36" pan="0" />
+          <note pos="2256" len="24" key="69" vol="36" pan="0" />
+          <note pos="2280" len="24" key="74" vol="36" pan="0" />
+          <note pos="2304" len="24" key="64" vol="36" pan="0" />
+          <note pos="2304" len="48" key="71" vol="86" pan="0" />
+          <note pos="2328" len="24" key="67" vol="36" pan="0" />
+          <note pos="2352" len="24" key="71" vol="36" pan="0" />
+          <note pos="2352" len="48" key="74" vol="86" pan="0" />
+          <note pos="2376" len="24" key="74" vol="36" pan="0" />
+          <note pos="2400" len="24" key="64" vol="36" pan="0" />
+          <note pos="2400" len="48" key="76" vol="86" pan="0" />
+          <note pos="2424" len="24" key="67" vol="36" pan="0" />
+          <note pos="2448" len="24" key="71" vol="36" pan="0" />
+          <note pos="2448" len="72" key="79" vol="86" pan="0" />
+          <note pos="2472" len="24" key="74" vol="36" pan="0" />
+          <note pos="2496" len="24" key="60" vol="36" pan="0" />
+          <note pos="2520" len="24" key="64" vol="36" pan="0" />
+          <note pos="2520" len="24" key="81" vol="86" pan="0" />
+          <note pos="2544" len="24" key="67" vol="36" pan="0" />
+          <note pos="2544" len="144" key="83" vol="86" pan="0" />
+          <note pos="2568" len="24" key="71" vol="36" pan="0" />
+          <note pos="2592" len="24" key="60" vol="36" pan="0" />
+          <note pos="2616" len="24" key="64" vol="36" pan="0" />
+          <note pos="2640" len="24" key="67" vol="36" pan="0" />
+          <note pos="2664" len="24" key="71" vol="36" pan="0" />
+          <note pos="2688" len="48" key="67" vol="54" pan="0" />
+          <note pos="2808" len="48" key="67" vol="50" pan="0" />
+          <note pos="2832" len="48" key="71" vol="54" pan="0" />
+          <note pos="2856" len="48" key="74" vol="58" pan="0" />
+          <note pos="2880" len="48" key="81" vol="62" pan="0" />
+          <note pos="2928" len="384" key="79" vol="58" pan="0" />
+        </midiclip>
+      </track>
+      <track type="0" name="Marimba" muted="0" solo="0">
+        <instrumenttrack vol="60" pan="20" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="12" bank="0" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Marimba" muted="0" type="1" steps="16">
+          <note pos="1656" len="48" key="71" vol="54" pan="0" />
+          <note pos="1668" len="19" key="74" vol="38" pan="0" />
+          <note pos="1704" len="48" key="74" vol="54" pan="0" />
+          <note pos="1716" len="19" key="76" vol="38" pan="0" />
+          <note pos="1752" len="48" key="76" vol="54" pan="0" />
+          <note pos="1764" len="19" key="76" vol="38" pan="0" />
+          <note pos="1800" len="72" key="79" vol="54" pan="0" />
+          <note pos="1812" len="19" key="79" vol="38" pan="0" />
+          <note pos="1860" len="19" key="83" vol="38" pan="0" />
+          <note pos="1872" len="24" key="81" vol="54" pan="0" />
+          <note pos="1896" len="144" key="83" vol="54" pan="0" />
+          <note pos="1956" len="19" key="83" vol="38" pan="0" />
+          <note pos="2052" len="19" key="81" vol="38" pan="0" />
+          <note pos="2100" len="19" key="79" vol="38" pan="0" />
+          <note pos="2148" len="19" key="78" vol="38" pan="0" />
+          <note pos="2196" len="19" key="81" vol="38" pan="0" />
+          <note pos="2244" len="19" key="74" vol="38" pan="0" />
+          <note pos="2292" len="19" key="74" vol="38" pan="0" />
+          <note pos="2340" len="19" key="79" vol="38" pan="0" />
+          <note pos="2388" len="19" key="83" vol="38" pan="0" />
+          <note pos="2436" len="19" key="74" vol="38" pan="0" />
+          <note pos="2484" len="19" key="76" vol="38" pan="0" />
+          <note pos="2532" len="19" key="76" vol="38" pan="0" />
+          <note pos="2580" len="19" key="79" vol="38" pan="0" />
+          <note pos="2628" len="19" key="83" vol="38" pan="0" />
+          <note pos="2676" len="19" key="72" vol="38" pan="0" />
+        </midiclip>
+      </track>
+      <track type="0" name="Glockenspiel" muted="0" solo="0">
+        <instrumenttrack vol="55" pan="15" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="9" bank="0" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Glockenspiel" muted="0" type="1" steps="16">
+          <note pos="2304" len="72" key="79" vol="78" pan="0" />
+          <note pos="2304" len="72" key="83" vol="78" pan="0" />
+          <note pos="2400" len="72" key="81" vol="78" pan="0" />
+          <note pos="2400" len="72" key="86" vol="78" pan="0" />
+          <note pos="2496" len="72" key="83" vol="78" pan="0" />
+          <note pos="2496" len="72" key="88" vol="78" pan="0" />
+        </midiclip>
+      </track>
+      <track type="0" name="Nylon guitar" muted="0" solo="0">
+        <instrumenttrack vol="75" pan="-20" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="24" bank="0" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Nylon guitar" muted="0" type="1" steps="16">
+          <note pos="1032" len="17" key="50" vol="44" pan="0" />
+          <note pos="1032" len="17" key="54" vol="44" pan="0" />
+          <note pos="1032" len="17" key="57" vol="44" pan="0" />
+          <note pos="1080" len="17" key="50" vol="44" pan="0" />
+          <note pos="1080" len="17" key="54" vol="44" pan="0" />
+          <note pos="1080" len="17" key="57" vol="44" pan="0" />
+          <note pos="1128" len="17" key="50" vol="44" pan="0" />
+          <note pos="1128" len="17" key="54" vol="44" pan="0" />
+          <note pos="1128" len="17" key="57" vol="44" pan="0" />
+          <note pos="1176" len="17" key="55" vol="44" pan="0" />
+          <note pos="1176" len="17" key="59" vol="44" pan="0" />
+          <note pos="1176" len="17" key="62" vol="44" pan="0" />
+          <note pos="1224" len="17" key="55" vol="44" pan="0" />
+          <note pos="1224" len="17" key="59" vol="44" pan="0" />
+          <note pos="1224" len="17" key="62" vol="44" pan="0" />
+          <note pos="1272" len="17" key="55" vol="44" pan="0" />
+          <note pos="1272" len="17" key="59" vol="44" pan="0" />
+          <note pos="1272" len="17" key="62" vol="44" pan="0" />
+          <note pos="1320" len="17" key="55" vol="44" pan="0" />
+          <note pos="1320" len="17" key="59" vol="44" pan="0" />
+          <note pos="1320" len="17" key="62" vol="44" pan="0" />
+          <note pos="1368" len="17" key="50" vol="44" pan="0" />
+          <note pos="1368" len="17" key="54" vol="44" pan="0" />
+          <note pos="1368" len="17" key="57" vol="44" pan="0" />
+          <note pos="1416" len="17" key="50" vol="44" pan="0" />
+          <note pos="1416" len="17" key="54" vol="44" pan="0" />
+          <note pos="1416" len="17" key="57" vol="44" pan="0" />
+          <note pos="1464" len="17" key="50" vol="44" pan="0" />
+          <note pos="1464" len="17" key="54" vol="44" pan="0" />
+          <note pos="1464" len="17" key="57" vol="44" pan="0" />
+          <note pos="1512" len="17" key="50" vol="44" pan="0" />
+          <note pos="1512" len="17" key="54" vol="44" pan="0" />
+          <note pos="1512" len="17" key="57" vol="44" pan="0" />
+          <note pos="1560" len="17" key="52" vol="44" pan="0" />
+          <note pos="1560" len="17" key="55" vol="44" pan="0" />
+          <note pos="1560" len="17" key="62" vol="44" pan="0" />
+          <note pos="1608" len="17" key="52" vol="44" pan="0" />
+          <note pos="1608" len="17" key="55" vol="44" pan="0" />
+          <note pos="1608" len="17" key="62" vol="44" pan="0" />
+          <note pos="1656" len="17" key="52" vol="52" pan="0" />
+          <note pos="1656" len="17" key="55" vol="52" pan="0" />
+          <note pos="1656" len="17" key="62" vol="52" pan="0" />
+          <note pos="1704" len="17" key="52" vol="52" pan="0" />
+          <note pos="1704" len="17" key="55" vol="52" pan="0" />
+          <note pos="1704" len="17" key="62" vol="52" pan="0" />
+          <note pos="1752" len="17" key="48" vol="52" pan="0" />
+          <note pos="1752" len="17" key="52" vol="52" pan="0" />
+          <note pos="1752" len="17" key="59" vol="52" pan="0" />
+          <note pos="1800" len="17" key="48" vol="52" pan="0" />
+          <note pos="1800" len="17" key="52" vol="52" pan="0" />
+          <note pos="1800" len="17" key="59" vol="52" pan="0" />
+          <note pos="1848" len="17" key="48" vol="52" pan="0" />
+          <note pos="1848" len="17" key="52" vol="52" pan="0" />
+          <note pos="1848" len="17" key="59" vol="52" pan="0" />
+          <note pos="1896" len="17" key="48" vol="52" pan="0" />
+          <note pos="1896" len="17" key="52" vol="52" pan="0" />
+          <note pos="1896" len="17" key="59" vol="52" pan="0" />
+          <note pos="1944" len="17" key="55" vol="52" pan="0" />
+          <note pos="1944" len="17" key="59" vol="52" pan="0" />
+          <note pos="1944" len="17" key="62" vol="52" pan="0" />
+          <note pos="1992" len="17" key="55" vol="52" pan="0" />
+          <note pos="1992" len="17" key="59" vol="52" pan="0" />
+          <note pos="1992" len="17" key="62" vol="52" pan="0" />
+          <note pos="2040" len="17" key="55" vol="52" pan="0" />
+          <note pos="2040" len="17" key="59" vol="52" pan="0" />
+          <note pos="2040" len="17" key="62" vol="52" pan="0" />
+          <note pos="2088" len="17" key="55" vol="52" pan="0" />
+          <note pos="2088" len="17" key="59" vol="52" pan="0" />
+          <note pos="2088" len="17" key="62" vol="52" pan="0" />
+          <note pos="2136" len="17" key="50" vol="52" pan="0" />
+          <note pos="2136" len="17" key="54" vol="52" pan="0" />
+          <note pos="2136" len="17" key="57" vol="52" pan="0" />
+          <note pos="2184" len="17" key="50" vol="52" pan="0" />
+          <note pos="2184" len="17" key="54" vol="52" pan="0" />
+          <note pos="2184" len="17" key="57" vol="52" pan="0" />
+          <note pos="2232" len="17" key="50" vol="52" pan="0" />
+          <note pos="2232" len="17" key="54" vol="52" pan="0" />
+          <note pos="2232" len="17" key="57" vol="52" pan="0" />
+          <note pos="2280" len="17" key="50" vol="68" pan="0" />
+          <note pos="2280" len="17" key="54" vol="68" pan="0" />
+          <note pos="2280" len="17" key="57" vol="68" pan="0" />
+          <note pos="2328" len="17" key="52" vol="68" pan="0" />
+          <note pos="2328" len="17" key="55" vol="68" pan="0" />
+          <note pos="2328" len="17" key="62" vol="68" pan="0" />
+          <note pos="2376" len="17" key="52" vol="68" pan="0" />
+          <note pos="2376" len="17" key="55" vol="68" pan="0" />
+          <note pos="2376" len="17" key="62" vol="68" pan="0" />
+          <note pos="2424" len="17" key="52" vol="68" pan="0" />
+          <note pos="2424" len="17" key="55" vol="68" pan="0" />
+          <note pos="2424" len="17" key="62" vol="68" pan="0" />
+          <note pos="2472" len="17" key="52" vol="68" pan="0" />
+          <note pos="2472" len="17" key="55" vol="68" pan="0" />
+          <note pos="2472" len="17" key="62" vol="68" pan="0" />
+          <note pos="2520" len="17" key="48" vol="68" pan="0" />
+          <note pos="2520" len="17" key="52" vol="68" pan="0" />
+          <note pos="2520" len="17" key="59" vol="68" pan="0" />
+          <note pos="2568" len="17" key="48" vol="68" pan="0" />
+          <note pos="2568" len="17" key="52" vol="68" pan="0" />
+          <note pos="2568" len="17" key="59" vol="68" pan="0" />
+          <note pos="2616" len="17" key="48" vol="68" pan="0" />
+          <note pos="2616" len="17" key="52" vol="68" pan="0" />
+          <note pos="2616" len="17" key="59" vol="68" pan="0" />
+          <note pos="2664" len="17" key="48" vol="68" pan="0" />
+          <note pos="2664" len="17" key="52" vol="68" pan="0" />
+          <note pos="2664" len="17" key="59" vol="68" pan="0" />
+          <note pos="2688" len="144" key="55" vol="60" pan="0" />
+          <note pos="2688" len="144" key="59" vol="60" pan="0" />
+          <note pos="2688" len="144" key="62" vol="60" pan="0" />
+          <note pos="2688" len="144" key="69" vol="60" pan="0" />
+        </midiclip>
+      </track>
+      <track type="0" name="Finger bass" muted="0" solo="0">
+        <instrumenttrack vol="80" pan="0" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="33" bank="0" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Finger bass" muted="0" type="1" steps="16">
+          <note pos="480" len="96" key="40" vol="50" pan="0" />
+          <note pos="576" len="192" key="36" vol="50" pan="0" />
+          <note pos="768" len="192" key="43" vol="50" pan="0" />
+          <note pos="960" len="48" key="38" vol="50" pan="0" />
+          <note pos="1032" len="19" key="50" vol="58" pan="0" />
+          <note pos="1080" len="19" key="38" vol="58" pan="0" />
+          <note pos="1128" len="19" key="38" vol="58" pan="0" />
+          <note pos="1152" len="36" key="43" vol="72" pan="0" />
+          <note pos="1224" len="19" key="55" vol="58" pan="0" />
+          <note pos="1272" len="19" key="43" vol="58" pan="0" />
+          <note pos="1320" len="19" key="43" vol="58" pan="0" />
+          <note pos="1344" len="36" key="38" vol="72" pan="0" />
+          <note pos="1416" len="19" key="50" vol="58" pan="0" />
+          <note pos="1464" len="19" key="38" vol="58" pan="0" />
+          <note pos="1512" len="19" key="38" vol="58" pan="0" />
+          <note pos="1536" len="36" key="40" vol="72" pan="0" />
+          <note pos="1608" len="19" key="52" vol="58" pan="0" />
+          <note pos="1656" len="19" key="40" vol="58" pan="0" />
+          <note pos="1704" len="19" key="40" vol="58" pan="0" />
+          <note pos="1728" len="36" key="36" vol="72" pan="0" />
+          <note pos="1800" len="19" key="48" vol="58" pan="0" />
+          <note pos="1848" len="19" key="36" vol="58" pan="0" />
+          <note pos="1896" len="19" key="36" vol="58" pan="0" />
+          <note pos="1920" len="36" key="43" vol="72" pan="0" />
+          <note pos="1992" len="19" key="55" vol="58" pan="0" />
+          <note pos="2040" len="19" key="43" vol="58" pan="0" />
+          <note pos="2088" len="19" key="43" vol="58" pan="0" />
+          <note pos="2112" len="36" key="38" vol="72" pan="0" />
+          <note pos="2184" len="19" key="50" vol="58" pan="0" />
+          <note pos="2232" len="19" key="38" vol="58" pan="0" />
+          <note pos="2280" len="19" key="38" vol="58" pan="0" />
+          <note pos="2304" len="36" key="40" vol="72" pan="0" />
+          <note pos="2376" len="19" key="52" vol="58" pan="0" />
+          <note pos="2424" len="19" key="40" vol="58" pan="0" />
+          <note pos="2472" len="19" key="40" vol="58" pan="0" />
+          <note pos="2496" len="36" key="36" vol="72" pan="0" />
+          <note pos="2568" len="19" key="48" vol="58" pan="0" />
+          <note pos="2616" len="19" key="36" vol="58" pan="0" />
+          <note pos="2664" len="19" key="36" vol="58" pan="0" />
+          <note pos="2688" len="768" key="43" vol="70" pan="0" />
+        </midiclip>
+      </track>
+      <track type="0" name="Strings" muted="0" solo="0">
+        <instrumenttrack vol="55" pan="0" mixch="0" basenote="69" pitch="0" pitchrange="1" usemasterpitch="1">
+          <instrument name="sf2player">
+            <sf2player src="/usr/share/sounds/sf2/FluidR3_GM.sf2" patch="48" bank="0" gain="3" reverbOn="0" chorusOn="0" />
+          </instrument>
+          <fxchain enabled="0" numofeffects="0" />
+        </instrumenttrack>
+        <midiclip pos="0" name="Strings" muted="0" type="1" steps="16">
+          <note pos="480" len="96" key="52" vol="36" pan="0" />
+          <note pos="480" len="96" key="59" vol="36" pan="0" />
+          <note pos="480" len="96" key="67" vol="36" pan="0" />
+          <note pos="576" len="192" key="48" vol="38" pan="0" />
+          <note pos="576" len="192" key="55" vol="38" pan="0" />
+          <note pos="576" len="192" key="64" vol="38" pan="0" />
+          <note pos="768" len="192" key="55" vol="40" pan="0" />
+          <note pos="768" len="192" key="62" vol="40" pan="0" />
+          <note pos="768" len="192" key="69" vol="40" pan="0" />
+          <note pos="960" len="192" key="50" vol="42" pan="0" />
+          <note pos="960" len="192" key="57" vol="42" pan="0" />
+          <note pos="960" len="192" key="66" vol="42" pan="0" />
+          <note pos="1152" len="192" key="55" vol="44" pan="0" />
+          <note pos="1152" len="192" key="62" vol="44" pan="0" />
+          <note pos="1152" len="192" key="69" vol="44" pan="0" />
+          <note pos="1344" len="192" key="50" vol="46" pan="0" />
+          <note pos="1344" len="192" key="57" vol="46" pan="0" />
+          <note pos="1344" len="192" key="66" vol="46" pan="0" />
+          <note pos="1536" len="192" key="52" vol="48" pan="0" />
+          <note pos="1536" len="192" key="59" vol="48" pan="0" />
+          <note pos="1536" len="192" key="67" vol="48" pan="0" />
+          <note pos="1728" len="192" key="48" vol="50" pan="0" />
+          <note pos="1728" len="192" key="55" vol="50" pan="0" />
+          <note pos="1728" len="192" key="64" vol="50" pan="0" />
+          <note pos="1920" len="192" key="55" vol="52" pan="0" />
+          <note pos="1920" len="192" key="62" vol="52" pan="0" />
+          <note pos="1920" len="192" key="69" vol="52" pan="0" />
+          <note pos="2112" len="192" key="50" vol="54" pan="0" />
+          <note pos="2112" len="192" key="57" vol="54" pan="0" />
+          <note pos="2112" len="192" key="66" vol="54" pan="0" />
+          <note pos="2304" len="192" key="52" vol="88" pan="0" />
+          <note pos="2304" len="192" key="59" vol="88" pan="0" />
+          <note pos="2304" len="192" key="67" vol="88" pan="0" />
+          <note pos="2496" len="192" key="48" vol="94" pan="0" />
+          <note pos="2496" len="192" key="55" vol="94" pan="0" />
+          <note pos="2496" len="192" key="64" vol="94" pan="0" />
+          <note pos="2688" len="768" key="55" vol="64" pan="0" />
+          <note pos="2688" len="768" key="62" vol="64" pan="0" />
+          <note pos="2688" len="768" key="69" vol="64" pan="0" />
+          <note pos="2688" len="768" key="71" vol="64" pan="0" />
+        </midiclip>
+      </track>
+    </trackcontainer>
+    <mixer>
+      <mixerchannel num="0" name="Master" volume="1" muted="0" soloed="0">
+        <fxchain enabled="1" numofeffects="2">
+          <effect name="reverbsc" on="1" wet="0.26" gate="0" autoquit="1">
+            <ReverbSCControls size="0.8" color="7500" input_gain="0" output_gain="0" />
+            <key />
+          </effect>
+          <effect name="compressor" on="1" wet="1.0" gate="0" autoquit="1">
+            <CompressorControls threshold="-17" ratio="20" attack="0.5" release="120" knee="2" lookahead="1" lookaheadLength="5" peakmode="1" limiter="1" />
+            <key />
+          </effect>
+        </fxchain>
+      </mixerchannel>
+    </mixer>
+  </song>
+</lmms-project>

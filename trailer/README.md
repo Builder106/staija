@@ -17,5 +17,5 @@ The render output is transient and should not be committed.
 
 ## Music
 
-`public/audio.mp3` is Kevin MacLeod's "Wholesome" (CC BY 4.0). Keep the credit
-in `public/CREDITS.md` with any published video.
+`public/audio.mp3` is an original cue composed in LMMS. The source is
+`music/cue.py` and the brief is `ORIGINAL-CUE.md`.
