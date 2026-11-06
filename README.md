@@ -15,6 +15,10 @@
 
 > **Educational platform supporting Nigeria's future STEM leaders.** Manages student scholarship applications, mentorship pairings, course learning, and alumni networks.
 
+<p align="center">
+  <img src="assets/screenshot.png" alt="The STAIJA home page: a purple gradient hero reading Africa's next scientist-leaders start here, with Apply to StepUp and Explore programs buttons beside an illustration of a student reading." width="880">
+</p>
+
 ## 💡 What is STAIJA?
 
 The Science and Technology Association for Indigenous Jumpstart Advancement (STAIJA) empowers students across Nigeria to pursue careers in science, technology, engineering, and mathematics. 
