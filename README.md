@@ -21,9 +21,9 @@
 
 ## 💡 What is STAIJA?
 
-The Science and Technology Association for Indigenous Jumpstart Advancement (STAIJA) empowers students across Nigeria to pursue careers in science, technology, engineering, and mathematics. 
+The Science and Technology Association for Indigenous Jumpstart Advancement (STAIJA) supports students across Nigeria pursuing science, technology, engineering, and mathematics.
 
-This platform serves as the central digital hub for STAIJA's scholarship programs (StepUp Scholars and Dynamerge). It streamlines the entire student journey: applying online, matching admitted students with professional mentors, delivering coursework and assignments, and maintaining an active alumni network.
+This platform supports STAIJA's scholarship programs, StepUp Scholars and Dynamerge. It handles applications, mentor matching, coursework and assignments, and the alumni network.
 
 **Live site:** [staija.org](https://staija.org)
 
