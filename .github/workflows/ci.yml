@@ -78,7 +78,7 @@ jobs:
       # application's deployed attack surface. Build and operator tools are
       # not shipped in the browser bundle.
       - name: Dependency security audit
-        run: npm audit --omit=dev --audit-level=high
+        run: node scripts/audit.mjs
       - name: Open-source license compliance scan
         run: npx license-checker --summary --production
       - name: TypeScript validation
