@@ -248,10 +248,11 @@ onMounted(loadInvite);
           <Heading :level="2" class="!text-2xl">Wrong account.</Heading>
           <Body class="text-ink/70">
             This invitation is for
-            <code class="font-mono text-sm bg-ink/5 px-1.5 py-0.5 rounded">{{ invite.email }}</code
-            >. You're signed in as
-            <code class="font-mono text-sm bg-ink/5 px-1.5 py-0.5 rounded">{{ user?.email }}</code
-            >. Sign out and back in with the right address.
+            <code class="font-mono text-sm bg-ink/5 px-1.5 py-0.5 rounded">{{
+              invite.email
+            }}</code>. You're signed in as
+            <code class="font-mono text-sm bg-ink/5 px-1.5 py-0.5 rounded">{{ user?.email }}</code>.
+            Sign out and back in with the right address.
           </Body>
           <div class="flex flex-col sm:flex-row gap-3">
             <RouterLink

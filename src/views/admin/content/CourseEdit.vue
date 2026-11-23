@@ -509,8 +509,8 @@ onMounted(async () => {
             <div v-else-if="form.coverImage" class="flex items-center gap-3 text-xs text-ink/70">
               <Icon icon="lucide:image" width="14" />
               <span
-                >Cover image attached (asset <code class="font-mono">{{ form.coverImage }}</code
-                >). Upload below to replace.</span
+                >Cover image attached (asset <code class="font-mono">{{ form.coverImage }}</code>).
+                Upload below to replace.</span
               >
               <button
                 type="button"
