@@ -1169,8 +1169,8 @@ const DYNAMERGE_SEED: SeedTemplate = {
                     class="text-amber-700 mt-0.5 shrink-0"
                   />
                   <span>
-                    Already announced <strong>{{ lastAnnouncedTimeAgo(p) }}</strong
-                    >. Re-sending will hit every subscriber in this segment again.
+                    Already announced <strong>{{ lastAnnouncedTimeAgo(p) }}</strong>. Re-sending
+                    will hit every subscriber in this segment again.
                   </span>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 mt-1">

@@ -681,8 +681,7 @@ function refStatusClass(s: ReferenceWithStatus['status']) {
             <a href="mailto:contact@staija.org" class="text-brand-violet hover:underline"
               >contact@staija.org</a
             >
-            and quote this reference: <span class="font-mono">{{ route.params.id }}</span
-            >.
+            and quote this reference: <span class="font-mono">{{ route.params.id }}</span>.
           </p>
         </Container>
       </Section>

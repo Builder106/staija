@@ -1301,9 +1301,8 @@ watch(
         </div>
         <Heading :level="1">Application submitted.</Heading>
         <Body large class="text-ink/70">
-          Thanks for applying to <strong>{{ program.name }}</strong
-          >. We've sent a confirmation to your email and a separate invite to each of your
-          references. Application reference:
+          Thanks for applying to <strong>{{ program.name }}</strong>. We've sent a confirmation to
+          your email and a separate invite to each of your references. Application reference:
           <span class="font-mono text-sm bg-ink/5 px-2 py-1 rounded">{{ submittedId }}</span>
         </Body>
         <div class="flex flex-wrap gap-3 mt-2">

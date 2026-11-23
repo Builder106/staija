@@ -312,8 +312,7 @@ async function handleDonateClick() {
           class="mt-4 max-w-[400px] text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3"
         >
           Thanks — your donation went through. Reference:
-          <span class="font-mono">{{ successRef }}</span
-          >. A receipt is on its way to your inbox.
+          <span class="font-mono">{{ successRef }}</span>. A receipt is on its way to your inbox.
         </div>
 
         <!-- Receipt Preview -->

@@ -570,8 +570,7 @@ onBeforeUnmount(() => {
       <div class="flex flex-col gap-3 mb-12">
         <Eyebrow class="text-brand-violet">Applicant dashboard</Eyebrow>
         <Heading :level="1"
-          >Hi, <span class="text-brand-violet">{{ firstName }}</span
-          >.</Heading
+          >Hi, <span class="text-brand-violet">{{ firstName }}</span>.</Heading
         >
         <Body
           v-if="!loading && !hasApplications && visibleDrafts.length === 0"

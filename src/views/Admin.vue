@@ -151,8 +151,7 @@ onMounted(loadData);
       <div class="flex flex-col gap-3 mb-12">
         <Eyebrow class="text-brand-violet">{{ roleLabel }}</Eyebrow>
         <Heading :level="1"
-          >Hi, <span class="text-brand-violet">{{ firstName }}</span
-          >.</Heading
+          >Hi, <span class="text-brand-violet">{{ firstName }}</span>.</Heading
         >
         <Body class="text-ink/70 max-w-xl">
           Review applications, manage users, set up mentor pairings. Editorial content lives in
