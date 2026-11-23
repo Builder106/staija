@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "busboy": "^1.6.0",
-    "contentful-management": "^12.20.0",
-    "firebase-admin": "^14.5.0",
+    "contentful-management": "^12.21.0",
+    "firebase-admin": "^14.5.1",
     "firebase-functions": "^7.4.0",
     "groq-sdk": "^1.6.0",
     "zod": "^4.6.7"
