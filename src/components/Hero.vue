@@ -9,6 +9,7 @@ import { onMounted, ref } from 'vue';
 // the lazy load doesn't shift layout.
 import { defineProps } from 'vue';
 import heroAnimation from '../assets/hero.json';
+import ParticleField from './motion/ParticleField.vue';
 
 const props = defineProps<{
   title: string;
@@ -50,6 +51,7 @@ onMounted(async () => {
     "
   >
     <div class="eureka-lattice" aria-hidden="true"></div>
+    <ParticleField />
     <div class="container">
       <div class="hero-inner" aria-labelledby="hero-heading">
         <Motion
